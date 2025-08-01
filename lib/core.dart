@@ -47,14 +47,14 @@ library flutter_core;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 
 import 'src/core/network/dio_client.dart';
-import 'src/core/network/dio_cache_config.dart';
+// import 'src/core/network/dio_cache_config.dart';
 import 'src/core/services/connectivity_service.dart';
 import 'src/core/storage/secure_storage_service.dart';
-import 'src/theme/theme_provider.dart';
+// import 'src/theme/theme_provider.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.
 ///
@@ -86,7 +86,7 @@ class FlutterCore {
   ///
   /// This getter retrieves the instance from [ThemeProvider.instance].
   /// The [ThemeProvider] itself is configured via [initializeUI].
-  static ThemeProvider get themeProvider => ThemeProvider.instance;
+  // static ThemeProvider get themeProvider => ThemeProvider.instance;
 
   /// Initializes core non-UI services of the Flutter Core package.
   ///
@@ -126,19 +126,20 @@ class FlutterCore {
 
     // 2. Initialize Network Client (Dio)
     // Configures Dio with caching, logging, and timeout settings.
-    final cacheConfig = DioCacheConfig(maxAge: cacheMaxAge);
+    // final cacheConfig = DioCacheConfig(maxAge: cacheMaxAge);
     dioClient = DioClient(
       baseUrl: baseUrl,
-      connectTimeout: connectTimeout,
-      receiveTimeout: receiveTimeout,
+      connectTimeoutMs: connectTimeout,
+      receiveTimeoutMs: receiveTimeout,
       enableLogging: enableLogging,
-      cacheConfig: cacheConfig,
+      // cacheConfig: cacheConfig,
       logger: Logger(
         printer: PrettyPrinter(
           methodCount: 0, // Hides method stack trace in logs
           colors: true, // Enables colored logs
           printEmojis: true, // Enables emojis in logs
-          dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart, // Log time format
+          dateTimeFormat:
+              DateTimeFormat.onlyTimeAndSinceStart, // Log time format
         ),
       ),
     );
@@ -165,28 +166,28 @@ class FlutterCore {
   /// - [darkTheme]: Optional custom [ThemeData] for the dark mode.
   /// - [textTheme]: Optional custom global [TextTheme].
   /// - [colorScheme]: Optional custom global [ColorScheme].
-  static Future<void> initializeUI({
-    ThemeData? lightTheme,
-    ThemeData? darkTheme,
-    TextTheme? textTheme,
-    ColorScheme? colorScheme,
-  }) async {
-    // Initialize Google Fonts.
-    // Example: Pre-load 'Inter' font. This can be expanded to accept a list of fonts.
-    await GoogleFonts.pendingFonts([
-      GoogleFonts.inter(), // Commonly used sans-serif font
-    ]);
+  // static Future<void> initializeUI({
+  //   ThemeData? lightTheme,
+  //   ThemeData? darkTheme,
+  //   TextTheme? textTheme,
+  //   ColorScheme? colorScheme,
+  // }) async {
+  //   // Initialize Google Fonts.
+  //   // Example: Pre-load 'Inter' font. This can be expanded to accept a list of fonts.
+  //   await GoogleFonts.pendingFonts([
+  //     GoogleFonts.inter(), // Commonly used sans-serif font
+  //   ]);
 
-    // Configure the ThemeProvider with custom or default themes.
-    // If parameters are null, ThemeProvider will use its internal defaults.
-    ThemeProvider.configure(
-      lightTheme: lightTheme,
-      darkTheme: darkTheme,
-      textTheme: textTheme,
-      colorScheme: colorScheme,
-    );
-    debugPrint("FlutterCore UI initialized successfully.");
-  }
+  //   // Configure the ThemeProvider with custom or default themes.
+  //   // If parameters are null, ThemeProvider will use its internal defaults.
+  //   ThemeProvider.configure(
+  //     lightTheme: lightTheme,
+  //     darkTheme: darkTheme,
+  //     textTheme: textTheme,
+  //     colorScheme: colorScheme,
+  //   );
+  //   debugPrint("FlutterCore UI initialized successfully.");
+  // }
 
   /// Cleans up resources and resets the initialization state of FlutterCore.
   ///
@@ -209,7 +210,8 @@ class FlutterCore {
     // to an uninitialized state without restarting the app or using more
     // sophisticated DI. This cleanup is partial.
     _isInitialized = false;
-    debugPrint("FlutterCore cleaned up. Ready for re-initialization if needed.");
+    debugPrint(
+        "FlutterCore cleaned up. Ready for re-initialization if needed.");
   }
 }
 
@@ -266,7 +268,8 @@ class ScreenUtilWrapper extends StatelessWidget {
       splitScreenMode: splitScreenMode,
       // The builder ensures that the child is built within the ScreenUtil context,
       // making ScreenUtil available to all descendants.
-      builder: (_, widgetChild) => widgetChild!, // widgetChild is the 'child' passed to ScreenUtilInit
+      // builder: (_, widgetChild) =>
+      //     widgetChild!, // widgetChild is the 'child' passed to ScreenUtilInit
       child: child, // This is the 'child' property of ScreenUtilWrapper
     );
   }
