@@ -22,42 +22,42 @@ abstract class BaseRepository<T extends BaseEntity> {
   ///
   /// Returns a [Result] containing a list of entities on success,
   /// or a [Failure] on error.
-  Future<Result<List<T>>> getAll();
+  FutureResult<List<T>> getAll();
 
   /// Retrieves a single entity of type [T] by its unique [id].
   ///
   /// [id]: The unique identifier of the entity to retrieve.
   /// Returns a [Result] containing the entity on success,
   /// or a [Failure] if not found or on error.
-  Future<Result<T>> getById(String id);
+  FutureResult<T> getById(String id);
 
   /// Creates a new entity.
   ///
   /// [entity]: The entity to be created.
   /// Returns a [Result] containing the created entity (which might include
   /// server-generated fields like an ID) on success, or a [Failure] on error.
-  Future<Result<T>> create(T entity);
+  FutureResult<T> create(T entity);
 
   /// Updates an existing entity.
   ///
   /// [entity]: The entity with updated information. It should contain its identifier.
   /// Returns a [Result] containing the updated entity on success,
   /// or a [Failure] on error.
-  Future<Result<T>> update(T entity);
+  FutureResult<T> update(T entity);
 
   /// Deletes an entity by its unique [id].
   ///
   /// [id]: The unique identifier of the entity to delete.
   /// Returns a [Result<void>] indicating success (with null data)
   /// or a [Failure] on error.
-  Future<Result<void>> delete(String id);
+  FutureResult<void> delete(String id);
 
   /// Searches for entities matching the given [query].
   ///
   /// [query]: The search term or criteria.
   /// Returns a [Result] containing a list of matching entities on success,
   /// or a [Failure] on error.
-  Future<Result<List<T>>> search(String query);
+  FutureResult<List<T>> search(String query);
 
   /// Retrieves a paginated list of entities.
   ///
@@ -67,7 +67,7 @@ abstract class BaseRepository<T extends BaseEntity> {
   /// [descending]: Whether to sort in descending order. Defaults to `false`.
   /// Returns a [Result] containing the list of entities for the requested page
   /// on success, or a [Failure] on error.
-  Future<Result<List<T>>> getPaginated({
+  FutureResult<List<T>> getPaginated({
     required int page,
     required int limit,
     String? sortBy,

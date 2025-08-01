@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:flutter_core/src/core/network/dio_logging_interceptor.dart';
 import 'package:logger/logger.dart';
 
 import '../services/connectivity_service.dart';
-import 'dio_cache_config.dart';
+// import 'dio_cache_config.dart';
 // import 'dio_interceptor.dart'; // Now DioLoggingInterceptor
+import 'dio_interceptor.dart';
 import 'dio_retry_interceptor.dart';
 import 'exceptions/network_exceptions.dart';
 
@@ -73,7 +73,7 @@ class DioClient {
     required String baseUrl,
     int connectTimeoutMs = 15000,
     int receiveTimeoutMs = 15000,
-    DioCacheConfig? cacheConfig,
+    // DioCacheConfig? cacheConfig,
     Logger? logger,
     bool enableLogging = true,
     RetryOptions retryOptions = const RetryOptions(),
@@ -89,7 +89,7 @@ class DioClient {
     _setupInterceptors(
       enableLogging: enableLogging,
       retryOptions: retryOptions,
-      cacheConfig: cacheConfig,
+      // cacheConfig: cacheConfig,
       refreshTokenCallback: refreshToken,
     );
   }
@@ -98,12 +98,13 @@ class DioClient {
   void _setupInterceptors({
     required bool enableLogging,
     required RetryOptions retryOptions,
-    required DioCacheConfig? cacheConfig,
+    // required DioCacheConfig? cacheConfig,
     required Future<String?> Function(Dio dioForRefresh)? refreshTokenCallback,
   }) {
     // Logging Interceptor (conditionally added)
     if (enableLogging && _logger != null) {
-      _dio.interceptors.add(DioLoggingInterceptor(logger: _logger, enableLogging: true));
+      _dio.interceptors
+          .add(DioLoggingInterceptor(logger: _logger, enableLogging: true));
     }
 
     // Token Refresh Interceptor (if callback is provided)
@@ -112,33 +113,40 @@ class DioClient {
         onError: (DioException error, ErrorInterceptorHandler handler) async {
           if (error.response?.statusCode == 401) {
             if (_logger != null && enableLogging) {
-              _logger!.i('DioClient: Received 401 Unauthorized. Attempting token refresh.');
+              _logger.i(
+                  'DioClient: Received 401 Unauthorized. Attempting token refresh.');
             }
             try {
               // Create a new Dio instance for the refresh token call to avoid
               // recursive calls to this interceptor or using stale headers.
-              final Dio dioForRefresh = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
+              final Dio dioForRefresh =
+                  Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
               final newToken = await refreshTokenCallback(dioForRefresh);
 
               if (newToken != null) {
-                setAuthToken(newToken); // Update the token in the main Dio instance
-                 if (_logger != null && enableLogging) {
-                  _logger!.i('DioClient: Token refreshed successfully. Retrying original request.');
+                setAuthToken(
+                    newToken); // Update the token in the main Dio instance
+                if (_logger != null && enableLogging) {
+                  _logger.i(
+                      'DioClient: Token refreshed successfully. Retrying original request.');
                 }
                 // Clone the original request with the new token in headers
                 final originalRequestOptions = error.requestOptions;
-                originalRequestOptions.headers['Authorization'] = 'Bearer $newToken';
+                originalRequestOptions.headers['Authorization'] =
+                    'Bearer $newToken';
 
                 final response = await _dio.fetch(originalRequestOptions);
                 return handler.resolve(response);
               } else {
-                 if (_logger != null && enableLogging) {
-                  _logger!.w('DioClient: Token refresh returned null. Propagating original 401 error.');
+                if (_logger != null && enableLogging) {
+                  _logger.w(
+                      'DioClient: Token refresh returned null. Propagating original 401 error.');
                 }
               }
-            } catch (e,s) {
+            } catch (e, s) {
               if (_logger != null && enableLogging) {
-                _logger!.e('DioClient: Token refresh failed.', error: e, stackTrace: s);
+                _logger.e('DioClient: Token refresh failed.',
+                    error: e, stackTrace: s);
               }
               // If token refresh itself fails, proceed with the original error.
             }
@@ -157,9 +165,9 @@ class DioClient {
     ));
 
     // Cache Interceptor (if configured)
-    if (cacheConfig != null) {
-      _dio.interceptors.add(cacheConfig.interceptor);
-    }
+    // if (cacheConfig != null) {
+    //   _dio.interceptors.add(cacheConfig.interceptor);
+    // }
   }
 
   /// Executes a GET request.
@@ -284,7 +292,8 @@ class DioClient {
   /// It first checks for internet connectivity. If connected, it executes the
   /// provided [request] function. [DioException]s are caught and converted
   /// to [NetworkException]s. Other exceptions are rethrown as generic [Exception]s.
-  Future<Response<T>> _request<T>(Future<Response<T>> Function() requestFunction) async {
+  Future<Response<T>> _request<T>(
+      Future<Response<T>> Function() requestFunction) async {
     await _checkConnectivity();
     try {
       return await requestFunction();
@@ -295,10 +304,14 @@ class DioClient {
       // For non-Dio errors that are not already NetworkExceptions,
       // wrap them in a generic UnknownNetworkException or rethrow if appropriate.
       if (_logger != null) {
-        _logger!.e('DioClient: An unexpected non-Dio error occurred during request.', error: e, stackTrace: s);
+        _logger.e(
+            'DioClient: An unexpected non-Dio error occurred during request.',
+            error: e,
+            stackTrace: s);
       }
       // To maintain consistency of throwing NetworkException subtypes:
-      throw UnknownNetworkException(dioException: DioException(requestOptions: RequestOptions(path: '')));
+      throw UnknownNetworkException(
+          dioException: DioException(requestOptions: RequestOptions(path: '')));
       // Alternatively, rethrow e if specific handling outside is preferred:
       // throw Exception('An unexpected error occurred: $e');
     }
@@ -312,10 +325,9 @@ class DioClient {
       // as it expects one, even if the root cause isn't a Dio network layer error
       // but rather a pre-flight check failure.
       final artificialDioException = DioException(
-        requestOptions: RequestOptions(path: ''), // Dummy path
-        type: DioExceptionType.connectionError, // Appropriate type
-        message: 'No internet connection detected by ConnectivityService.'
-      );
+          requestOptions: RequestOptions(path: ''), // Dummy path
+          type: DioExceptionType.connectionError, // Appropriate type
+          message: 'No internet connection detected by ConnectivityService.');
       throw NoInternetConnectionException(dioException: artificialDioException);
     }
   }

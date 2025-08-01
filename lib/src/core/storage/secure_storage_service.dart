@@ -1,8 +1,11 @@
+library secure_storage_service;
+
 import 'dart:convert';
 import 'dart:developer' show log;
 
 import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:flutter/foundation.dart' show debugPrint; // For initialize check
+import 'package:flutter/foundation.dart'
+    show debugPrint; // For initialize check
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -14,15 +17,16 @@ import 'key_manager.dart';
 /// with features like data migration, encryption, and backup/restore.
 /// It also defines [StorageException] for error handling and [Migration]
 /// for defining data migration steps.
-library secure_storage_service;
 
 /// A custom exception for errors encountered during storage operations
 /// within [SecureStorageService].
 class StorageException implements Exception {
   /// A descriptive message about the error.
   final String message;
+
   /// The original exception that caused this storage exception, if any.
   final dynamic originalException;
+
   /// The stack trace associated with the original exception, if any.
   final StackTrace? stackTrace;
 
@@ -107,7 +111,8 @@ class SecureStorageService {
   final List<Migration> migrations;
 
   late final Box _dataBox; // For main encrypted data
-  late final Box _metaBox; // For backup data (unencrypted map of encrypted main box)
+  late final Box
+      _metaBox; // For backup data (unencrypted map of encrypted main box)
 
   bool _isInitialized = false;
 
@@ -139,7 +144,8 @@ class SecureStorageService {
   /// Throws a [StorageException] if initialization fails at any step.
   Future<void> initialize() async {
     if (_isInitialized) {
-      debugPrint("SecureStorageService is already initialized. Skipping redundant call.");
+      debugPrint(
+          "SecureStorageService is already initialized. Skipping redundant call.");
       return;
     }
     log('SecureStorageService: Initializing...');
@@ -155,7 +161,8 @@ class SecureStorageService {
 
       _dataBox = await Hive.openBox(_primaryBoxName);
       log('SecureStorageService: Primary data box "$_primaryBoxName" opened.');
-      _metaBox = await Hive.openBox(_backupBoxName); // Changed from _backupBoxName to _metaBox for actual use
+      _metaBox = await Hive.openBox(
+          _backupBoxName); // Changed from _backupBoxName to _metaBox for actual use
       log('SecureStorageService: Backup metadata box "$_backupBoxName" opened.');
 
       await _runMigrations();
@@ -163,7 +170,8 @@ class SecureStorageService {
       _isInitialized = true;
       log('SecureStorageService: Initialization complete. Current data version: ${_dataBox.get(_versionStorageKey)}');
     } catch (e, s) {
-      log('SecureStorageService: Initialization failed.', error: e, stackTrace: s);
+      log('SecureStorageService: Initialization failed.',
+          error: e, stackTrace: s);
       throw StorageException('Failed to initialize SecureStorageService.',
           originalException: e, stackTrace: s);
     }
@@ -171,16 +179,20 @@ class SecureStorageService {
 
   /// Runs data migrations if the stored data version is older than the service's [version].
   Future<void> _runMigrations() async {
-    _assertInitialized(forInternalCall: true); // KeyManager and boxes must be ready
-    final storedVersion = _dataBox.get(_versionStorageKey, defaultValue: 0) as int;
+    _assertInitialized(
+        forInternalCall: true); // KeyManager and boxes must be ready
+    final storedVersion =
+        _dataBox.get(_versionStorageKey, defaultValue: 0) as int;
     log('SecureStorageService: Checking migrations. Stored version: $storedVersion, App version: $version');
 
     if (storedVersion >= version) {
       log('SecureStorageService: Data version is up to date. No migrations needed.');
       // Ensure version key is set if it was default 0 and app version is >0
-      if (storedVersion == 0 && version > 0 && !_dataBox.containsKey(_versionStorageKey)) {
-         await _dataBox.put(_versionStorageKey, version);
-         log('SecureStorageService: Initial version key set to $version.');
+      if (storedVersion == 0 &&
+          version > 0 &&
+          !_dataBox.containsKey(_versionStorageKey)) {
+        await _dataBox.put(_versionStorageKey, version);
+        log('SecureStorageService: Initial version key set to $version.');
       }
       return;
     }
@@ -198,9 +210,13 @@ class SecureStorageService {
           // Pass the _dataBox to the migration function
           await migration.migrate(_dataBox);
           log('SecureStorageService: Migration for version ${migration.version} completed.');
-        } catch (e,s) {
-          log('SecureStorageService: Error during migration for version ${migration.version}.', error: e, stackTrace: s);
-          throw StorageException('Migration for version ${migration.version} failed.', originalException: e, stackTrace: s);
+        } catch (e, s) {
+          log('SecureStorageService: Error during migration for version ${migration.version}.',
+              error: e, stackTrace: s);
+          throw StorageException(
+              'Migration for version ${migration.version} failed.',
+              originalException: e,
+              stackTrace: s);
         }
       }
     } else {
@@ -214,10 +230,12 @@ class SecureStorageService {
   /// Asserts that the service has been initialized.
   /// Throws an [AssertionError] if not initialized.
   void _assertInitialized({bool forInternalCall = false}) {
-     // For internal calls like _runMigrations, we might not want to assert _isInitialized itself
-     // but rather that its dependencies (like boxes) are ready if _isInitialized isn't true yet.
-     // However, simpler to just ensure _isInitialized is true for all operations.
-    assert(_isInitialized || forInternalCall, // Allow internal calls during init sequence
+    // For internal calls like _runMigrations, we might not want to assert _isInitialized itself
+    // but rather that its dependencies (like boxes) are ready if _isInitialized isn't true yet.
+    // However, simpler to just ensure _isInitialized is true for all operations.
+    assert(
+        _isInitialized ||
+            forInternalCall, // Allow internal calls during init sequence
         'SecureStorageService not initialized. Call initialize() first.');
   }
 
@@ -228,7 +246,8 @@ class SecureStorageService {
   Future<void> save(String key, dynamic value) async {
     _assertInitialized();
     if (key == _versionStorageKey) {
-      throw ArgumentError('The key "$_versionStorageKey" is reserved for internal use.');
+      throw ArgumentError(
+          'The key "$_versionStorageKey" is reserved for internal use.');
     }
     log('SecureStorageService: Saving data for key "$key".');
     try {
@@ -236,7 +255,8 @@ class SecureStorageService {
       await _dataBox.put(key, encryptedValue);
       log('SecureStorageService: Data saved and encrypted for key "$key".');
     } catch (e, s) {
-      log('SecureStorageService: Failed to save data for key "$key".', error: e, stackTrace: s);
+      log('SecureStorageService: Failed to save data for key "$key".',
+          error: e, stackTrace: s);
       throw StorageException('Failed to save data for key "$key".',
           originalException: e, stackTrace: s);
     }
@@ -252,7 +272,8 @@ class SecureStorageService {
   Future<T?> load<T>(String key) async {
     _assertInitialized();
     if (key == _versionStorageKey) {
-      throw ArgumentError('The key "$_versionStorageKey" is reserved. Use internal methods to access version.');
+      throw ArgumentError(
+          'The key "$_versionStorageKey" is reserved. Use internal methods to access version.');
     }
     log('SecureStorageService: Loading data for key "$key".');
     try {
@@ -265,7 +286,8 @@ class SecureStorageService {
       log('SecureStorageService: Data loaded and decrypted for key "$key".');
       return decryptedValue as T?;
     } catch (e, s) {
-      log('SecureStorageService: Failed to load or decrypt data for key "$key".', error: e, stackTrace: s);
+      log('SecureStorageService: Failed to load or decrypt data for key "$key".',
+          error: e, stackTrace: s);
       throw StorageException('Failed to load or decrypt data for key "$key".',
           originalException: e, stackTrace: s);
     }
@@ -277,15 +299,18 @@ class SecureStorageService {
   Future<void> delete(String key) async {
     _assertInitialized();
     if (key == _versionStorageKey) {
-      throw ArgumentError('Cannot delete the reserved version key "$_versionStorageKey". Use clear() with caution.');
+      throw ArgumentError(
+          'Cannot delete the reserved version key "$_versionStorageKey". Use clear() with caution.');
     }
     log('SecureStorageService: Deleting data for key "$key".');
     try {
       await _dataBox.delete(key);
       log('SecureStorageService: Data deleted for key "$key".');
     } catch (e, s) {
-      log('SecureStorageService: Failed to delete data for key "$key".', error: e, stackTrace: s);
-      throw StorageException('Failed to delete data for key "$key".', originalException: e, stackTrace: s);
+      log('SecureStorageService: Failed to delete data for key "$key".',
+          error: e, stackTrace: s);
+      throw StorageException('Failed to delete data for key "$key".',
+          originalException: e, stackTrace: s);
     }
   }
 
@@ -305,8 +330,10 @@ class SecureStorageService {
       }
       log('SecureStorageService: Primary box cleared. Version key preserved if existed.');
     } catch (e, s) {
-      log('SecureStorageService: Failed to clear primary box.', error: e, stackTrace: s);
-      throw StorageException('Failed to clear storage.', originalException: e, stackTrace: s);
+      log('SecureStorageService: Failed to clear primary box.',
+          error: e, stackTrace: s);
+      throw StorageException('Failed to clear storage.',
+          originalException: e, stackTrace: s);
     }
   }
 
@@ -323,7 +350,7 @@ class SecureStorageService {
     try {
       // _dataBox.toMap() returns Map<dynamic, dynamic> where values are encrypted strings
       final Map<String, String> dataToBackup = {};
-      for(var key in _dataBox.keys) {
+      for (var key in _dataBox.keys) {
         if (key is String && _dataBox.get(key) is String) {
           dataToBackup[key] = _dataBox.get(key) as String;
         }
@@ -331,7 +358,8 @@ class SecureStorageService {
       await _metaBox.put(backupName, jsonEncode(dataToBackup));
       log('SecureStorageService: Backup "$backupName" created successfully.');
     } catch (e, s) {
-      log('SecureStorageService: Failed to create backup "$backupName".', error: e, stackTrace: s);
+      log('SecureStorageService: Failed to create backup "$backupName".',
+          error: e, stackTrace: s);
       throw StorageException('Failed to create backup "$backupName".',
           originalException: e, stackTrace: s);
     }
@@ -365,7 +393,8 @@ class SecureStorageService {
       // Note: After restore, the version in _dataBox is from the backup.
       // If an app restart/re-init happens, migrations will run based on this restored version.
     } catch (e, s) {
-      log('SecureStorageService: Failed to restore backup "$backupName".', error: e, stackTrace: s);
+      log('SecureStorageService: Failed to restore backup "$backupName".',
+          error: e, stackTrace: s);
       throw StorageException('Failed to restore backup "$backupName".',
           originalException: e, stackTrace: s);
     }
@@ -387,8 +416,10 @@ class SecureStorageService {
       await _metaBox.delete(backupName);
       log('SecureStorageService: Backup "$backupName" deleted.');
     } catch (e, s) {
-      log('SecureStorageService: Failed to delete backup "$backupName".', error: e, stackTrace: s);
-      throw StorageException('Failed to delete backup "$backupName".', originalException: e, stackTrace: s);
+      log('SecureStorageService: Failed to delete backup "$backupName".',
+          error: e, stackTrace: s);
+      throw StorageException('Failed to delete backup "$backupName".',
+          originalException: e, stackTrace: s);
     }
   }
 
@@ -416,7 +447,8 @@ class SecureStorageService {
     final encrypter = encrypt.Encrypter(
       encrypt.AES(_keyManager.key, mode: encrypt.AESMode.cbc),
     );
-    final String decryptedJson = encrypter.decrypt64(encryptedString, iv: _keyManager.iv);
+    final String decryptedJson =
+        encrypter.decrypt64(encryptedString, iv: _keyManager.iv);
     return jsonDecode(decryptedJson);
   }
 }

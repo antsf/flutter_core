@@ -1,3 +1,5 @@
+library network_exceptions;
+
 import 'package:dio/dio.dart';
 
 /// Defines a hierarchy of custom exceptions related to network operations.
@@ -5,7 +7,6 @@ import 'package:dio/dio.dart';
 /// These exceptions provide more specific and user-friendly error information
 /// compared to raw [DioException]s, and they integrate with the application's
 /// [Failure] and [Result] error handling pattern.
-library network_exceptions;
 
 /// A base abstract class for all custom network-related exceptions.
 ///
@@ -45,7 +46,9 @@ abstract class NetworkException implements Exception {
     if (statusCode != null) {
       sb.write(' (Status Code: $statusCode)');
     }
-    if (error != null && error is DioException && (error as DioException).requestOptions.uri != null) {
+    if (error != null && error is DioException
+        // && (error as DioException).requestOptions.uri != null
+        ) {
       sb.write(' URL: ${(error as DioException).requestOptions.uri}');
     }
     // Optionally include more details from 'error' if needed, but keep it concise for typical logging.
@@ -70,11 +73,18 @@ abstract class NetworkException implements Exception {
         // Further categorize based on status code for bad responses
         final statusCode = dioException.response?.statusCode;
         if (statusCode != null) {
-          if (statusCode >= 500) { // Server errors (5xx)
-            return ServerException(dioException: dioException, specificMessage: 'Server error occurred (Status $statusCode).');
-          } else if (statusCode >= 400) { // Client errors (4xx)
-             // Could be further specialized, e.g., NotFoundException (404), UnauthorizedException (401)
-            return ClientErrorException(dioException: dioException, specificMessage: 'Client error: Bad request (Status $statusCode).');
+          if (statusCode >= 500) {
+            // Server errors (5xx)
+            return ServerException(
+                dioException: dioException,
+                specificMessage: 'Server error occurred (Status $statusCode).');
+          } else if (statusCode >= 400) {
+            // Client errors (4xx)
+            // Could be further specialized, e.g., NotFoundException (404), UnauthorizedException (401)
+            return ClientErrorException(
+                dioException: dioException,
+                specificMessage:
+                    'Client error: Bad request (Status $statusCode).');
           }
         }
         // Default for bad responses if status code doesn't fit specific categories above
@@ -85,8 +95,7 @@ abstract class NetworkException implements Exception {
         // This often indicates no internet or DNS resolution failure.
         return NoInternetConnectionException(dioException: dioException);
       case DioExceptionType.unknown:
-      case DioExceptionType.badCertificate: // Treat bad certificate as an unknown/setup issue for now
-      default:
+      case DioExceptionType.badCertificate:
         return UnknownNetworkException(dioException: dioException);
     }
   }
@@ -97,7 +106,8 @@ class TimeoutException extends NetworkException {
   /// Creates a [TimeoutException].
   TimeoutException({required DioException dioException})
       : super(
-          message: 'The network request timed out. Please check your connection and try again.',
+          message:
+              'The network request timed out. Please check your connection and try again.',
           statusCode: dioException.response?.statusCode,
           error: dioException,
           stackTrace: dioException.stackTrace,
@@ -109,8 +119,10 @@ class NoInternetConnectionException extends NetworkException {
   /// Creates a [NoInternetConnectionException].
   NoInternetConnectionException({required DioException dioException})
       : super(
-          message: 'No internet connection. Please check your network settings and try again.',
-          statusCode: dioException.response?.statusCode, // Usually null for connection errors
+          message:
+              'No internet connection. Please check your network settings and try again.',
+          statusCode: dioException
+              .response?.statusCode, // Usually null for connection errors
           error: dioException,
           stackTrace: dioException.stackTrace,
         );
@@ -122,7 +134,8 @@ class ServerException extends NetworkException {
   /// [specificMessage] can be provided if a more detailed message than the default is needed.
   ServerException({required DioException dioException, String? specificMessage})
       : super(
-          message: specificMessage ?? 'A server error occurred. Please try again later.',
+          message: specificMessage ??
+              'A server error occurred. Please try again later.',
           statusCode: dioException.response?.statusCode,
           error: dioException,
           stackTrace: dioException.stackTrace,
@@ -134,9 +147,11 @@ class ServerException extends NetworkException {
 class ClientErrorException extends NetworkException {
   /// Creates a [ClientErrorException].
   /// [specificMessage] can be provided if a more detailed message than the default is needed.
-  ClientErrorException({required DioException dioException, String? specificMessage})
+  ClientErrorException(
+      {required DioException dioException, String? specificMessage})
       : super(
-          message: specificMessage ?? 'There was an issue with the request (Client Error).',
+          message: specificMessage ??
+              'There was an issue with the request (Client Error).',
           statusCode: dioException.response?.statusCode,
           error: dioException,
           stackTrace: dioException.stackTrace,

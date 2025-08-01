@@ -55,6 +55,7 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     implements BaseRepository<T> {
   /// The remote data source for fetching and manipulating data over the network.
   final BaseRemoteDataSource<M> remoteDataSource;
+
   /// The local data source for caching and retrieving data from local persistence.
   final BaseLocalDataSource<T> localDataSource;
 
@@ -77,18 +78,19 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   M toModel(T entity);
 
   @override
-  Future<Result<List<T>>> getAll() async {
+  FutureResult<List<T>> getAll() async {
     try {
       // Attempt to fetch from the local cache first.
       // Cache is treated as an enhancement; network is the source of truth if cache fails or is empty.
       final localEntities = await localDataSource.getAll();
       if (localEntities.isNotEmpty) {
         log('getAll: Data successfully retrieved from local cache.');
-        return (data: localEntities, failure: null);
+        return Success(localEntities);
       }
     } catch (e) {
       // Log cache failure but proceed to network as cache is not critical for this read.
       log('getAll: Cache read failed, proceeding to network. Error: $e');
+      return Error(ServerFailure(message: e.toString()));
     }
 
     // If cache is empty or fails, fetch from the remote source.
@@ -102,12 +104,11 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
         log('getAll: Fetched from remote, but failed to save to cache. Error: $cacheError');
         // Still return remote data, cache save is secondary for success of getAll.
       }
-      return (data: remoteEntities, failure: null);
+      return Success(remoteEntities);
     } catch (e, stackTrace) {
       log('getAll: Network fetch failed. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
+      return Error(
+        NetworkFailure(
           message: 'Failed to get all entities from remote source.',
           error: e,
           stackTrace: stackTrace,
@@ -117,12 +118,12 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<T>> getById(String id) async {
+  FutureResult<T> getById(String id) async {
     try {
       // Attempt to fetch from the local cache first.
       final localEntity = await localDataSource.getById(id);
       log('getById: Entity $id successfully retrieved from local cache.');
-      return (data: localEntity, failure: null);
+      return Success(localEntity);
     } catch (e) {
       // Log cache failure but proceed to network.
       log('getById: Cache read failed for entity $id, proceeding to network. Error: $e');
@@ -135,14 +136,13 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
         await localDataSource.save(remoteEntity);
         log('getById: Entity $id fetched from remote and saved to local cache.');
       } catch (cacheError) {
-         log('getById: Fetched entity $id from remote, but failed to save to cache. Error: $cacheError');
+        log('getById: Fetched entity $id from remote, but failed to save to cache. Error: $cacheError');
       }
-      return (data: remoteEntity, failure: null);
+      return Success(remoteEntity);
     } catch (e, stackTrace) {
       log('getById: Network fetch failed for entity $id. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
+      return Error(
+        NetworkFailure(
           message: 'Failed to get entity by id "$id" from remote source.',
           error: e,
           stackTrace: stackTrace,
@@ -152,24 +152,23 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<T>> create(T entity) async {
+  FutureResult<T> create(T entity) async {
     try {
       final modelToCreate = toModel(entity);
       final remoteModel = await remoteDataSource.create(modelToCreate);
       final createdEntity = remoteModel.toEntity();
       try {
         await localDataSource.save(createdEntity);
-        log('create: Entity created remotely and saved locally: ${createdEntity.id}');
+        log('create: Entity created remotely and saved locally: $createdEntity');
       } catch (cacheError) {
-        log('create: Entity created remotely, but failed to save to cache. ID: ${createdEntity.id}. Error: $cacheError');
+        log('create: Entity created remotely, but failed to save to cache. ID: $createdEntity. Error: $cacheError');
         // Remote creation succeeded, so we might still return success despite cache failure.
       }
-      return (data: createdEntity, failure: null);
+      return Success(createdEntity);
     } catch (e, stackTrace) {
       log('create: Network operation to create entity failed. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
+      return Error(
+        NetworkFailure(
           message: 'Failed to create entity on remote source.',
           error: e,
           stackTrace: stackTrace,
@@ -179,24 +178,23 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<T>> update(T entity) async {
+  FutureResult<T> update(T entity) async {
     try {
       final modelToUpdate = toModel(entity);
       final remoteModel = await remoteDataSource.update(modelToUpdate);
       final updatedEntity = remoteModel.toEntity();
       try {
         await localDataSource.save(updatedEntity);
-         log('update: Entity updated remotely and saved locally: ${updatedEntity.id}');
+        log('update: Entity updated remotely and saved locally: $updatedEntity');
       } catch (cacheError) {
-        log('update: Entity updated remotely, but failed to save to cache. ID: ${updatedEntity.id}. Error: $cacheError');
+        log('update: Entity updated remotely, but failed to save to cache. ID: $updatedEntity. Error: $cacheError');
       }
-      return (data: updatedEntity, failure: null);
+      return Success(updatedEntity);
     } catch (e, stackTrace) {
-      log('update: Network operation to update entity failed. ID: ${entity.id}. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
-          message: 'Failed to update entity on remote source. ID: ${entity.id}',
+      log('update: Network operation to update entity failed. ID: $entity. Error: $e');
+      return Error(
+        NetworkFailure(
+          message: 'Failed to update entity on remote source. ID: $entity',
           error: e,
           stackTrace: stackTrace,
         ),
@@ -205,7 +203,7 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<void>> delete(String id) async {
+  FutureResult<void> delete(String id) async {
     try {
       await remoteDataSource.delete(id);
       // If remote deletion is successful, attempt local deletion.
@@ -213,15 +211,14 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
         await localDataSource.delete(id);
         log('delete: Entity $id deleted from remote and local sources.');
       } catch (cacheError) {
-         log('delete: Entity $id deleted from remote, but failed to delete from cache. Error: $cacheError');
-         // Remote deletion was successful, so overall operation is a success.
+        log('delete: Entity $id deleted from remote, but failed to delete from cache. Error: $cacheError');
+        // Remote deletion was successful, so overall operation is a success.
       }
-      return (data: (), failure: null);
+      return const Success(null);
     } catch (e, stackTrace) {
       log('delete: Network operation to delete entity $id failed. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
+      return Error(
+        NetworkFailure(
           message: 'Failed to delete entity on remote source. ID: $id',
           error: e,
           stackTrace: stackTrace,
@@ -231,7 +228,7 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<List<T>>> search(String query) async {
+  FutureResult<List<T>> search(String query) async {
     try {
       final remoteModels = await remoteDataSource.search(query: query);
       final entities = remoteModels.map((m) => m.toEntity()).toList();
@@ -246,12 +243,11 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       } catch (cacheError) {
         log('search: Fetched search results for query "$query", but failed to save to cache. Error: $cacheError');
       }
-      return (data: entities, failure: null);
+      return Success(entities);
     } catch (e, stackTrace) {
       log('search: Network search for query "$query" failed. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
+      return Error(
+        NetworkFailure(
           message: 'Failed to search entities with query "$query".',
           error: e,
           stackTrace: stackTrace,
@@ -261,7 +257,7 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
   }
 
   @override
-  Future<Result<List<T>>> getPaginated({
+  FutureResult<List<T>> getPaginated({
     required int page,
     required int limit,
     String? sortBy,
@@ -286,13 +282,13 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       } catch (cacheError) {
         log('getPaginated: Fetched page $page, but failed to save to cache. Error: $cacheError');
       }
-      return (data: entities, failure: null);
+      return Success(entities);
     } catch (e, stackTrace) {
       log('getPaginated: Network fetch for page $page (limit $limit) failed. Error: $e');
-      return (
-        data: null,
-        failure: NetworkFailure(
-          message: 'Failed to get paginated entities (page $page, limit $limit).',
+      return Error(
+        NetworkFailure(
+          message:
+              'Failed to get paginated entities (page $page, limit $limit).',
           error: e,
           stackTrace: stackTrace,
         ),

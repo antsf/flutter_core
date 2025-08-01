@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, unused_local_variable
 // Disabling some lints for this example file as it's illustrative.
 import 'dart:async';
+import 'dart:developer';
 
 import '../entities/base_entity.dart';
 import '../failures/failures.dart';
@@ -25,9 +26,11 @@ class ExampleEntity extends BaseEntity {
 
 /// An abstract repository interface for fetching [ExampleEntity].
 /// This would typically be in the `domain/repositories` directory.
-abstract class IExampleRepository {
-  Future<Result<ExampleEntity>> getExampleData(String id, Map<String, dynamic>? queryParams);
-  Future<Result<List<ExampleEntity>>> getMultipleExampleData(List<String> ids);
+abstract class IExampleRepository extends BaseRepository {
+  FutureResult<ExampleEntity> getExampleData(
+      String id, Map<String, dynamic>? queryParams);
+  FutureResult<List<ExampleEntity>> getMultipleExampleData(List<String> ids);
+  FutureResult<void> performSomeSideEffect();
 }
 
 // --- Example Use Case Implementation ---
@@ -55,7 +58,7 @@ class GetExampleDataUseCase extends UseCase<ExampleEntity, ExampleParams> {
   GetExampleDataUseCase(this._repository);
 
   @override
-  Future<Result<ExampleEntity>> execute(ExampleParams params) async {
+  FutureResult<ExampleEntity> execute(ExampleParams params) async {
     // Here you would typically call a method on the repository.
     // The repository is responsible for fetching data (e.g., from a remote API or local cache)
     // and converting it from a data model to a domain entity.
@@ -70,34 +73,35 @@ class MultipleExampleParams {
 }
 
 /// An example use case demonstrating fetching multiple entities.
-class GetMultipleExampleDataUseCase extends UseCase<List<ExampleEntity>, MultipleExampleParams> {
+class GetMultipleExampleDataUseCase
+    extends UseCase<List<ExampleEntity>, MultipleExampleParams> {
   final IExampleRepository _repository;
 
   GetMultipleExampleDataUseCase(this._repository);
 
   @override
-  Future<Result<List<ExampleEntity>>> execute(MultipleExampleParams params) {
+  FutureResult<List<ExampleEntity>> execute(MultipleExampleParams params) {
     return _repository.getMultipleExampleData(params.ids);
   }
 }
 
-
 /// Example of a use case that requires no parameters.
 class PerformActionUseCase extends UseCase<void, NoParams> {
-  final IExampleRepository _repository; // Assuming some action might involve a repo
+  final IExampleRepository
+      _repository; // Assuming some action might involve a repo
 
   PerformActionUseCase(this._repository);
 
   @override
-  Future<Result<void>> execute(NoParams params) async {
+  FutureResult<void> execute(NoParams params) async {
     // Perform some action, e.g.,
-    // await _repository.performSomeSideEffect();
+    await _repository.performSomeSideEffect();
     // For this example, we'll just simulate success.
-    await Future.delayed(const Duration(milliseconds: 100)); // Simulate async work
-    return (data: (), failure: null); // Success with no data
+    await Future.delayed(
+        const Duration(milliseconds: 100)); // Simulate async work
+    return const Success(null); // Success with no data
   }
 }
-
 
 // --- Example Usage (Illustrative) ---
 // This section demonstrates how the use cases might be invoked.
@@ -117,63 +121,130 @@ void exampleUseCaseUsage() async {
   final getMultipleExampleData = GetMultipleExampleDataUseCase(mockRepository);
   final performAction = PerformActionUseCase(mockRepository);
 
-  print('--- Running GetExampleDataUseCase ---');
-  final singleResult = await getExampleData(ExampleParams(id: '123', queryParams: {'page': 1}));
+  log('--- Running GetExampleDataUseCase ---');
+  final singleResult = await getExampleData(
+      const ExampleParams(id: '123', queryParams: {'page': 1}));
   singleResult.when(
-    onSuccess: (entity) => print('Success! Fetched: $entity'),
-    onFailure: (failure) => print('Error! ${failure.message}'),
+    onSuccess: (entity) => log('Success! Fetched: $entity'),
+    onFailure: (failure) => log('Error! ${failure.message}'),
   );
 
   // Example of cancellation (conceptual)
   // Timer(const Duration(milliseconds: 50), () {
-  //   print('Attempting to cancel getExampleData for id 456...');
+  //   log('Attempting to cancel getExampleData for id 456...');
   //   getExampleData.cancel(); // This would cancel if called during an active 'call'
   // });
   // final cancellableResult = await getExampleData(ExampleParams(id: '456')); // New call needed
   // cancellableResult.when(
-  //   onSuccess: (entity) => print('Success (456)! Fetched: $entity'),
-  //   onFailure: (failure) => print('Error (456)! ${failure.message}'),
+  //   onSuccess: (entity) => log('Success (456)! Fetched: $entity'),
+  //   onFailure: (failure) => log('Error (456)! ${failure.message}'),
   // );
 
-
-  print('\n--- Running GetMultipleExampleDataUseCase ---');
-  final multipleResult = await getMultipleExampleData(MultipleExampleParams(['a', 'b', 'c']));
+  log('\n--- Running GetMultipleExampleDataUseCase ---');
+  final multipleResult = await getMultipleExampleData(
+      const MultipleExampleParams(['a', 'b', 'c']));
   multipleResult.when(
-    onSuccess: (entities) => print('Success! Fetched ${entities.length} entities: $entities'),
-    onFailure: (failure) => print('Error! ${failure.message}'),
+    onSuccess: (entities) =>
+        log('Success! Fetched ${entities.length} entities: $entities'),
+    onFailure: (failure) => log('Error! ${failure.message}'),
   );
 
-  print('\n--- Running PerformActionUseCase (NoParams) ---');
+  log('\n--- Running PerformActionUseCase (NoParams) ---');
   final actionResult = await performAction(const NoParams());
   actionResult.when(
-    onSuccess: (_) => print('Action performed successfully!'),
-    onFailure: (failure) => print('Action failed! ${failure.message}'),
+    onSuccess: (_) => log('Action performed successfully!'),
+    onFailure: (failure) => log('Action failed! ${failure.message}'),
   );
 }
 
 /// A mock implementation of [IExampleRepository] for demonstration purposes.
 class MockExampleRepository implements IExampleRepository {
   @override
-  Future<Result<ExampleEntity>> getExampleData(String id, Map<String, dynamic>? queryParams) async {
-    await Future.delayed(const Duration(milliseconds: 100)); // Simulate network delay
+  FutureResult<ExampleEntity> getExampleData(
+      String id, Map<String, dynamic>? queryParams) async {
+    await Future.delayed(
+        const Duration(milliseconds: 100)); // Simulate network delay
     if (id == 'error') {
-      return (data: null, failure: NetworkFailure(message: 'Failed to fetch entity $id'));
+      return Error(NetworkFailure(message: 'Failed to fetch entity $id'));
     }
-    if (id == 'cancelled_target'){
+    if (id == 'cancelled_target') {
       await Future.delayed(const Duration(milliseconds: 500)); // Longer delay
-       return (data: ExampleEntity(id: id, data: 'Data for $id with params $queryParams'), failure: null);
+      return Success(
+        ExampleEntity(id: id, data: 'Data for $id with params $queryParams'),
+      );
     }
-    return (data: ExampleEntity(id: id, data: 'Data for $id with params $queryParams'), failure: null);
+    return Success(
+      ExampleEntity(id: id, data: 'Data for $id with params $queryParams'),
+    );
   }
 
   @override
-  Future<Result<List<ExampleEntity>>> getMultipleExampleData(List<String> ids) async {
+  FutureResult<List<ExampleEntity>> getMultipleExampleData(
+      List<String> ids) async {
     await Future.delayed(const Duration(milliseconds: 150));
     if (ids.contains('error_multi')) {
-       return (data: null, failure: NetworkFailure(message: 'Failed to fetch one of the entities'));
+      return const Error(
+          NetworkFailure(message: 'Failed to fetch one of the entities'));
     }
-    final entities = ids.map((id) => ExampleEntity(id: id, data: 'Multiple data for $id')).toList();
-    return (data: entities, failure: null);
+    final entities = ids
+        .map((id) => ExampleEntity(id: id, data: 'Multiple data for $id'))
+        .toList();
+    return Success(entities);
+  }
+
+  @override
+  FutureResult<void> performSomeSideEffect() async {
+    await Future.delayed(const Duration(milliseconds: 80)); // Simulate work
+    // Simulate a random failure or success for demonstration
+    const shouldFail = false; // Change to true to simulate failure
+
+    return const Success(null);
+  }
+
+  @override
+  FutureResult<BaseEntity> create(BaseEntity entity) {
+    // TODO: implement create
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<void> delete(String id) {
+    // TODO: implement delete
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<List<BaseEntity>> getAll() {
+    // TODO: implement getAll
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<BaseEntity> getById(String id) {
+    // TODO: implement getById
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<List<BaseEntity>> getPaginated(
+      {required int page,
+      required int limit,
+      String? sortBy,
+      bool descending = false}) {
+    // TODO: implement getPaginated
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<List<BaseEntity>> search(String query) {
+    // TODO: implement search
+    throw UnimplementedError();
+  }
+
+  @override
+  FutureResult<BaseEntity> update(BaseEntity entity) {
+    // TODO: implement update
+    throw UnimplementedError();
   }
 }
 
@@ -195,9 +266,9 @@ class MockExampleRepository implements IExampleRepository {
 ///       queryParams: {'page': 1},
 ///     ),
 ///   );
-///   print('Result: $result');
+///   log('Result: $result');
 /// } catch (e) {
-///   print('Error: $e');
+///   log('Error: $e');
 /// }
 ///
 /// // Cancel the operation

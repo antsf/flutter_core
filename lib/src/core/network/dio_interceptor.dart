@@ -24,7 +24,8 @@ import 'package:logger/logger.dart'; // Assuming 'logger' package is used
 ///   enableLogging: true, // Default is true
 /// ));
 /// ```
-class DioLoggingInterceptor extends Interceptor { // Renamed class for clarity
+class DioLoggingInterceptor extends Interceptor {
+  // Renamed class for clarity
   /// The [Logger] instance used for outputting log messages.
   /// If null, no logging will occur even if [enableLogging] is true.
   final Logger? logger;
@@ -54,10 +55,12 @@ class DioLoggingInterceptor extends Interceptor { // Renamed class for clarity
       logMessage.writeln('URI: ${options.uri}');
       if (options.headers.isNotEmpty) {
         logMessage.writeln('Headers:');
-        options.headers.forEach((key, value) => logMessage.writeln('  $key: $value'));
+        options.headers
+            .forEach((key, value) => logMessage.writeln('  $key: $value'));
       }
       if (options.data != null) {
-        logMessage.writeln('Data: ${options.data.toString().length > 200 ? options.data.toString().substring(0,200) + "..." : options.data}');
+        logMessage.writeln(
+            'Data: ${options.data.toString().length > 200 ? "${options.data.toString().substring(0, 200)}..." : options.data}');
       }
       logMessage.write('-------------------');
       logger!.i(logMessage.toString());
@@ -77,12 +80,14 @@ class DioLoggingInterceptor extends Interceptor { // Renamed class for clarity
       logMessage.writeln('Status Code: ${response.statusCode}');
       logMessage.writeln('Status Message: ${response.statusMessage}');
       if (response.data != null) {
-         logMessage.writeln('Data: ${response.data.toString().length > 200 ? response.data.toString().substring(0,200) + "..." : response.data}');
+        logMessage.writeln(
+            'Data: ${response.data.toString().length > 200 ? "${response.data.toString().substring(0, 200)}..." : response.data}');
       }
       logMessage.write('--------------------');
       logger!.i(logMessage.toString());
     }
-    super.onResponse(response, handler); // Ensure to call super or handler.next()
+    super.onResponse(
+        response, handler); // Ensure to call super or handler.next()
   }
 
   /// Called when an error occurs during a request or response.
@@ -100,11 +105,13 @@ class DioLoggingInterceptor extends Interceptor { // Renamed class for clarity
         logMessage.writeln('Status Code: ${err.response!.statusCode}');
         logMessage.writeln('Status Message: ${err.response!.statusMessage}');
         if (err.response!.data != null) {
-          logMessage.writeln('Response Data: ${err.response!.data.toString().length > 200 ? err.response!.data.toString().substring(0,200) + "..." : err.response!.data}');
+          logMessage.writeln(
+              'Response Data: ${err.response!.data.toString().length > 200 ? "${err.response!.data.toString().substring(0, 200)}..." : err.response!.data}');
         }
       }
       logMessage.write('-----------------');
-      logger!.e(logMessage.toString(), error: err.error, stackTrace: err.stackTrace);
+      logger!.e(logMessage.toString(),
+          error: err.error, stackTrace: err.stackTrace);
     }
     super.onError(err, handler); // Ensure to call super or handler.next()
   }

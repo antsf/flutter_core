@@ -1,3 +1,5 @@
+library simple_hive_storage_service;
+
 import 'dart:async';
 import 'dart:developer' show log;
 import 'dart:io';
@@ -17,7 +19,6 @@ import 'package:path_provider/path_provider.dart';
 // class StorageBoxOpenException extends StorageException { ... }
 // class StorageOperationException extends StorageException { ... }
 
-
 /// Provides a simple service wrapper around Hive for key-value storage.
 ///
 /// This service, `SimpleStorageService`, facilitates common Hive operations such as
@@ -26,8 +27,6 @@ import 'package:path_provider/path_provider.dart';
 ///
 /// Note: The filename is `storage_service.dart` while the class is `SimpleStorageService`.
 /// This might be a point of minor inconsistency if strict file-class name matching is desired.
-library simple_hive_storage_service;
-
 
 /// A service class for managing data persistence using Hive.
 ///
@@ -91,7 +90,8 @@ class SimpleStorageService {
       await Hive.initFlutter(fullPath);
       log('SimpleStorageService: Hive initialized at $fullPath');
     } catch (e, s) {
-      log('SimpleStorageService: Error initializing Hive at path $_basePath', error: e, stackTrace: s);
+      log('SimpleStorageService: Error initializing Hive at path $_basePath',
+          error: e, stackTrace: s);
       // Consider rethrowing as a custom StorageInitializationException
       rethrow; // Rethrow to allow caller to handle critical init failure
     }
@@ -115,7 +115,8 @@ class SimpleStorageService {
       log('SimpleStorageService: Opened Hive box "$name"');
       return box;
     } catch (e, s) {
-      log('SimpleStorageService: Error opening Hive box "$name"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error opening Hive box "$name"',
+          error: e, stackTrace: s);
       // Consider rethrowing as a custom StorageBoxOpenException
       rethrow;
     }
@@ -135,7 +136,8 @@ class SimpleStorageService {
         _openedBoxes.remove(name);
         log('SimpleStorageService: Closed Hive box "$name"');
       } catch (e, s) {
-        log('SimpleStorageService: Error closing Hive box "$name"', error: e, stackTrace: s);
+        log('SimpleStorageService: Error closing Hive box "$name"',
+            error: e, stackTrace: s);
         rethrow;
       }
     }
@@ -152,7 +154,8 @@ class SimpleStorageService {
       await box.clear();
       log('SimpleStorageService: Cleared all data from Hive box "$name"');
     } catch (e, s) {
-      log('SimpleStorageService: Error clearing Hive box "$name"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error clearing Hive box "$name"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -165,7 +168,8 @@ class SimpleStorageService {
   ///
   /// [name]: The name of the Hive box to delete.
   /// Throws a `StorageException` (or underlying `HiveError`/`FileSystemException`) on failure.
-  Future<void> deleteBoxFromDisk(String name) async { // Renamed for clarity
+  Future<void> deleteBoxFromDisk(String name) async {
+    // Renamed for clarity
     await closeBox(name); // Ensure box is closed and removed from cache
     try {
       // Hive.deleteBoxFromDisk does not require path if Hive.init was called with one.
@@ -190,7 +194,8 @@ class SimpleStorageService {
       // A more robust way if Hive manages the path:
       // await Hive.deleteBoxFromDisk(name); // if Hive.init was called with the full base path
     } catch (e, s) {
-      log('SimpleStorageService: Error deleting Hive box "$name" from disk', error: e, stackTrace: s);
+      log('SimpleStorageService: Error deleting Hive box "$name" from disk',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -206,7 +211,8 @@ class SimpleStorageService {
       final box = await openBox<T>(boxName); // Specify type for Box<T>
       return box.get(key); // No need for `as T?` if Box is typed Box<T>
     } catch (e, s) {
-      log('SimpleStorageService: Error getting key "$key" from box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error getting key "$key" from box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -221,9 +227,10 @@ class SimpleStorageService {
     try {
       final box = await openBox<T>(boxName); // Specify type for Box<T>
       await box.put(key, value);
-      log('SimpleStorageService: Set key "$key" in box "$name"');
+      log('SimpleStorageService: Set key "$key" in box "$value"');
     } catch (e, s) {
-      log('SimpleStorageService: Error setting key "$key" in box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error setting key "$key" in box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -235,11 +242,13 @@ class SimpleStorageService {
   /// Throws a `StorageException` (or underlying `HiveError`) on failure.
   Future<void> delete(String boxName, String key) async {
     try {
-      final box = await openBox(boxName); // Type arg not strictly needed for delete
+      final box =
+          await openBox(boxName); // Type arg not strictly needed for delete
       await box.delete(key);
       log('SimpleStorageService: Deleted key "$key" from box "$boxName"');
     } catch (e, s) {
-      log('SimpleStorageService: Error deleting key "$key" from box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error deleting key "$key" from box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -255,7 +264,8 @@ class SimpleStorageService {
       final box = await openBox(boxName);
       return box.containsKey(key);
     } catch (e, s) {
-      log('SimpleStorageService: Error checking key "$key" in box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error checking key "$key" in box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -270,7 +280,8 @@ class SimpleStorageService {
       final box = await openBox(boxName);
       return box.keys.toList();
     } catch (e, s) {
-      log('SimpleStorageService: Error getting keys from box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error getting keys from box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -281,12 +292,14 @@ class SimpleStorageService {
   /// Returns a list of all values in the box. The values are dynamic.
   /// If you need typed values, consider iterating keys and using `get<T>`.
   /// Throws a `StorageException` (or underlying `HiveError`) on failure.
-  Future<List<E>> getValues<E>(String boxName) async { // Made generic
+  Future<List<E>> getValues<E>(String boxName) async {
+    // Made generic
     try {
       final box = await openBox<E>(boxName); // Use typed box
       return box.values.toList();
     } catch (e, s) {
-      log('SimpleStorageService: Error getting values from box "$boxName"', error: e, stackTrace: s);
+      log('SimpleStorageService: Error getting values from box "$boxName"',
+          error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -297,12 +310,14 @@ class SimpleStorageService {
   /// though Hive generally manages this well.
   Future<void> closeAllBoxes() async {
     log('SimpleStorageService: Closing all cached Hive boxes.');
-    for (final boxName in _openedBoxes.keys.toList()) { // toList to avoid concurrent modification
+    for (final boxName in _openedBoxes.keys.toList()) {
+      // toList to avoid concurrent modification
       try {
         await _openedBoxes[boxName]?.close();
         log('SimpleStorageService: Closed box "$boxName" during closeAll.');
-      } catch (e,s) {
-        log('SimpleStorageService: Error closing box "$boxName" during closeAll', error: e, stackTrace: s);
+      } catch (e, s) {
+        log('SimpleStorageService: Error closing box "$boxName" during closeAll',
+            error: e, stackTrace: s);
         // Continue to attempt to close other boxes
       }
     }

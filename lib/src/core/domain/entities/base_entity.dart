@@ -74,8 +74,7 @@ abstract class BaseEntity {
   /// If not needed, subclasses can leave this unimplemented or throw an error.
   /// If implemented, it should return a `Map<String, dynamic>`.
   Map<String, dynamic> toJson() {
-    throw UnimplementedError(
-        'toJson() is not implemented for $runtimeType. '
+    throw UnimplementedError('toJson() is not implemented for $runtimeType. '
         'Consider implementing it if direct entity serialization is needed, '
         'or rely on data models for JSON conversion.');
   }

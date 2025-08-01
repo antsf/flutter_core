@@ -72,15 +72,14 @@ abstract class UseCase<Type, Params> {
   ///
   /// Returns a [Result] object, which will contain either the success data [Type]
   /// or a [Failure].
-  Future<Result<Type>> call(Params params) async {
+  FutureResult<Type> call(Params params) async {
     // Initialize a new controller for this specific call.
     _cancelController = StreamController<void>.broadcast();
 
     try {
       if (_cancelController!.isClosed) {
-        return (
-          data: null,
-          failure: const GenericFailure(message: 'Operation was cancelled before execution.'),
+        return const Error(
+          GenericFailure(message: 'Operation was cancelled before execution.'),
         );
       }
       // Delegate the core logic to the subclass's implementation.
@@ -88,13 +87,13 @@ abstract class UseCase<Type, Params> {
     } catch (e, s) {
       // If cancelled during an exception, prioritize the cancellation failure.
       if (_cancelController!.isClosed) {
-        return (
-          data: null,
-          failure: const GenericFailure(message: 'Operation was cancelled during error handling.'),
+        return const Error(
+          GenericFailure(
+              message: 'Operation was cancelled during error handling.'),
         );
       }
       // Convert any other exception to a domain Failure.
-      return (data: null, failure: _handleError(e, s));
+      return Error(_handleError(e, s));
     } finally {
       // Ensure the controller is closed and cleaned up.
       if (_cancelController != null && !_cancelController!.isClosed) {
@@ -111,7 +110,7 @@ abstract class UseCase<Type, Params> {
   ///
   /// [params]: The parameters required for this use case execution.
   /// Returns a [Future] of [Result<Type>], encapsulating the success data or a failure.
-  Future<Result<Type>> execute(Params params);
+  FutureResult<Type> execute(Params params);
 
   /// Converts a caught error/exception into a domain-specific [Failure].
   ///
@@ -128,7 +127,8 @@ abstract class UseCase<Type, Params> {
     // For unknown errors, return a generic Failure.
     // Consider adding more specific error handling here if needed (e.g., based on error type).
     return GenericFailure(
-      message: 'An unexpected error occurred during use case execution: ${error.toString()}',
+      message:
+          'An unexpected error occurred during use case execution: ${error.toString()}',
       error: error,
       stackTrace: stackTrace,
     );

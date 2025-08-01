@@ -6,9 +6,8 @@
 /// for encryption/decryption operations.
 library key_manager;
 
-import 'dart:convert';
 import 'dart:developer' show log;
-import 'dart:math';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart' as encrypt;
@@ -29,7 +28,7 @@ class KeyManager {
   static const String _keyStorageIdentifier = 'app_encryption_master_key';
   static const String _ivStorageIdentifier = 'app_encryption_master_iv';
   static const int _keyBitLength = 256; // For AES-256
-  static const int _ivBitLength = 128;  // For AES block size (e.g., CBC mode)
+  static const int _ivBitLength = 128; // For AES block size (e.g., CBC mode)
 
   final FlutterSecureStorage _secureStorage;
   late encrypt.Key _encryptionKey;
@@ -73,8 +72,10 @@ class KeyManager {
 
   /// Loads keys from secure storage if they exist, otherwise generates new ones.
   Future<void> _loadOrGenerateKeys() async {
-    final String? storedKeyBase64 = await _secureStorage.read(key: _keyStorageIdentifier);
-    final String? storedIvBase64 = await _secureStorage.read(key: _ivStorageIdentifier);
+    final String? storedKeyBase64 =
+        await _secureStorage.read(key: _keyStorageIdentifier);
+    final String? storedIvBase64 =
+        await _secureStorage.read(key: _ivStorageIdentifier);
 
     if (storedKeyBase64 != null && storedIvBase64 != null) {
       log('KeyManager: Found existing keys in secure storage. Loading them.');
@@ -114,7 +115,7 @@ class KeyManager {
   /// Generates a list of random bytes of the specified [length].
   /// Uses [Random.secure] for cryptographically secure random numbers.
   Uint8List _generateRandomBytes(int length) {
-    final random = Random.secure();
+    final random = math.Random.secure();
     final values = List<int>.generate(length, (_) => random.nextInt(256));
     return Uint8List.fromList(values);
   }
@@ -155,7 +156,8 @@ class KeyManager {
       await _secureStorage.delete(key: _ivStorageIdentifier);
       log('KeyManager: Stored keys cleared successfully.');
     } catch (e, s) {
-      log('KeyManager: Error clearing keys from secure storage.', error: e, stackTrace: s);
+      log('KeyManager: Error clearing keys from secure storage.',
+          error: e, stackTrace: s);
       throw Exception('KeyManager failed to clear keys: $e');
     }
   }
