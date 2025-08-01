@@ -30,7 +30,7 @@ extension NavigationExtension on BuildContext {
   /// Wraps `Navigator.of(this).pushNamed<T>()`.
   /// [routeName]: The name of the route to push.
   /// [arguments]: Optional arguments to pass to the new route.
-  Future<T?> pushNamed<T extends Object?>(
+  Future<T?> toNamed<T extends Object?>(
     String routeName, {
     Object? arguments,
   }) =>
@@ -44,7 +44,7 @@ extension NavigationExtension on BuildContext {
   /// Wraps `Navigator.of(this).pushReplacementNamed<T, Object?>()`.
   /// [routeName]: The name of the route to push.
   /// [arguments]: Optional arguments to pass to the new route.
-  Future<T?> pushReplacementNamed<T extends Object?>(
+  Future<T?> toReplacementNamed<T extends Object?>(
     String routeName, {
     Object? arguments,
   }) =>
@@ -59,13 +59,14 @@ extension NavigationExtension on BuildContext {
   /// Wraps `Navigator.of(this).pushNamedAndRemoveUntil<T>()`.
   /// [routeName]: The name of the route to push.
   /// [arguments]: Optional arguments to pass to the new route.
-  Future<T?> pushNamedAndRemoveUntil<T extends Object?>(
+  Future<T?> toNamedAndRemoveUntil<T extends Object?>(
     String routeName, {
     Object? arguments,
   }) =>
       Navigator.of(this).pushNamedAndRemoveUntil<T>(
         routeName,
-        (_) => false, // Predicate that always returns false to remove all routes
+        (_) =>
+            false, // Predicate that always returns false to remove all routes
         arguments: arguments,
       );
 
@@ -73,7 +74,7 @@ extension NavigationExtension on BuildContext {
   ///
   /// Wraps `Navigator.of(this).push()` with a [MaterialPageRoute].
   /// [page]: The widget representing the new screen.
-  Future<T?> push<T extends Object?>(Widget page) => Navigator.of(this).push<T>(
+  Future<T?> to<T extends Object?>(Widget page) => Navigator.of(this).push<T>(
         MaterialPageRoute(builder: (_) => page),
       );
 
@@ -81,7 +82,7 @@ extension NavigationExtension on BuildContext {
   ///
   /// Wraps `Navigator.of(this).pushReplacement()` with a [MaterialPageRoute].
   /// [page]: The widget representing the new screen.
-  Future<T?> pushReplacement<T extends Object?>(Widget page) =>
+  Future<T?> toReplacement<T extends Object?>(Widget page) =>
       Navigator.of(this).pushReplacement<T, Object?>(
         MaterialPageRoute(builder: (_) => page),
       );
@@ -91,17 +92,19 @@ extension NavigationExtension on BuildContext {
   ///
   /// Wraps `Navigator.of(this).pushAndRemoveUntil()` with a [MaterialPageRoute].
   /// [page]: The widget representing the new screen.
-  Future<T?> pushAndRemoveUntil<T extends Object?>(Widget page) =>
+  Future<T?> toAndRemoveUntil<T extends Object?>(Widget page) =>
       Navigator.of(this).pushAndRemoveUntil<T>(
         MaterialPageRoute(builder: (_) => page),
-        (_) => false, // Predicate that always returns false to remove all routes
+        (_) =>
+            false, // Predicate that always returns false to remove all routes
       );
 
   /// Pops the current screen from the navigation stack.
   ///
   /// Wraps `Navigator.of(this).pop<T>(result)`.
   /// [result]: An optional value to return to the previous screen.
-  void back<T extends Object?>([T? result]) => Navigator.of(this).pop<T>(result);
+  void back<T extends Object?>([T? result]) =>
+      Navigator.of(this).pop<T>(result);
 
   /// Checks if the navigator can be popped.
   ///
@@ -118,6 +121,24 @@ extension NavigationExtension on BuildContext {
       back<T>(result);
     }
   }
+
+  // --- Keyboard & Focus ---
+  /// Unfocuses all focus nodes, hiding the keyboard if open.
+  void unfocusKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  /// Requests focus for the given [FocusNode].
+  void requestFocus(FocusNode node) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    FocusScope.of(this).requestFocus(node);
+  }
+
+  /// Returns true if any input field currently has focus.
+  bool get hasFocus => FocusManager.instance.primaryFocus != null;
+
+  /// Returns true if the keyboard is currently visible.
+  bool get isKeyboardVisible => MediaQuery.of(this).viewInsets.bottom > 0;
 
   // --- Dialogs & Modals ---
 
@@ -199,7 +220,8 @@ extension NavigationExtension on BuildContext {
     EdgeInsetsGeometry? padding,
     double? width,
     ShapeBorder? shape,
-    SnackBarBehavior? behavior, // Defaults to SnackBarBehavior.fixed for Material 2, .floating for Material 3
+    SnackBarBehavior?
+        behavior, // Defaults to SnackBarBehavior.fixed for Material 2, .floating for Material 3
     Animation<double>? animation,
   }) =>
       ScaffoldMessenger.of(this).showSnackBar(
@@ -232,7 +254,8 @@ extension NavigationExtension on BuildContext {
         context: this,
         barrierDismissible: barrierDismissible,
         builder: (_) => PopScope(
-          canPop: barrierDismissible, // Only allow pop if barrierDismissible is true
+          canPop:
+              barrierDismissible, // Only allow pop if barrierDismissible is true
           child: Dialog(
             child: Padding(
               padding: EdgeInsets.all(16.w), // Scaled padding
@@ -308,6 +331,7 @@ extension NavigationExtension on BuildContext {
         ],
       ),
     );
-    return result ?? false; // If dialog is dismissed, result is null, treat as false
+    return result ??
+        false; // If dialog is dismissed, result is null, treat as false
   }
 }

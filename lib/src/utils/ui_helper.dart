@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../constants/default.dart'; // kPadding
-import '../extensions/ui_extensions.dart'; // .cornerRadius extension
+import '../extensions/ui_ext.dart'; // .cornerRadius extension
 
 /// A utility class providing helper methods and constants for building UI.
 ///
@@ -18,7 +18,7 @@ class UiHelper {
   ///
   /// This shadow provides a subtle elevation effect.
   static final BoxShadow shadow = BoxShadow(
-    color: Colors.black.withOpacity(0.1), // Shadow color with 10% opacity
+    color: Colors.black.withValues(alpha: .1), // Shadow color with 10% opacity
     offset: const Offset(0, 6), // Offset from the top (y-axis)
     blurRadius: 6.0, // Spread of the shadow
   );
