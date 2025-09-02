@@ -32,38 +32,37 @@ extension BuildContextExtension on BuildContext {
 
   // Theme Access
   ThemeData get theme => Theme.of(this);
-  TextTheme get text => theme.textTheme;
-  ColorScheme get color => theme.colorScheme;
-  Color get primaryColor => theme.primaryColor;
-  Color get accentColor => theme.colorScheme.secondary;
-  Color get backgroundColor => theme.scaffoldBackgroundColor;
-  Color get cardColor => theme.cardColor;
-  Color get errorColor => theme.colorScheme.error;
-  Color get dividerColor => theme.dividerColor;
-  Color get disabledColor => theme.disabledColor;
-  Color get hintColor => theme.hintColor;
+  // TextTheme get textTheme => theme.textTheme;
+  // ColorScheme get colorScheme => theme.colorScheme;
+  // Color get primaryColor => theme.primaryColor;
+  // Color get accentColor => theme.colorScheme.secondary;
+  // Color get backgroundColor => theme.scaffoldBackgroundColor;
+  // Color get cardColor => theme.cardColor;
+  // Color get errorColor => theme.colorScheme.error;
+  // Color get dividerColor => theme.dividerColor;
+  // Color get disabledColor => theme.disabledColor;
+  // Color get hintColor => theme.hintColor;
 
   // Theme Components
   IconThemeData get iconTheme => theme.iconTheme;
   IconThemeData get primaryIconTheme => theme.primaryIconTheme;
   IconThemeData get accentIconTheme =>
-      IconThemeData(color: theme.colorScheme.secondary.withOpacity(0.7));
+      IconThemeData(color: theme.colorScheme.secondary.withValues(alpha: .7));
   InputDecorationTheme get inputDecorationTheme => theme.inputDecorationTheme;
   ButtonThemeData get buttonTheme => theme.buttonTheme;
   ElevatedButtonThemeData get elevatedButtonTheme => theme.elevatedButtonTheme;
   TextButtonThemeData get textButtonTheme => theme.textButtonTheme;
   OutlinedButtonThemeData get outlinedButtonTheme => theme.outlinedButtonTheme;
-  DialogTheme get dialogTheme => theme.dialogTheme;
+  DialogThemeData get dialogTheme => theme.dialogTheme;
   SnackBarThemeData get snackBarTheme => theme.snackBarTheme;
   BottomSheetThemeData get bottomSheetTheme => theme.bottomSheetTheme;
   PopupMenuThemeData get popupMenuTheme => theme.popupMenuTheme;
   TooltipThemeData get tooltipTheme => theme.tooltipTheme;
   ChipThemeData get chipTheme => theme.chipTheme;
-  CardTheme get cardTheme => theme.cardTheme;
+  CardThemeData get cardTheme => theme.cardTheme;
   DividerThemeData get dividerTheme => theme.dividerTheme;
   BottomNavigationBarThemeData get bottomNavigationBarTheme =>
       theme.bottomNavigationBarTheme;
-  TabBarTheme get tabBarTheme => theme.tabBarTheme;
   FloatingActionButtonThemeData get floatingActionButtonTheme =>
       theme.floatingActionButtonTheme;
   NavigationRailThemeData get navigationRailTheme => theme.navigationRailTheme;
@@ -114,10 +113,8 @@ extension BuildContextExtension on BuildContext {
 /// Extension methods for [num] to provide spacing, padding, and radius helpers.
 extension NumExtension on num {
   /// Returns a [SizedBox] with both width and height as multiples of [kPadding].
-  Widget get spacing => SizedBox(
-        width: (this * kPadding).w,
-        height: (this * kPadding).h,
-      );
+  Widget get spacing =>
+      SizedBox(width: (this * kPadding).w, height: (this * kPadding).h);
 
   /// Returns a horizontal spacing widget.
   Widget get spacingWidth => SizedBox(width: (this * kPadding).w);
@@ -138,20 +135,16 @@ extension NumExtension on num {
 /// --- EdgeInsets Extensions ---
 /// (Scaling)
 /// Extension methods for [EdgeInsets] to provide scaling.
-extension EdgeInsetsExtension on EdgeInsets {
+extension EdgeInsetsX on EdgeInsets {
   /// Returns a scaled [EdgeInsets] using [ScreenUtil].
-  EdgeInsets get scaled => copyWith(
-        left: left.w,
-        right: right.w,
-        top: top.h,
-        bottom: bottom.h,
-      );
+  EdgeInsets get scaled =>
+      copyWith(left: left.w, right: right.w, top: top.h, bottom: bottom.h);
 }
 
 /// --- BorderRadius Extensions ---
 /// (Scaling)
 /// Extension methods for [BorderRadius] to provide scaling.
-extension BorderRadiusExtension on BorderRadius {
+extension BorderRadiusX on BorderRadius {
   /// Returns a scaled [BorderRadius] using [ScreenUtil].
   BorderRadius get scaled => BorderRadius.only(
         topLeft: Radius.circular(topLeft.x.r),

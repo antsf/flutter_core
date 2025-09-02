@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +21,7 @@ void main() async {
   }
 
   // Initialize theme and core services
-  await ThemeProvider.instance.loadThemeMode();
+  // await ThemeProvider.instance.loadThemeMode();
   await FlutterCore.initialize(
     baseUrl: 'https://jsonplaceholder.typicode.com',
     connectTimeout: 30000,
@@ -39,17 +38,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FlutterCore.initializeUI();
-    return ListenableBuilder(
-      listenable: ThemeProvider.instance,
-      builder: (context, _) {
-        return MaterialApp(
-          title: 'Flutter Core Demo',
-          theme: ThemeProvider.instance.currentTheme,
-          home: const HomePage(),
-        );
-      },
+    // FlutterCore.initializeUI();
+    return const MaterialApp(
+      title: 'Flutter Core Demo',
+      // theme: ThemeProvider.instance.currentTheme,
+      home: HomePage(),
     );
+    // return ListenableBuilder(
+    //   listenable: ThemeProvider.instance,
+    //   builder: (context, _) {
+    //     return MaterialApp(
+    //       title: 'Flutter Core Demo',
+    //       theme: ThemeProvider.instance.currentTheme,
+    //       home: const HomePage(),
+    //     );
+    //   },
+    // );
   }
 }
 
@@ -85,14 +89,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter Core Demo'),
-        actions: [
-          IconButton(
-            icon: Icon(ThemeProvider.instance.isDarkMode
-                ? Icons.light_mode
-                : Icons.dark_mode),
-            onPressed: () => ThemeProvider.instance.toggleTheme(),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(ThemeProvider.instance.isDarkMode
+        //         ? Icons.light_mode
+        //         : Icons.dark_mode),
+        //     onPressed: () => ThemeProvider.instance.toggleTheme(),
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.w),

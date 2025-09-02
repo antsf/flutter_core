@@ -35,7 +35,16 @@ abstract class Failure {
   String toString() => '$runtimeType(message: $message, error: $error)';
 }
 
-/// Represents a failure related to network operations (e.g., no internet, server error).
+/// Represents a failure related to server operations (e.g., server error).
+class ServerFailure extends Failure {
+  const ServerFailure({
+    required super.message,
+    super.error,
+    super.stackTrace,
+  });
+}
+
+/// Represents a failure related to network operations (e.g., no internet).
 class NetworkFailure extends Failure {
   const NetworkFailure({
     required super.message,
@@ -92,13 +101,47 @@ class GenericFailure extends Failure {
 ///
 /// This is a core component of the error handling strategy, ensuring that
 /// all operations that can fail do so in a predictable and type-safe way.
-typedef Result<T> = ({T? data, Failure? failure});
+abstract class Result<T, F> {
+  const Result();
+  bool get isSuccess;
+  bool get isFailure;
+  T? get data;
+  F? get failure;
+}
+
+class Success<T, F> extends Result<T, F> {
+  final T value;
+  const Success(this.value);
+  @override
+  bool get isSuccess => true;
+  @override
+  bool get isFailure => false;
+  @override
+  T? get data => value;
+  @override
+  F? get failure => null;
+}
+
+class Error<T, F> extends Result<T, F> {
+  final F error;
+  const Error(this.error);
+  @override
+  bool get isSuccess => false;
+  @override
+  bool get isFailure => true;
+  @override
+  T? get data => null;
+  @override
+  F? get failure => error;
+}
+
+typedef FutureResult<T> = Future<Result<T, Failure>>;
 
 // --- 3. Result Extension for Safe Handling ---
 
 /// Provides extension methods on the [Result] type for safe and convenient
 /// handling of success and failure cases.
-extension ResultExtension<T> on Result<T> {
+extension ResultExtension<T, F> on Result<T, F> {
   /// Returns `true` if the result is a success (data is not null and failure is null).
   bool get isSuccess => data != null && failure == null;
 
@@ -131,13 +174,13 @@ extension ResultExtension<T> on Result<T> {
   /// );
   /// ```
   R when<R>({
-    required R Function(T data) onSuccess,
-    required R Function(Failure failure) onFailure,
+    required R Function(T value) onSuccess,
+    required R Function(F failure) onFailure,
   }) {
     if (isSuccess) {
-      return onSuccess(data as T);
+      return onSuccess((this as Success<T, F>).value);
     } else {
-      return onFailure(failure!);
+      return onFailure((this as Error<T, F>).error);
     }
   }
 }

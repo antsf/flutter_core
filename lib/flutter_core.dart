@@ -50,3 +50,9 @@ export 'src/core/data/repositories/base_repository_impl.dart';
 
 // Extensions
 export 'src/extensions/extensions.dart';
+
+// external package
+export 'package:flutter_screenutil/flutter_screenutil.dart';
+export 'package:google_fonts/google_fonts.dart';
+export 'package:rxdart/rxdart.dart';
+export 'package:intl/intl.dart';
