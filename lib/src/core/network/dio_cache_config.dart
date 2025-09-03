@@ -84,7 +84,7 @@
 //   DioCacheInterceptor get interceptor {
 //     return DioCacheInterceptor(
 //       options: CacheOptions(
-//         store: HttpCacheHiveStore(cachePath),
+//         store: HiveCacheStore(cachePath),
 //         policy: policy,
 //         maxStale: maxAge, // How long the cache is considered fresh.
 //         priority: CachePriority.normal,
