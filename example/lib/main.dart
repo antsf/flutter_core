@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_core/flutter_core.dart';
+import 'package:flutter_core/src/core/storage/local_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,22 @@ void main() async {
     cacheMaxAge: const Duration(minutes: 5),
   );
 
+  // Initialize the LocalStorage service before use
+  final localStorage = LocalStorage();
+  await localStorage.init();
+
+  // Example of providing a custom dark theme
+  final customDarkTheme = AppTheme.defaultDarkTheme.copyWith(
+    colorScheme: ColorSchemes.greenScheme,
+  );
+
+  ThemeProvider.configure(
+    lightTheme: null, // Use default light theme
+    darkTheme: customDarkTheme, // Use custom dark theme
+  );
+
+  await ThemeProvider.instance.loadThemeMode();
+
   runApp(const ScreenUtilWrapper(child: MyApp()));
 }
 
@@ -39,21 +56,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // FlutterCore.initializeUI();
-    return const MaterialApp(
-      title: 'Flutter Core Demo',
-      // theme: ThemeProvider.instance.currentTheme,
-      home: HomePage(),
+
+    return ListenableBuilder(
+      listenable: ThemeProvider.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Flutter Core Demo',
+          theme: ThemeProvider.instance.currentTheme,
+          home: const HomePage(),
+        );
+      },
     );
-    // return ListenableBuilder(
-    //   listenable: ThemeProvider.instance,
-    //   builder: (context, _) {
-    //     return MaterialApp(
-    //       title: 'Flutter Core Demo',
-    //       theme: ThemeProvider.instance.currentTheme,
-    //       home: const HomePage(),
-    //     );
-    //   },
-    // );
   }
 }
 
@@ -65,58 +78,79 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _response = '';
-  bool _isLoading = false;
+  String response = '';
+  bool isLoading = false;
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+  final localStorage = LocalStorage();
+
+  Future<void> loadData() async {
+    setState(() => isLoading = true);
     try {
       final result = await FlutterCore.dioClient.get('/posts/1');
       setState(() {
-        _response = result.data.toString();
-        _isLoading = false;
+        response = result.data.toString();
+        isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _response = 'Error: $e';
-        _isLoading = false;
+        response = 'Error: $e';
+        isLoading = false;
       });
     }
   }
 
+  void localStorageVoid() async {
+    await localStorage.set<String>('prefs', 'token', 'abc123');
+    final token = await localStorage.get<String>('prefs', 'token');
+    if (token.isNotNullOrEmpty) {
+      await localStorage.set('prefs', 'token', token!);
+    }
+    await localStorage.delete('prefs', 'token');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = ThemeProvider.instance;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter Core Demo'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(ThemeProvider.instance.isDarkMode
-        //         ? Icons.light_mode
-        //         : Icons.dark_mode),
-        //     onPressed: () => ThemeProvider.instance.toggleTheme(),
-        //   ),
-        // ],
+        title: const Text('Flexible Theme Demo'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
+      body: Center(
         child: Column(
-          children: [
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    _response,
-                    style: Theme.of(context).textTheme.bodyMedium,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Current Theme:',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              themeProvider.isDarkMode ? 'Dark' : 'Light',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),
-              ),
-            SizedBox(height: 16.h),
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Load Data'),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+              child: Text(
+                'Toggle Theme',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                // Example of setting a custom color scheme (doesn't change theme in this simple example)
+                themeProvider.setColorScheme('blue');
+              },
+              child: Text(
+                'Set Blue Scheme',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ),
           ],
         ),
