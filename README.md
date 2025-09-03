@@ -154,11 +154,11 @@ import 'package:flutter_core/flutter_core.dart';
 
 - Theme: `theme.dart`, `theme_provider.dart`, `text_theme.dart`, `color_schemes.dart`
 - Network: `dio_client.dart`, `dio_interceptor.dart`, `dio_cache_config.dart`, `dio_retry_interceptor.dart`
-- Storage: `secure_storage_service.dart`, `key_manager.dart`, `simple_storage_service.dart`
+- Storage: `secure_storage_service.dart`, `key_manager.dart`, `simple_storage_service.dart`, `local_storage.dart`
 - Services: `connectivity_service.dart`
 - Constants: `constants.dart`, `colors.dart`, `default.dart`
 - Utils: `utils.dart`, `path_utils.dart`, `ui_helper.dart`
-- Domain/Data: All base entities, repositories, usecases, models, datasources
+<!-- - Domain/Data: All base entities, repositories, usecases, models, datasources -->
 - Extensions: All widget, context, and style extensions
 
 ## Dependencies
