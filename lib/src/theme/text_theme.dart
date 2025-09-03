@@ -19,12 +19,13 @@ class TextThemes {
 
   /// Creates a base text theme
   static TextTheme get base => TextTheme(
-        headlineLarge: GoogleFonts.inter(
-          fontWeight: bold,
-          fontSize: 24.sp,
-        ),
-        headlineSmall: GoogleFonts.inter(
-            fontSize: 20.sp, fontWeight: semiBold, color: FcColors.primaryText),
+        displayLarge: GoogleFonts.inter(fontSize: 57.sp, fontWeight: bold),
+        displayMedium: GoogleFonts.inter(fontSize: 45.sp, fontWeight: bold),
+        displaySmall: GoogleFonts.inter(fontSize: 36.sp, fontWeight: bold),
+        headlineLarge: GoogleFonts.inter(fontSize: 32.sp, fontWeight: semiBold),
+        headlineMedium:
+            GoogleFonts.inter(fontSize: 28.sp, fontWeight: semiBold),
+        headlineSmall: GoogleFonts.inter(fontSize: 22.sp, fontWeight: semiBold),
         titleLarge: GoogleFonts.inter(
             fontSize: 18.sp,
             letterSpacing: 0,
@@ -75,13 +76,13 @@ class TextThemes {
 
   /// Creates a light text theme
   static TextTheme get light => base.apply(
-        bodyColor: Colors.black87,
-        displayColor: Colors.black,
+        bodyColor: FcColors.primaryText,
+        displayColor: FcColors.primaryText,
       );
 
   /// Creates a dark text theme
   static TextTheme get dark => base.apply(
-        bodyColor: Colors.white70,
-        displayColor: Colors.white,
+        bodyColor: FcColors.darkText,
+        displayColor: FcColors.darkText,
       );
 }
