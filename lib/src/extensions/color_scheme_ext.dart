@@ -32,7 +32,7 @@ extension ColorContextExtensions on BuildContext {
   Color get onErrorColor => colorScheme.onError;
   Color get onErrorContainerColor => colorScheme.onErrorContainer;
 
-  Color get backgroundColor => colorScheme.surfaceContainer;
+  Color get surfaceContainerColor => colorScheme.surfaceContainer;
   Color get surfaceColor => colorScheme.surface;
   Color get outlineColor => colorScheme.outline;
   Color get outlineVariantColor => colorScheme.outlineVariant;

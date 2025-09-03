@@ -4,6 +4,7 @@ library extensions;
 export 'animation_ext.dart';
 export 'color_scheme_ext.dart';
 export 'date_ext.dart';
+export 'dialogs_and_alerts_ext.dart';
 export 'iterable_ext.dart';
 export 'layout_ext.dart';
 export 'map_ext.dart';
