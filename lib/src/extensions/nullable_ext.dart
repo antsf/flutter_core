@@ -1,6 +1,6 @@
 extension NullableX<T> on T? {
   /// Run block if value is NOT null
-  R? let<R>(R Function(T) block) => this == null ? null : block(this!);
+  R? let<R>(R Function(T) block) => this == null ? null : block(this as T);
 
   /// Provide default when null
   T or(T defaultValue) => this ?? defaultValue;

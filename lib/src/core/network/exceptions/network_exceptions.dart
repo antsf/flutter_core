@@ -46,15 +46,9 @@ abstract class NetworkException implements Exception {
     if (statusCode != null) {
       sb.write(' (Status Code: $statusCode)');
     }
-    if (error != null && error is DioException
-        // && (error as DioException).requestOptions.uri != null
-        ) {
+    if (error != null && error is DioException) {
       sb.write(' URL: ${(error as DioException).requestOptions.uri}');
     }
-    // Optionally include more details from 'error' if needed, but keep it concise for typical logging.
-    // if (error != null) {
-    //   sb.write('\nOriginal Error: $error');
-    // }
     return sb.toString();
   }
 
@@ -64,39 +58,155 @@ abstract class NetworkException implements Exception {
   /// to determine the most appropriate custom exception to return.
   /// This helps in categorizing network errors for better handling in the application.
   factory NetworkException.fromDioException(DioException dioException) {
+    return _mapDioExceptionToNetworkException(dioException);
+  }
+
+  static NetworkException _mapDioExceptionToNetworkException(
+      DioException dioException) {
     switch (dioException.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
         return TimeoutException(dioException: dioException);
       case DioExceptionType.badResponse:
-        // Further categorize based on status code for bad responses
-        final statusCode = dioException.response?.statusCode;
-        if (statusCode != null) {
-          if (statusCode >= 500) {
-            // Server errors (5xx)
-            return ServerException(
-                dioException: dioException,
-                specificMessage: 'Server error occurred (Status $statusCode).');
-          } else if (statusCode >= 400) {
-            // Client errors (4xx)
-            // Could be further specialized, e.g., NotFoundException (404), UnauthorizedException (401)
-            return ClientErrorException(
-                dioException: dioException,
-                specificMessage:
-                    'Client error: Bad request (Status $statusCode).');
-          }
-        }
-        // Default for bad responses if status code doesn't fit specific categories above
-        return ServerException(dioException: dioException);
+        return _mapStatusCodeToException(dioException);
       case DioExceptionType.cancel:
         return CancelledException(dioException: dioException);
       case DioExceptionType.connectionError:
-        // This often indicates no internet or DNS resolution failure.
         return NoInternetConnectionException(dioException: dioException);
       case DioExceptionType.unknown:
       case DioExceptionType.badCertificate:
         return UnknownNetworkException(dioException: dioException);
+    }
+  }
+
+  static NetworkException _mapStatusCodeToException(DioException dioException) {
+    final statusCode = dioException.response?.statusCode;
+    final dynamic responseData = dioException.response?.data;
+    String? apiMessage;
+
+    // Check if the response data is a Map and contains a 'message' or 'error' key
+    if (responseData is Map<String, dynamic>) {
+      apiMessage = responseData['message'] as String? ??
+          responseData['error'] as String?;
+    } else if (responseData is String) {
+      // Handle cases where the response body is a plain string
+      apiMessage = responseData;
+    }
+
+    final specificMessage = _getDefaultMessage(statusCode);
+
+    // Prioritize the API message if it's available and not empty.
+    final finalMessage = (apiMessage != null && apiMessage.isNotEmpty)
+        ? apiMessage
+        : specificMessage;
+
+    if (statusCode == null) {
+      return ServerException(dioException: dioException);
+    }
+
+    switch (statusCode) {
+      case 400:
+        return ClientErrorException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 401:
+        return UnauthorizedException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 403:
+        return ForbiddenException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 404:
+        return NotFoundException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 405:
+        return MethodNotAllowedException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 408:
+        return RequestTimeoutException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 409:
+        return ConflictException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 429:
+        return TooManyRequestsException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 500:
+        return InternalServerErrorException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 501:
+        return NotImplementedException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 502:
+        return BadGatewayException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 503:
+        return ServiceUnavailableException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      case 504:
+        return GatewayTimeoutException(
+          dioException: dioException,
+          specificMessage: finalMessage,
+        );
+      default:
+        return ServerException(
+            dioException: dioException, specificMessage: finalMessage);
+    }
+  }
+
+  static String _getDefaultMessage(int? statusCode) {
+    switch (statusCode) {
+      case 400:
+        return 'Bad Request: The request was invalid or cannot be otherwise served.';
+      case 401:
+        return 'Unauthorized: Authentication credentials were missing or incorrect.';
+      case 403:
+        return 'Forbidden: The request is understood, but it has been refused or access is not allowed.';
+      case 404:
+        return 'Not Found: The requested resource could not be found.';
+      case 405:
+        return 'Method Not Allowed: The request was made to a resource using an HTTP request method not supported by that resource.';
+      case 408:
+        return 'Request Timeout: The server timed out waiting for the request.';
+      case 409:
+        return 'Conflict: The request could not be completed due to a conflict with the current state of the resource.';
+      case 429:
+        return 'Too Many Requests: The user has sent too many requests in a given amount of time.';
+      case 500:
+        return 'Internal Server Error: The server encountered an unexpected condition that prevented it from fulfilling the request.';
+      case 501:
+        return 'Not Implemented: The server does not support the functionality required to fulfill the request.';
+      case 502:
+        return 'Bad Gateway: The server was acting as a gateway or proxy and received an invalid response from the upstream server.';
+      case 503:
+        return 'Service Unavailable: The server is currently unavailable.';
+      case 504:
+        return 'Gateway Timeout: The server was acting as a gateway or proxy and did not receive a timely response from the upstream server.';
+      default:
+        return 'A server error occurred. Please try again later.';
     }
   }
 }
@@ -121,8 +231,7 @@ class NoInternetConnectionException extends NetworkException {
       : super(
           message:
               'No internet connection. Please check your network settings and try again.',
-          statusCode: dioException
-              .response?.statusCode, // Usually null for connection errors
+          statusCode: dioException.response?.statusCode,
           error: dioException,
           stackTrace: dioException.stackTrace,
         );
@@ -158,13 +267,192 @@ class ClientErrorException extends NetworkException {
         );
 }
 
+/// Exception thrown for unauthorized errors (HTTP status code 401).
+class UnauthorizedException extends NetworkException {
+  /// Creates an [UnauthorizedException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  UnauthorizedException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Unauthorized: Authentication credentials were missing or incorrect.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for forbidden errors (HTTP status code 403).
+class ForbiddenException extends NetworkException {
+  /// Creates a [ForbiddenException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  ForbiddenException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Forbidden: The request is understood, but it has been refused or access is not allowed.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for not found errors (HTTP status code 404).
+class NotFoundException extends NetworkException {
+  /// Creates a [NotFoundException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  NotFoundException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Not Found: The requested resource could not be found.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for method not allowed errors (HTTP status code 405).
+class MethodNotAllowedException extends NetworkException {
+  /// Creates a [MethodNotAllowedException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  MethodNotAllowedException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Method Not Allowed: The request was made to a resource using an HTTP request method not supported by that resource.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for request timeout errors (HTTP status code 408).
+class RequestTimeoutException extends NetworkException {
+  /// Creates a [RequestTimeoutException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  RequestTimeoutException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Request Timeout: The server timed out waiting for the request.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for conflict errors (HTTP status code 409).
+class ConflictException extends NetworkException {
+  /// Creates a [ConflictException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  ConflictException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Conflict: The request could not be completed due to a conflict with the current state of the resource.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for too many requests errors (HTTP status code 429).
+class TooManyRequestsException extends NetworkException {
+  /// Creates a [TooManyRequestsException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  TooManyRequestsException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Too Many Requests: The user has sent too many requests in a given amount of time.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for internal server errors (HTTP status code 500).
+class InternalServerErrorException extends NetworkException {
+  /// Creates an [InternalServerErrorException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  InternalServerErrorException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Internal Server Error: The server encountered an unexpected condition that prevented it from fulfilling the request.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for not implemented errors (HTTP status code 501).
+class NotImplementedException extends NetworkException {
+  /// Creates a [NotImplementedException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  NotImplementedException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Not Implemented: The server does not support the functionality required to fulfill the request.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for bad gateway errors (HTTP status code 502).
+class BadGatewayException extends NetworkException {
+  /// Creates a [BadGatewayException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  BadGatewayException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Bad Gateway: The server was acting as a gateway or proxy and received an invalid response from the upstream server.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for service unavailable errors (HTTP status code 503).
+class ServiceUnavailableException extends NetworkException {
+  /// Creates a [ServiceUnavailableException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  ServiceUnavailableException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Service Unavailable: The server is currently unavailable.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
+/// Exception thrown for gateway timeout errors (HTTP status code 504).
+class GatewayTimeoutException extends NetworkException {
+  /// Creates a [GatewayTimeoutException].
+  /// [specificMessage] can be provided if a more detailed message than the default is needed.
+  GatewayTimeoutException(
+      {required DioException dioException, String? specificMessage})
+      : super(
+          message: specificMessage ??
+              'Gateway Timeout: The server was acting as a gateway or proxy and did not receive a timely response from the upstream server.',
+          statusCode: dioException.response?.statusCode,
+          error: dioException,
+          stackTrace: dioException.stackTrace,
+        );
+}
+
 /// Exception thrown when a network request is cancelled by the client.
 class CancelledException extends NetworkException {
   /// Creates a [CancelledException].
   CancelledException({required DioException dioException})
       : super(
           message: 'The network request was cancelled.',
-          // statusCode is usually null for cancellations
           error: dioException,
           stackTrace: dioException.stackTrace,
         );

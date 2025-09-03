@@ -18,7 +18,7 @@ void main() {
   maybe.let((v) => print(v)) ?? print('was null');
 
   'hello world'.capitalizeWords; // Hello World
-  DateTime.now().toIndonesianDate(); // 26 Juni 2025
+  DateTime.now().toIndonesianDateTime(); // 26 Juni 2025
   60000.toRupiah(); // Rp60.000,00
 
   Column(

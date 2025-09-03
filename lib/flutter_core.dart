@@ -38,21 +38,23 @@ export 'src/constants/constants.dart';
 export 'src/utils/utils.dart';
 
 // Domain
-export 'src/core/domain/entities/base_entity.dart';
-export 'src/core/domain/repositories/base_repository.dart';
+// export 'src/core/domain/entities/base_entity.dart';
+// export 'src/core/domain/repositories/base_repository.dart';
 export 'src/core/domain/usecases/base_usecase.dart';
 
-// Data
-export 'src/core/data/datasources/base_local_data_source.dart';
-export 'src/core/data/datasources/base_remote_data_source.dart';
-export 'src/core/data/models/base_model.dart';
-export 'src/core/data/repositories/base_repository_impl.dart';
+// // Data
+// export 'src/core/data/datasources/base_local_data_source.dart';
+// export 'src/core/data/datasources/base_remote_data_source.dart';
+// export 'src/core/data/models/base_model.dart';
+// export 'src/core/data/repositories/base_repository_impl.dart';
 
 // Extensions
 export 'src/extensions/extensions.dart';
 
 // external package
+export 'package:dio/dio.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:google_fonts/google_fonts.dart';
 export 'package:rxdart/rxdart.dart';
 export 'package:intl/intl.dart';
+export 'package:connectivity_plus/connectivity_plus.dart';

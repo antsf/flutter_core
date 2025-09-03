@@ -11,15 +11,17 @@ abstract class Failure {
   final String message;
   final dynamic error;
   final StackTrace? stackTrace;
+  final int statusCode; // New property for status code
 
   const Failure({
     required this.message,
     this.error,
     this.stackTrace,
+    this.statusCode = 200, // New parameter in constructor
   });
 
   /// The list of properties that will be used for value-based equality.
-  List<Object?> get props => [message, error, stackTrace];
+  List<Object?> get props => [message, error, stackTrace, statusCode];
 
   @override
   bool operator ==(Object other) =>
@@ -32,7 +34,8 @@ abstract class Failure {
   int get hashCode => Object.hashAll(props);
 
   @override
-  String toString() => '$runtimeType(message: $message, error: $error)';
+  String toString() =>
+      '$runtimeType(message: $message, error: $error, statusCode: $statusCode)';
 }
 
 /// Represents a failure related to server operations (e.g., server error).
@@ -41,6 +44,7 @@ class ServerFailure extends Failure {
     required super.message,
     super.error,
     super.stackTrace,
+    super.statusCode, // Pass statusCode to the super constructor
   });
 }
 
@@ -50,6 +54,7 @@ class NetworkFailure extends Failure {
     required super.message,
     super.error,
     super.stackTrace,
+    super.statusCode,
   });
 }
 
@@ -59,6 +64,7 @@ class CacheFailure extends Failure {
     required super.message,
     super.error,
     super.stackTrace,
+    super.statusCode,
   });
 }
 
@@ -68,6 +74,7 @@ class AuthFailure extends Failure {
     required super.message,
     super.error,
     super.stackTrace,
+    super.statusCode,
   });
 }
 
@@ -79,6 +86,7 @@ class ValidationFailure extends Failure {
     required this.errors,
     super.error,
     super.stackTrace,
+    super.statusCode,
   }) : super(message: 'One or more validation errors occurred.');
 
   @override
@@ -91,6 +99,7 @@ class GenericFailure extends Failure {
     required super.message,
     super.error,
     super.stackTrace,
+    super.statusCode,
   });
 }
 

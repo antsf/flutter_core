@@ -105,6 +105,9 @@ class FcColors {
   static const Color secondaryText = Color(0xFF757575); // Grey 600
   /// Tertiary text color, for hints or disabled text.
   static const Color tertiaryText = Color(0xFF9E9E9E); // Grey 500
+  /// The dark text color, used for dark theme.
+  static const Color darkText = Colors.white70;
+
   /// Text color that contrasts with [background].
   static const Color onBackground = Color(0xFF212121); // Grey 900
   /// Text color that contrasts with [surface].
@@ -210,70 +213,70 @@ class FcColors {
   // /// A pre-defined light [ColorScheme] based on the `FcColors` palette.
   // ///
   // /// This scheme is suitable for light-themed UIs and follows Material Design guidelines.
-  // static ColorScheme get lightColorScheme => const ColorScheme(
-  //       brightness: Brightness.light,
-  //       primary: primary,
-  //       onPrimary: onPrimary,
-  //       primaryContainer: primaryContainer,
-  //       onPrimaryContainer: onPrimaryContainer,
-  //       secondary: secondary,
-  //       onSecondary: onSecondary,
-  //       secondaryContainer: secondaryContainer,
-  //       onSecondaryContainer: onSecondaryContainer,
-  //       tertiary: tertiary,
-  //       onTertiary: onTertiary,
-  //       tertiaryContainer: tertiaryContainer,
-  //       onTertiaryContainer: onTertiaryContainer,
-  //       error: error,
-  //       onError: onError,
-  //       errorContainer: errorContainer,
-  //       onErrorContainer: onErrorContainer,
-  //       surface: surface,
-  //       onSurface: onSurface,
-  //       surfaceContainer: background,
-  //       surfaceContainerHighest: surfaceVariant,
-  //       onSurfaceVariant: onSurfaceVariant,
-  //       outline: outline,
-  //       outlineVariant: outlineVariant,
-  //       // Inverse colors can be added if needed, e.g.,
-  //       // inversePrimary: onPrimary,
-  //       // inverseSurface: onSurface,
-  //       // onInverseSurface: surface,
-  //       // shadow: Colors.black, // Default shadow color
-  //       // surfaceTint: primary, // Default surface tint color
-  //     );
+  static ColorScheme get lightColorScheme => const ColorScheme(
+        brightness: Brightness.light,
+        primary: primary,
+        onPrimary: onPrimary,
+        primaryContainer: primaryContainer,
+        onPrimaryContainer: onPrimaryContainer,
+        secondary: secondary,
+        onSecondary: onSecondary,
+        secondaryContainer: secondaryContainer,
+        onSecondaryContainer: onSecondaryContainer,
+        tertiary: tertiary,
+        onTertiary: onTertiary,
+        tertiaryContainer: tertiaryContainer,
+        onTertiaryContainer: onTertiaryContainer,
+        error: error,
+        onError: onError,
+        errorContainer: errorContainer,
+        onErrorContainer: onErrorContainer,
+        surface: surface,
+        onSurface: onSurface,
+        surfaceContainer: background,
+        surfaceContainerHighest: surfaceVariant,
+        onSurfaceVariant: onSurfaceVariant,
+        outline: outline,
+        outlineVariant: outlineVariant,
+        // Inverse colors can be added if needed, e.g.,
+        inversePrimary: onPrimary,
+        inverseSurface: onSurface,
+        onInverseSurface: surface,
+        shadow: Colors.black, // Default shadow color
+        surfaceTint: primary, // Default surface tint color
+      );
 
-  // /// A pre-defined dark [ColorScheme] based on the `FcColors` palette.
-  // ///
-  // /// This scheme is suitable for dark-themed UIs, using adjusted shades for better
-  // /// readability and visual appeal in dark environments.
-  // static ColorScheme get darkColorScheme => const ColorScheme(
-  //       brightness: Brightness.dark,
-  //       primary: primaryLight, // Lighter primary for dark theme
-  //       onPrimary:
-  //           onPrimary, // Text on primary usually stays the same or high contrast
-  //       primaryContainer: primaryDark, // Darker container for dark theme
-  //       onPrimaryContainer: onPrimaryContainer,
-  //       secondary: secondaryLight, // Lighter secondary
-  //       onSecondary: onSecondary,
-  //       secondaryContainer: secondaryDark, // Darker container
-  //       onSecondaryContainer: onSecondaryContainer,
-  //       tertiary: tertiaryLight, // Lighter tertiary
-  //       onTertiary:
-  //           onTertiary, // Black text on light orange might need adjustment
-  //       tertiaryContainer: tertiaryDark, // Darker container
-  //       onTertiaryContainer: onTertiaryContainer,
-  //       error: errorLight, // Lighter error
-  //       onError: onError, // Text on error usually stays high contrast
-  //       errorContainer: errorDark, // Darker container
-  //       onErrorContainer: onErrorContainer, // White text on dark background
-  //       surface: Color(0xFF1E1E1E), // Slightly lighter surface for cards
-  //       onSurface: Colors.white, // White text on surface
-  //       surfaceContainer: Color(0xFF121212), // Common dark theme background
-  //       surfaceContainerHighest: Color(0xFF2C2C2C), // Variant surface
-  //       onSurfaceVariant: Colors.white, // White text on surface variant
-  //       outline: Color(0xFF424242), // Darker outline
-  //       outlineVariant: Color(0xFF616161), // Darker outline variant
-  //     );
+  /// A pre-defined dark [ColorScheme] based on the `FcColors` palette.
+  ///
+  /// This scheme is suitable for dark-themed UIs, using adjusted shades for better
+  /// readability and visual appeal in dark environments.
+  static ColorScheme get darkColorScheme => const ColorScheme(
+        brightness: Brightness.dark,
+        primary: primaryLight, // Lighter primary for dark theme
+        onPrimary:
+            onPrimary, // Text on primary usually stays the same or high contrast
+        primaryContainer: primaryDark, // Darker container for dark theme
+        onPrimaryContainer: onPrimaryContainer,
+        secondary: secondaryLight, // Lighter secondary
+        onSecondary: onSecondary,
+        secondaryContainer: secondaryDark, // Darker container
+        onSecondaryContainer: onSecondaryContainer,
+        tertiary: tertiaryLight, // Lighter tertiary
+        onTertiary:
+            onTertiary, // Black text on light orange might need adjustment
+        tertiaryContainer: tertiaryDark, // Darker container
+        onTertiaryContainer: onTertiaryContainer,
+        error: errorLight, // Lighter error
+        onError: onError, // Text on error usually stays high contrast
+        errorContainer: errorDark, // Darker container
+        onErrorContainer: onErrorContainer, // White text on dark background
+        surface: Color(0xFF1E1E1E), // Slightly lighter surface for cards
+        onSurface: Colors.white, // White text on surface
+        surfaceContainer: Color(0xFF121212), // Common dark theme background
+        surfaceContainerHighest: Color(0xFF2C2C2C), // Variant surface
+        onSurfaceVariant: Colors.white, // White text on surface variant
+        outline: Color(0xFF424242), // Darker outline
+        outlineVariant: Color(0xFF616161), // Darker outline variant
+      );
   //endregion
 }

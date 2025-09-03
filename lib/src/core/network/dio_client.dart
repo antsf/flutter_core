@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter_core/src/core/domain/failures/failures.dart'
+    show NetworkFailure;
+import 'package:flutter_core/src/core/network/api_response.dart'
+    show ApiResponse;
 import 'package:logger/logger.dart';
 
 import '../services/connectivity_service.dart';
 // import 'dio_cache_config.dart';
 // import 'dio_interceptor.dart'; // Now DioLoggingInterceptor
 import 'dio_interceptor.dart';
-import 'dio_retry_interceptor.dart';
+// import 'dio_retry_interceptor.dart';
 import 'exceptions/network_exceptions.dart';
 
 /// A robust HTTP client built on top of [Dio], incorporating features like
@@ -76,7 +80,7 @@ class DioClient {
     // DioCacheConfig? cacheConfig,
     Logger? logger,
     bool enableLogging = true,
-    RetryOptions retryOptions = const RetryOptions(),
+    // RetryOptions retryOptions = const RetryOptions(),
     Future<String?> Function(Dio dioForRefresh)? refreshToken,
   })  : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
@@ -88,7 +92,7 @@ class DioClient {
         _logger = logger {
     _setupInterceptors(
       enableLogging: enableLogging,
-      retryOptions: retryOptions,
+      // retryOptions: retryOptions,
       // cacheConfig: cacheConfig,
       refreshTokenCallback: refreshToken,
     );
@@ -97,7 +101,7 @@ class DioClient {
   /// Configures and adds necessary interceptors to the Dio instance.
   void _setupInterceptors({
     required bool enableLogging,
-    required RetryOptions retryOptions,
+    // required RetryOptions retryOptions,
     // required DioCacheConfig? cacheConfig,
     required Future<String?> Function(Dio dioForRefresh)? refreshTokenCallback,
   }) {
@@ -122,6 +126,10 @@ class DioClient {
               final Dio dioForRefresh =
                   Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
               final newToken = await refreshTokenCallback(dioForRefresh);
+
+              if (_logger != null && enableLogging) {
+                _logger.i('DioClient: New token = $newToken');
+              }
 
               if (newToken != null) {
                 setAuthToken(
@@ -157,12 +165,12 @@ class DioClient {
     }
 
     // Retry Interceptor
-    _dio.interceptors.add(DioRetryInterceptor(
-      dio: _dio, // Pass the Dio instance for retries
-      options: retryOptions,
-      logger: _logger,
-      enableLogging: enableLogging,
-    ));
+    // _dio.interceptors.add(DioRetryInterceptor(
+    //   dio: _dio, // Pass the Dio instance for retries
+    //   options: retryOptions,
+    //   logger: _logger,
+    //   enableLogging: enableLogging,
+    // ));
 
     // Cache Interceptor (if configured)
     // if (cacheConfig != null) {
@@ -314,6 +322,158 @@ class DioClient {
           dioException: DioException(requestOptions: RequestOptions(path: '')));
       // Alternatively, rethrow e if specific handling outside is preferred:
       // throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  /// Executes a GET request that expects an `ApiResponse` and returns the data directly.
+  Future<T> getWithApi<T>(
+    String path, {
+    required T Function(dynamic) dataBuilder,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return _requestWithApi<T>(
+      () => _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
+      ),
+      dataBuilder,
+    );
+  }
+
+  /// Executes a POST request that expects an `ApiResponse` and returns the data directly.
+  Future<T> postWithApi<T>(
+    String path, {
+    required T Function(dynamic) dataBuilder,
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return _requestWithApi<T>(
+      () => _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      ),
+      dataBuilder,
+    );
+  }
+
+  /// Executes a PUT request that expects an `ApiResponse` and returns the data directly.
+  Future<T> putWithApi<T>(
+    String path, {
+    required T Function(dynamic) dataBuilder,
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return _requestWithApi<T>(
+      () => _dio.put(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      ),
+      dataBuilder,
+    );
+  }
+
+  /// Executes a DELETE request that expects an `ApiResponse` and returns the data directly.
+  Future<T> deleteWithApi<T>(
+    String path, {
+    required T Function(dynamic) dataBuilder,
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    return _requestWithApi<T>(
+      () => _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      ),
+      dataBuilder,
+    );
+  }
+
+  /// Executes a PATCH request that expects an `ApiResponse` and returns the data directly.
+  Future<T> patchWithApi<T>(
+    String path, {
+    required T Function(dynamic) dataBuilder,
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return _requestWithApi<T>(
+      () => _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      ),
+      dataBuilder,
+    );
+  }
+
+  /// Generic request wrapper for `ApiResponse` that handles parsing and error translation.
+  Future<T> _requestWithApi<T>(
+      Future<Response<dynamic>> Function() requestFunction,
+      T Function(dynamic) dataBuilder) async {
+    await _checkConnectivity();
+    try {
+      final response = await requestFunction();
+      if (response.data is! Map<String, dynamic>) {
+        throw const FormatException(
+            'Invalid API response format: Expected a JSON map.');
+      }
+      final apiResponse = ApiResponse<T>.fromJson(response.data, dataBuilder);
+
+      if (apiResponse.data == null) {
+        throw NetworkFailure(
+            message: apiResponse.message,
+            error: apiResponse.status,
+            statusCode: response.statusCode ?? 400);
+      }
+
+      return apiResponse.data!;
+    } on DioException catch (e) {
+      throw NetworkException.fromDioException(e);
+    } catch (e, s) {
+      if (_logger != null) {
+        _logger.e(
+            'DioClient: An unexpected non-Dio error occurred during request.',
+            error: e,
+            stackTrace: s);
+      }
+      throw UnknownNetworkException(
+          dioException: DioException(requestOptions: RequestOptions(path: '')));
     }
   }
 

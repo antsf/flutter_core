@@ -46,6 +46,8 @@
 library flutter_core;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_core/flutter_core.dart' show Dio;
+import 'package:flutter_core/src/core/storage/local_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
@@ -82,6 +84,8 @@ class FlutterCore {
   /// Throws a [LateInitializationError] if accessed before initialization.
   static late final SecureStorageService storageService;
 
+  static late final LocalStorage localStorage;
+
   /// Provides access to the singleton [ThemeProvider] instance for managing app themes.
   ///
   /// This getter retrieves the instance from [ThemeProvider.instance].
@@ -112,6 +116,8 @@ class FlutterCore {
     int receiveTimeout = 30000, // 30 seconds
     bool enableLogging = true,
     Duration cacheMaxAge = const Duration(hours: 1),
+    Future<String?> Function(Dio)?
+        refreshToken, // <-- Added refreshToken parameter
   }) async {
     if (_isInitialized) {
       debugPrint(
@@ -123,6 +129,10 @@ class FlutterCore {
     // This service is used for securely storing sensitive data.
     storageService = SecureStorageService();
     await storageService.initialize();
+
+    localStorage = LocalStorage();
+
+    await localStorage.init();
 
     // 2. Initialize Network Client (Dio)
     // Configures Dio with caching, logging, and timeout settings.
@@ -142,6 +152,7 @@ class FlutterCore {
               DateTimeFormat.onlyTimeAndSinceStart, // Log time format
         ),
       ),
+      refreshToken: refreshToken, // <-- Pass refreshToken to DioClient
     );
 
     // 3. Initialize Connectivity Service

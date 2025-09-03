@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_core/src/extensions/ui_ext.dart';
 
 /// Extensions on List<Widget>
 extension ListWidgetX on List<Widget> {
@@ -16,7 +17,7 @@ extension ListWidgetX on List<Widget> {
   /// Adds [space] of a given height (vertical) or width (horizontal)
   List<Widget> spaceBetween(double space, {Axis axis = Axis.vertical}) {
     return separatedBy(
-      axis == Axis.vertical ? SizedBox(height: space) : SizedBox(width: space),
+      axis == Axis.vertical ? space.spacingHeight : space.spacingWidth,
     );
   }
 
