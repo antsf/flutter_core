@@ -60,7 +60,7 @@ class UiHelper {
   /// [right]: Multiplier for `kPadding` for the right inset.
   /// [bottom]: Multiplier for `kPadding` for the bottom inset.
   /// Returns an [EdgeInsets.fromLTRB] value.
-  static EdgeInsetsGeometry inset(
+  static EdgeInsets inset(
       double left, double top, double right, double bottom) {
     return EdgeInsets.fromLTRB(
       (kPadding * left).w,

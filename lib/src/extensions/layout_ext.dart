@@ -69,6 +69,21 @@ extension LayoutExtension on Widget {
         child: this,
       );
 
+  /// Wraps the widget in an [AspectRatio] widget with the specified [aspectRatio].
+  Widget fittedBox({
+    Key? key,
+    BoxFit fit = BoxFit.contain,
+    AlignmentGeometry alignment = Alignment.center,
+    Clip clipBehavior = Clip.none,
+  }) =>
+      FittedBox(
+        key: key,
+        fit: fit,
+        alignment: alignment,
+        clipBehavior: clipBehavior,
+        child: this,
+      );
+
   /// Wraps the widget in a [ConstrainedBox] with the specified constraints.
   /// Min/max width and height are scaled using [ScreenUtil]'s `.w` and `.h` extensions.
   Widget constrainedBox({
@@ -116,7 +131,8 @@ extension LayoutExtension on Widget {
     BorderRadius? borderRadius,
   }) =>
       ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(radius.r), // Scaled radius
+        borderRadius:
+            borderRadius ?? BorderRadius.circular(radius.r), // Scaled radius
         child: this,
       );
 
@@ -162,5 +178,6 @@ class _PathClipper extends CustomClipper<Path> {
   Path getClip(Size size) => path;
 
   @override
-  bool shouldReclip(covariant _PathClipper oldClipper) => oldClipper.path != path;
+  bool shouldReclip(covariant _PathClipper oldClipper) =>
+      oldClipper.path != path;
 }
