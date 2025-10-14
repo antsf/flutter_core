@@ -5,10 +5,10 @@ extension IndonesianCurrency on num {
   /// Formats the number as Indonesian Rupiah (e.g., Rp60.000,00).
   ///
   /// Set `withDecimal` to `false` to drop the decimal places.
-  String toRupiah({bool withDecimal = true}) {
+  String toRupiah({bool withDecimal = false}) {
     final fmt = NumberFormat.currency(
       locale: 'id_ID',
-      symbol: 'Rp',
+      symbol: 'Rp ',
       decimalDigits: withDecimal ? 2 : 0,
     );
     return fmt.format(this);

@@ -129,7 +129,7 @@ extension NavigationExtension on BuildContext {
   bool get hasFocus => FocusManager.instance.primaryFocus != null;
 
   /// Returns true if the keyboard is currently visible.
-  bool get isKeyboardVisible => MediaQuery.of(this).viewInsets.bottom > 0;
+  // bool get isKeyboardVisible => MediaQuery.of(this).viewInsets.bottom > 0;
 
   // --- Dialogs & Modals ---
 
