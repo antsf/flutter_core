@@ -4,21 +4,22 @@ import 'dart:convert';
 extension StringExt on String {
   /// Masks the email address, leaving the first and last characters of the local part visible.
   ///
-  /// For example, `john.doe@example.com` becomes `jxxx@example.com`.
+  /// For example, `john.doe@example.com` becomes `jxxxxxxxple.com`.
   String maskEmail() {
     if (isEmpty) return this;
 
-    // Split the email into local part and domain
     final parts = split('@');
     if (parts.length != 2) return this;
 
-    // Mask the local part, leaving the first and last characters visible
-    final localPart = parts[0];
-    final maskedLocalPart = localPart.length > 2
-        ? '${localPart.substring(0, 1)}xxx${localPart.substring(localPart.length - 1)}'
-        : 'xxx';
+    String mask(String s) {
+      if (s.length <= 2) return s;
+      return '${s[0]}${'x' * (s.length - 2)}${s[s.length - 1]}';
+    }
 
-    return '$maskedLocalPart@${parts[1]}';
+    final local = mask(parts[0]);
+    final domain = mask(parts[1]);
+
+    return '$local@$domain';
   }
 
   /// Masks a phone number, leaving only the last 3 digits visible.
@@ -71,6 +72,13 @@ extension StringExt on String {
     } else {
       return formatted;
     }
+  }
+
+  String toRemove62() {
+    if (startsWith('62')) {
+      return substring(2);
+    }
+    return this;
   }
 
   /// Parses a JSON string into a Dart `Map` or `List`.

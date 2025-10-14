@@ -477,6 +477,50 @@ class DioClient {
     }
   }
 
+  /// Downloads a file from the specified [urlPath] and saves it to [savePath].
+  ///
+  /// - [urlPath]: The endpoint to download the file from (appended to the base URL).
+  /// - [savePath]: The local file path where the downloaded file will be saved.
+  /// - [queryParameters]: Optional query parameters for the request.
+  /// - [options]: Optional Dio request options (e.g., headers).
+  /// - [cancelToken]: Optional token to cancel the download.
+  /// - [onReceiveProgress]: Optional callback to track download progress.
+  /// Throws a [NetworkException] subtype on failure.
+  Future<void> download(
+    String urlPath, {
+    required dynamic savePath,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    await _checkConnectivity();
+    try {
+      await _dio.download(
+        urlPath,
+        savePath,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioException(e);
+    } catch (e, s) {
+      if (_logger != null) {
+        _logger.e(
+          'DioClient: An unexpected error occurred during download.',
+          error: e,
+          stackTrace: s,
+        );
+      }
+      throw UnknownNetworkException(
+        dioException:
+            DioException(requestOptions: RequestOptions(path: urlPath)),
+      );
+    }
+  }
+
   /// Checks for an active internet connection before making a request.
   /// Throws [NoInternetConnectionException] if no connection is available.
   Future<void> _checkConnectivity() async {

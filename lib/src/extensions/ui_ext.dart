@@ -270,6 +270,16 @@ extension NumExtension on num {
   /// Returns a [BorderRadius] with all corners as multiples of [kRadius].
   BorderRadius get radius => BorderRadius.circular((this * kRadius).r);
 
+  /// Returns a [BorderRadius.horizontal] with all corners as multiples of [kRadius].
+  BorderRadius get radiusX =>
+      BorderRadius.horizontal(left: cornerRadius, right: cornerRadius);
+
+  /// Returns a [BorderRadius.top] with all corners as multiples of [kRadius].
+  BorderRadius get radiusTop => BorderRadius.vertical(top: cornerRadius);
+
+  /// Returns a [BorderRadius.bottom] with all corners as multiples of [kRadius].
+  BorderRadius get radiusBottom => BorderRadius.vertical(bottom: cornerRadius);
+
   /// Returns a [Radius] as a multiple of [kRadius].
   Radius get cornerRadius => Radius.circular((this * kRadius).r);
 }

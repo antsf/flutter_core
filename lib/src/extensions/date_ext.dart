@@ -58,6 +58,12 @@ extension IndonesianDate on DateTime {
   }
 
   /// Formats the time to `HH:mm` (e.g., `14:30`).
+  String toDayAndMonth() {
+    initialize();
+    return DateFormat('dd/MM', 'id_ID').format(this);
+  }
+
+  /// Formats the time to `HH:mm` (e.g., `14:30`).
   String toTime() {
     initialize();
     return DateFormat('HH:mm', 'id_ID').format(this);
