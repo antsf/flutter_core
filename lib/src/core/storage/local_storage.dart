@@ -9,11 +9,18 @@ class LocalStorage {
     encryptedSharedPreferences: true,
   );
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    aOptions: _options,
-    iOptions: IOSOptions(
-        accessibility: KeychainAccessibility.first_unlock_this_device),
-  );
+  final FlutterSecureStorage _storage;
+
+  /// Creates a [LocalStorage] instance.
+  /// [secureStorage] is optional and used for testing.
+  LocalStorage({FlutterSecureStorage? secureStorage})
+      : _storage = secureStorage ??
+            const FlutterSecureStorage(
+              aOptions: _options,
+              iOptions: IOSOptions(
+                accessibility: KeychainAccessibility.first_unlock_this_device,
+              ),
+            );
 
   /// No-op on secure-storage; kept for API compatibility.
   Future<void> init() async {

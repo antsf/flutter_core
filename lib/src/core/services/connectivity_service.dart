@@ -11,6 +11,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 /// A singleton service for checking network connectivity and listening to changes.
 ///
@@ -40,7 +41,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 /// ```
 class ConnectivityService {
   /// Private constructor for singleton pattern.
-  ConnectivityService._();
+  ConnectivityService._({Connectivity? connectivity})
+      : _connectivity = connectivity ?? Connectivity();
 
   static ConnectivityService? _instance;
 
@@ -50,7 +52,12 @@ class ConnectivityService {
   static ConnectivityService get instance =>
       _instance ??= ConnectivityService._();
 
-  final Connectivity _connectivity = Connectivity();
+  @visibleForTesting
+  static void reset({Connectivity? testConnectivity}) {
+    _instance = ConnectivityService._(connectivity: testConnectivity);
+  }
+
+  final Connectivity _connectivity;
 
   /// Checks if the device currently has an active internet connection.
   ///
@@ -65,7 +72,8 @@ class ConnectivityService {
       log("ConnectivityService: Current connectivity results: $results");
       return results.isOnline;
     } catch (e, stackTrace) {
-      log("ConnectivityService: Error checking connectivity", error: e, stackTrace: stackTrace);
+      log("ConnectivityService: Error checking connectivity",
+          error: e, stackTrace: stackTrace);
       return false; // Safe default in case of error
     }
   }
@@ -87,7 +95,8 @@ class ConnectivityService {
     try {
       return await _connectivity.checkConnectivity();
     } catch (e, stackTrace) {
-      log("ConnectivityService: Error getting current connectivity", error: e, stackTrace: stackTrace);
+      log("ConnectivityService: Error getting current connectivity",
+          error: e, stackTrace: stackTrace);
       return <ConnectivityResult>[]; // Return empty list on error
     }
   }
@@ -127,7 +136,8 @@ class ConnectivityService {
     try {
       subscription?.cancel();
     } catch (e, stackTrace) {
-      log("ConnectivityService: Error cancelling connectivity subscription", error: e, stackTrace: stackTrace);
+      log("ConnectivityService: Error cancelling connectivity subscription",
+          error: e, stackTrace: stackTrace);
     }
   }
 }
@@ -147,5 +157,6 @@ extension ConnectivityX on List<ConnectivityResult> {
       contains(ConnectivityResult.mobile) ||
       contains(ConnectivityResult.wifi) ||
       contains(ConnectivityResult.ethernet) ||
-      contains(ConnectivityResult.vpn); // VPN usually implies an underlying connection.
+      contains(ConnectivityResult
+          .vpn); // VPN usually implies an underlying connection.
 }

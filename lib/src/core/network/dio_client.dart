@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:flutter_core/src/core/domain/failures/failures.dart'
-    show NetworkFailure;
 import 'package:flutter_core/src/core/network/api_response.dart'
     show ApiResponse;
+import 'package:flutter_core/src/core/network/safe_call.dart' show safeCall;
 import 'package:logger/logger.dart';
 
 import '../services/connectivity_service.dart';
@@ -75,6 +74,8 @@ class DioClient {
   ///   interceptor loops during the refresh process itself.
   DioClient({
     required String baseUrl,
+    Dio? dio,
+    ConnectivityService? connectivityService,
     int connectTimeoutMs = 15000,
     int receiveTimeoutMs = 15000,
     // DioCacheConfig? cacheConfig,
@@ -82,13 +83,15 @@ class DioClient {
     bool enableLogging = true,
     // RetryOptions retryOptions = const RetryOptions(),
     Future<String?> Function(Dio dioForRefresh)? refreshToken,
-  })  : _dio = Dio(BaseOptions(
-          baseUrl: baseUrl,
-          connectTimeout: Duration(milliseconds: connectTimeoutMs),
-          receiveTimeout: Duration(milliseconds: receiveTimeoutMs),
-          // Default headers can be set here if needed, e.g., {'Content-Type': 'application/json'}
-        )),
-        _connectivityService = ConnectivityService.instance,
+  })  : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: baseUrl,
+              connectTimeout: Duration(milliseconds: connectTimeoutMs),
+              receiveTimeout: Duration(milliseconds: receiveTimeoutMs),
+              // Default headers can be set here if needed, e.g., {'Content-Type': 'application/json'}
+            )),
+        _connectivityService =
+            connectivityService ?? ConnectivityService.instance,
         _logger = logger {
     _setupInterceptors(
       enableLogging: enableLogging,
@@ -325,8 +328,10 @@ class DioClient {
     }
   }
 
-  /// Executes a GET request that expects an `ApiResponse` and returns the data directly.
-  Future<T> getWithApi<T>(
+  // --- API Response Wrapper Methods (Updated to use _requestWithSafeCallApi) ---
+
+  /// Executes a GET request that returns an `ApiResponse<T>`.
+  Future<ApiResponse<T>> getWithSafeCallApi<T>(
     String path, {
     required T Function(dynamic) dataBuilder,
     Map<String, dynamic>? queryParameters,
@@ -334,7 +339,8 @@ class DioClient {
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) async {
-    return _requestWithApi<T>(
+    // Simply call the centralized request function
+    return _requestWithSafeCallApi<T>(
       () => _dio.get(
         path,
         queryParameters: queryParameters,
@@ -346,8 +352,8 @@ class DioClient {
     );
   }
 
-  /// Executes a POST request that expects an `ApiResponse` and returns the data directly.
-  Future<T> postWithApi<T>(
+  /// Executes a POST request that returns an `ApiResponse<T>`.
+  Future<ApiResponse<T>> postWithSafeCallApi<T>(
     String path, {
     required T Function(dynamic) dataBuilder,
     dynamic data,
@@ -357,7 +363,8 @@ class DioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    return _requestWithApi<T>(
+    // Simply call the centralized request function
+    return _requestWithSafeCallApi<T>(
       () => _dio.post(
         path,
         data: data,
@@ -371,8 +378,8 @@ class DioClient {
     );
   }
 
-  /// Executes a PUT request that expects an `ApiResponse` and returns the data directly.
-  Future<T> putWithApi<T>(
+  /// Executes a PUT request that returns an `ApiResponse<T>`.
+  Future<ApiResponse<T>> putWithSafeCallApi<T>(
     String path, {
     required T Function(dynamic) dataBuilder,
     dynamic data,
@@ -382,7 +389,7 @@ class DioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    return _requestWithApi<T>(
+    return _requestWithSafeCallApi<T>(
       () => _dio.put(
         path,
         data: data,
@@ -396,8 +403,8 @@ class DioClient {
     );
   }
 
-  /// Executes a DELETE request that expects an `ApiResponse` and returns the data directly.
-  Future<T> deleteWithApi<T>(
+  /// Executes a DELETE request that returns an `ApiResponse<T>`.
+  Future<ApiResponse<T>> deleteWithSafeCallApi<T>(
     String path, {
     required T Function(dynamic) dataBuilder,
     dynamic data,
@@ -405,7 +412,7 @@ class DioClient {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    return _requestWithApi<T>(
+    return _requestWithSafeCallApi<T>(
       () => _dio.delete(
         path,
         data: data,
@@ -417,8 +424,8 @@ class DioClient {
     );
   }
 
-  /// Executes a PATCH request that expects an `ApiResponse` and returns the data directly.
-  Future<T> patchWithApi<T>(
+  /// Executes a PATCH request that returns an `ApiResponse<T>`.
+  Future<ApiResponse<T>> patchWithSafeCallApi<T>(
     String path, {
     required T Function(dynamic) dataBuilder,
     dynamic data,
@@ -428,7 +435,7 @@ class DioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    return _requestWithApi<T>(
+    return _requestWithSafeCallApi<T>(
       () => _dio.patch(
         path,
         data: data,
@@ -442,39 +449,31 @@ class DioClient {
     );
   }
 
-  /// Generic request wrapper for `ApiResponse` that handles parsing and error translation.
-  Future<T> _requestWithApi<T>(
+  /// Generic request wrapper for the Result Pattern that uses [safeCall]
+  /// to automatically handle all exceptions.
+  ///
+  /// This function now focuses purely on executing the request and performing DTO mapping.
+  Future<ApiResponse<T>> _requestWithSafeCallApi<T>(
       Future<Response<dynamic>> Function() requestFunction,
       T Function(dynamic) dataBuilder) async {
-    await _checkConnectivity();
-    try {
+    // Wrap the execution and mapping logic in safeCall
+    return safeCall<T>(() async {
+      // Note: We assume _checkConnectivity is handled either before this function
+      // is called or within the requestFunction's internal logic.
+
       final response = await requestFunction();
-      if (response.data is! Map<String, dynamic>) {
-        throw const FormatException(
-            'Invalid API response format: Expected a JSON map.');
-      }
-      final apiResponse = ApiResponse<T>.fromJson(response.data, dataBuilder);
 
-      if (apiResponse.data == null) {
-        throw NetworkFailure(
-            message: apiResponse.message,
-            error: apiResponse.status,
-            statusCode: response.statusCode ?? 400);
+      // Check if data is present and map it.
+      if (response.data != null) {
+        // Assuming response.data is the JSON map that dataBuilder expects.
+        // We explicitly return the result of the DTO building.
+        return dataBuilder(response.data);
       }
 
-      return apiResponse.data!;
-    } on DioException catch (e) {
-      throw NetworkException.fromDioException(e);
-    } catch (e, s) {
-      if (_logger != null) {
-        _logger.e(
-            'DioClient: An unexpected non-Dio error occurred during request.',
-            error: e,
-            stackTrace: s);
-      }
-      throw UnknownNetworkException(
-          dioException: DioException(requestOptions: RequestOptions(path: '')));
-    }
+      // If response.data is null (e.g., 204 No Content), return null.
+      // safeCall will interpret this as a business failure and wrap it appropriately.
+      return null;
+    });
   }
 
   /// Downloads a file from the specified [urlPath] and saves it to [savePath].
