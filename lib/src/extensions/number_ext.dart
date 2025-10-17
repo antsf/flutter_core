@@ -65,7 +65,7 @@ extension IndonesianCurrency on num {
 }
 
 // A simple main function to demonstrate the usage.
-void main() {
+// void main() {
   // final price1 = 50000;
   // final price2 = 1250000;
   // final price3 = 999;
@@ -99,4 +99,4 @@ void main() {
   // print('  1500 (US) -> ${1500.toFormattedString(locale: 'en_US')}');
   // print('  1250000 (ID) -> ${1250000.toFormattedString()}');
   // print('  1250000 (US) -> ${1250000.toFormattedString(locale: 'en_US')}');
-}
+// }

@@ -11,15 +11,21 @@ extension StringExt on String {
     final parts = split('@');
     if (parts.length != 2) return this;
 
-    String mask(String s) {
-      if (s.length <= 2) return s;
-      return '${s[0]}${'x' * (s.length - 2)}${s[s.length - 1]}';
-    }
+    final local = parts[0];
+    final domain = parts[1];
 
-    final local = mask(parts[0]);
-    final domain = mask(parts[1]);
+    if (local.isEmpty || domain.isEmpty) return this;
 
-    return '$local@$domain';
+    // local: keep first letter, mask the rest
+    final maskedLocal = local[0] + ('x' * (local.length - 1));
+
+    // domain: keep last 7 letters (or all if shorter), mask the rest
+    const keepLast = 7;
+    final maskLen = domain.length - keepLast;
+    final maskedDomain = (maskLen > 0 ? 'x' * maskLen : '') +
+        domain.substring(domain.length - keepLast);
+
+    return '${maskedLocal}x$maskedDomain';
   }
 
   /// Masks a phone number, leaving only the last 3 digits visible.

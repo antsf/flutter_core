@@ -160,39 +160,20 @@ class SimpleStorageService {
     }
   }
 
-  /// Deletes a Hive box and its associated file from disk.
+  /// Deletes a Hive box and its associated files from disk.
   ///
   /// The box is closed before deletion if it's currently open.
-  /// The path for deletion is constructed using the service's [_basePath] and
-  /// the application's documents directory.
+  /// This method uses Hive's built-in [Hive.deleteBoxFromDisk] to ensure
+  /// consistent cleanup of both data and internal registry state.
   ///
   /// [name]: The name of the Hive box to delete.
-  /// Throws a `StorageException` (or underlying `HiveError`/`FileSystemException`) on failure.
+  /// Throws a [HiveError] (or underlying exception) on failure.
   Future<void> deleteBoxFromDisk(String name) async {
-    // Renamed for clarity
-    await closeBox(name); // Ensure box is closed and removed from cache
+    await closeBox(name); // Ensure the box is closed and removed from cache
     try {
-      // Hive.deleteBoxFromDisk does not require path if Hive.init was called with one.
-      // However, to be explicit or if managing files directly:
-      final appDir = await getApplicationDocumentsDirectory();
-      final path = '${appDir.path}/$_basePath/$name.hive';
-      final lockPath = '${appDir.path}/$_basePath/$name.lock';
-
-      final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
-        log('SimpleStorageService: Deleted Hive box file "$path"');
-      }
-      final lockFile = File(lockPath);
-      if (await lockFile.exists()) {
-        await lockFile.delete();
-        log('SimpleStorageService: Deleted Hive box lock file "$lockPath"');
-      }
-      // Alternatively, if Hive is initialized and the box known:
-      // await Hive.deleteBoxFromDisk(name, path: _basePath); // if _basePath is the Hive init path.
-      // For simplicity and direct control, manual file deletion is shown.
-      // A more robust way if Hive manages the path:
-      // await Hive.deleteBoxFromDisk(name); // if Hive.init was called with the full base path
+      // ✅ Use Hive's official method — it handles file deletion AND registry cleanup
+      await Hive.deleteBoxFromDisk(name);
+      log('SimpleStorageService: Deleted Hive box "$name" from disk');
     } catch (e, s) {
       log('SimpleStorageService: Error deleting Hive box "$name" from disk',
           error: e, stackTrace: s);

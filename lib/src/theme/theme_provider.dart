@@ -7,9 +7,9 @@ import 'theme.dart';
 class ThemeProvider extends ChangeNotifier {
   static ThemeProvider? _instance;
   static const String themeBoxName = 'theme_box';
-  static const String _themeKey = 'theme_mode';
+  static const String themeKey = 'theme_mode';
   static const String _colorSchemeKey = 'color_scheme';
-  final LocalStorage _localStorage = LocalStorage();
+  static LocalStorage localStorage = LocalStorage();
 
   // These are the themes that can be customized during configuration
   ThemeData? _customLightTheme;
@@ -43,9 +43,9 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Load saved theme settings from LocalStorage.
   Future<void> loadThemeMode() async {
-    final isDark = await _localStorage.get<bool>(themeBoxName, _themeKey);
+    final isDark = await localStorage.get<bool>(themeBoxName, themeKey);
     final scheme =
-        await _localStorage.get<String>(themeBoxName, _colorSchemeKey);
+        await localStorage.get<String>(themeBoxName, _colorSchemeKey);
     _isDarkMode = isDark ?? false;
     _currentColorScheme = scheme ?? 'default';
     _updateTheme();
@@ -61,8 +61,8 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Save current theme settings to LocalStorage.
   Future<void> _saveThemeSettings() async {
-    await _localStorage.set<bool>(themeBoxName, _themeKey, _isDarkMode);
-    await _localStorage.set<String>(
+    await localStorage.set<bool>(themeBoxName, themeKey, _isDarkMode);
+    await localStorage.set<String>(
         themeBoxName, _colorSchemeKey, _currentColorScheme);
   }
 
@@ -96,5 +96,11 @@ class ThemeProvider extends ChangeNotifier {
       await _saveThemeSettings();
       notifyListeners();
     }
+  }
+
+  /// Resets the singleton instance (for testing only).
+  @visibleForTesting
+  static void reset() {
+    _instance = null;
   }
 }
