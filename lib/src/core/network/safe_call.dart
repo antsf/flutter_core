@@ -31,9 +31,10 @@ Future<ApiResponse<T>> safeCall<T>(Future<T?> Function() call) async {
         ),
       );
     }
-  } on NetworkException catch (e) {
-    // Explicitly catch your custom exceptions thrown by the Dio wrapper (_request)
-    return ApiResponse.failure(e);
+  } on DioException catch (e) {
+    // Convert DioException to a custom NetworkException
+    final exception = NetworkException.fromDioException(e);
+    return ApiResponse.failure(exception);
   } on Exception catch (e) {
     // Catch-all for non-network exceptions (e.g., JSON parsing errors, other runtime errors)
     return ApiResponse.failure(

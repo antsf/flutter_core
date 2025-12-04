@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/extensions/ui_ext.dart';
+import 'package:flutter_core/src/extensions/extensions.dart';
 
 extension TextThemeExtensions on BuildContext {
   TextTheme get textTheme => theme.textTheme;
@@ -80,6 +80,17 @@ extension TextThemeExtensions on BuildContext {
   TextStyle? get bodySmallItalic =>
       textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic);
 
+  TextStyle? get bodyLargeSecondary =>
+      textTheme.bodyLarge?.withColor(outlineColor);
+  TextStyle? get bodyMediumSecondary =>
+      textTheme.bodyMedium?.withColor(outlineColor);
+  TextStyle? get bodySmallSecondary =>
+      textTheme.bodySmall?.withColor(outlineColor);
+
+  TextStyle? get bodyLargeError => textTheme.bodyLarge?.withColor(errorColor);
+  TextStyle? get bodyMediumError => textTheme.bodyMedium?.withColor(errorColor);
+  TextStyle? get bodySmallError => textTheme.bodySmall?.withColor(errorColor);
+
   // Label styles
   TextStyle? get labelLarge => textTheme.labelLarge;
   TextStyle? get labelMedium => textTheme.labelMedium;
@@ -98,4 +109,16 @@ extension TextThemeExtensions on BuildContext {
       textTheme.labelMedium?.copyWith(fontStyle: FontStyle.italic);
   TextStyle? get labelSmallItalic =>
       textTheme.labelSmall?.copyWith(fontStyle: FontStyle.italic);
+
+  TextStyle? get labelLargeSecondary =>
+      textTheme.labelLarge?.withColor(outlineColor);
+  TextStyle? get labelMediumSecondary =>
+      textTheme.labelMedium?.withColor(outlineColor);
+  TextStyle? get labelSmallSecondary =>
+      textTheme.labelSmall?.withColor(outlineColor);
+
+  TextStyle? get labelLargeError => textTheme.labelLarge?.withColor(errorColor);
+  TextStyle? get labelMediumError =>
+      textTheme.labelMedium?.withColor(errorColor);
+  TextStyle? get labelSmallError => textTheme.labelSmall?.withColor(errorColor);
 }

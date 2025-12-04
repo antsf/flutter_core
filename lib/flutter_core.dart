@@ -18,7 +18,9 @@ export 'src/core/domain/failures/failures.dart';
 export 'src/core/network/exceptions/network_exceptions.dart';
 
 // Network
-// export 'src/core/network/dio_client.dart';
+export 'src/core/network/dio_client.dart';
+export 'src/core/network/api_response.dart';
+export 'src/core/data/repositories/safe_call.dart';
 // export 'src/core/network/dio_interceptor.dart';
 // export 'src/core/network/dio_cache_config.dart';
 // export 'src/core/network/dio_retry_interceptor.dart';
@@ -30,6 +32,7 @@ export 'src/core/services/storage_service.dart';
 // Storage
 export 'src/core/storage/key_manager.dart';
 export 'src/core/storage/secure_storage_service.dart';
+export 'src/core/storage/local_storage.dart';
 
 // Constants
 export 'src/constants/constants.dart';
