@@ -55,7 +55,7 @@ import 'package:logger/logger.dart';
 import 'src/core/network/dio_client.dart';
 // import 'src/core/network/dio_cache_config.dart';
 import 'src/core/services/connectivity_service.dart';
-import 'src/core/storage/secure_storage_service.dart';
+// import 'src/core/storage/secure_storage_service.dart';
 // import 'src/theme/theme_provider.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.
@@ -82,7 +82,7 @@ class FlutterCore {
   ///
   /// Available after [initialize] has been successfully called.
   /// Throws a [LateInitializationError] if accessed before initialization.
-  static late final SecureStorageService storageService;
+  // static late final SecureStorageService storageService;
 
   static late final LocalStorage localStorage;
 
@@ -127,8 +127,8 @@ class FlutterCore {
 
     // 1. Initialize Secure Storage Service
     // This service is used for securely storing sensitive data.
-    storageService = SecureStorageService();
-    await storageService.initialize();
+    // storageService = SecureStorageService();
+    // await storageService.initialize();
 
     localStorage = LocalStorage();
 
@@ -216,7 +216,7 @@ class FlutterCore {
       return;
     }
 
-    await storageService.clear();
+    // await storageService.clear();
     // Note: dioClient and other late final static fields cannot be easily "reset"
     // to an uninitialized state without restarting the app or using more
     // sophisticated DI. This cleanup is partial.

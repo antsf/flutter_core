@@ -462,9 +462,11 @@ class CancelledException extends NetworkException {
 /// into other categories.
 class UnknownNetworkException extends NetworkException {
   /// Creates an [UnknownNetworkException].
-  UnknownNetworkException({required DioException dioException})
+  UnknownNetworkException(
+      {required DioException dioException, String? specificMessage})
       : super(
-          message: 'An unknown network error occurred. Please try again.',
+          message: specificMessage ??
+              'An unknown network error occurred. Please try again.',
           statusCode: dioException.response?.statusCode,
           error: dioException,
           stackTrace: dioException.stackTrace,
