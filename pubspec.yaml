@@ -1,6 +1,6 @@
 name: flutter_core
 description: A comprehensive Flutter core package that provides essential utilities and services for building robust Flutter applications. Includes theme management, network handling, secure storage, UI extensions, and more.
-version: 0.0.1
+version: 0.0.3
 homepage: https://github.com/antsf/flutter_core
 repository: https://github.com/antsf/flutter_core
 issue_tracker: https://github.com/antsf/flutter_core/issues
