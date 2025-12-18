@@ -59,8 +59,8 @@ class DioLoggingInterceptor extends Interceptor {
             .forEach((key, value) => logMessage.writeln('  $key: $value'));
       }
       if (options.data != null) {
-        logMessage.writeln(
-            'Data: ${options.data.toString().length > 200 ? "${options.data.toString().substring(0, 200)}..." : options.data}');
+        logMessage.writeln('Data: ${options.data}');
+        // 'Data: ${options.data.toString().length > 200 ? "${options.data.toString().substring(0, 200)}..." : options.data}');
       }
       logMessage.write('-------------------');
       logger!.i(logMessage.toString());
@@ -80,8 +80,8 @@ class DioLoggingInterceptor extends Interceptor {
       logMessage.writeln('Status Code: ${response.statusCode}');
       logMessage.writeln('Status Message: ${response.statusMessage}');
       if (response.data != null) {
-        logMessage.writeln(
-            'Data: ${response.data.toString().length > 200 ? "${response.data.toString().substring(0, 200)}..." : response.data}');
+        logMessage.writeln('Data: ${response.data}');
+        // 'Data: ${response.data.toString().length > 200 ? "${response.data.toString().substring(0, 200)}..." : response.data}');
       }
       logMessage.write('--------------------');
       logger!.i(logMessage.toString());

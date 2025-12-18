@@ -456,6 +456,7 @@ class DioClient {
   Future<ApiResponse<T>> _requestWithSafeCallApi<T>(
       Future<Response<dynamic>> Function() requestFunction,
       T Function(dynamic) dataBuilder) async {
+    await _checkConnectivity();
     // Wrap the execution and mapping logic in safeCall
     return safeCall<T>(() async {
       // Note: We assume _checkConnectivity is handled either before this function
