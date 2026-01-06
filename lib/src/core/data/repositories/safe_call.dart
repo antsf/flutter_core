@@ -36,10 +36,10 @@ FutureResult<R?> safeRemoteCall<T, R>({
     if (result.isSuccess) {
       final data = result.data;
 
-      if (data == null && onSuccess != null) {
-        return Error(
-            AuthFailure(message: result.failure?.message ?? genericError));
-      }
+      // if (data == null && onSuccess != null) {
+      //   return Error(
+      //       AuthFailure(message: result.failure?.message ?? genericError));
+      // }
 
       onBeforeSuccess?.call(data as T);
 
@@ -53,13 +53,13 @@ FutureResult<R?> safeRemoteCall<T, R>({
   } on NetworkException catch (e) {
     _logger.e('NetworkException: ${e.message}');
     return Error(
-        NetworkFailure(message: e.message, statusCode: e.statusCode ?? 200));
+        NetworkFailure(message: e.message, statusCode: e.statusCode ?? 400));
   } on DioException catch (e) {
     final networkException = NetworkException.fromDioException(e);
     _logger.e('DioException: ${networkException.message}');
     return Error(NetworkFailure(
         message: networkException.message,
-        statusCode: networkException.statusCode ?? 200));
+        statusCode: networkException.statusCode ?? 400));
   } catch (e) {
     _logger.e('Unexpected error: $e');
     return Error(GenericFailure(message: e.toString()));
@@ -67,7 +67,7 @@ FutureResult<R?> safeRemoteCall<T, R>({
 }
 
 Failure mapToFailure(Failure failure) {
-  _logger.w('Mapped failure: ${failure.message}');
+  _logger.w('Mapped failure: ${failure}');
   return failure;
 }
 

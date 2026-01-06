@@ -39,10 +39,22 @@ extension IndonesianDate on DateTime {
     return DateFormat('EEEE, d MMMM yyyy HH:mm', 'id_ID').format(this);
   }
 
+  /// Formats the date with the full day of the week and time (e.g., `Kamis, 26 Jun 2025 14:30`).
+  String toIndonesiandMMMyyyy() {
+    initialize();
+    return DateFormat('EEEE, d MMM yyyy', 'id_ID').format(this);
+  }
+
   /// Formats the date with full month name and time (e.g., `26 Juni 2025 14:30`).
   String toDateTime() {
     initialize();
     return DateFormat('d MMMM yyyy HH:mm', 'id_ID').format(this);
+  }
+
+  /// Formats the date with full month name and time (e.g., `26 Juni 2025 14:30:00`).
+  String toDateTimeWithSeconds() {
+    initialize();
+    return DateFormat('d MMMM yyyy HH:mm:ss', 'id_ID').format(this);
   }
 
   /// Formats the date with short month name and time (e.g., `26 Jun 2025 14:30`).

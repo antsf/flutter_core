@@ -155,7 +155,13 @@ extension DialogsAndAlerts on BuildContext {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(child: Text(message, style: messageStyle)),
+                  Expanded(
+                      child: Text(
+                    message,
+                    style: messageStyle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )),
                   InkWell(
                       onTap: onClose,
                       child: Icon(
