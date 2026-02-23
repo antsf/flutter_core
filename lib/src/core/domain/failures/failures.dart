@@ -151,12 +151,6 @@ typedef FutureResult<T> = Future<Result<T, Failure>>;
 /// Provides extension methods on the [Result] type for safe and convenient
 /// handling of success and failure cases.
 extension ResultExtension<T, F> on Result<T, F> {
-  /// Returns `true` if the result is a success (data is not null and failure is null).
-  bool get isSuccess => data != null && failure == null;
-
-  /// Returns `true` if the result is a failure.
-  bool get isFailure => failure != null;
-
   /// Gets the data from a successful result.
   ///
   /// Throws a [StateError] if the result is a failure. This should only be

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_core/src/core/network/api_response.dart'
     show ApiResponse;
@@ -6,7 +7,7 @@ import 'package:flutter_core/src/core/network/safe_call.dart' show safeCall;
 import 'package:logger/logger.dart';
 
 import '../services/connectivity_service.dart';
-// import 'dio_cache_config.dart';
+import 'dio_cache_config.dart';
 // import 'dio_interceptor.dart'; // Now DioLoggingInterceptor
 import 'dio_interceptor.dart';
 // import 'dio_retry_interceptor.dart';
@@ -78,9 +79,10 @@ class DioClient {
     ConnectivityService? connectivityService,
     int connectTimeoutMs = 15000,
     int receiveTimeoutMs = 15000,
-    // DioCacheConfig? cacheConfig,
+    DioCacheConfig? cacheConfig,
     Logger? logger,
     bool enableLogging = true,
+    Interceptor? interceptor,
     // RetryOptions retryOptions = const RetryOptions(),
     Future<String?> Function(Dio dioForRefresh)? refreshToken,
   })  : _dio = dio ??
@@ -96,7 +98,8 @@ class DioClient {
     _setupInterceptors(
       enableLogging: enableLogging,
       // retryOptions: retryOptions,
-      // cacheConfig: cacheConfig,
+      cacheConfig: cacheConfig,
+      interceptor: interceptor,
       refreshTokenCallback: refreshToken,
     );
   }
@@ -105,13 +108,18 @@ class DioClient {
   void _setupInterceptors({
     required bool enableLogging,
     // required RetryOptions retryOptions,
-    // required DioCacheConfig? cacheConfig,
+    DioCacheConfig? cacheConfig,
+    Interceptor? interceptor,
     required Future<String?> Function(Dio dioForRefresh)? refreshTokenCallback,
   }) {
     // Logging Interceptor (conditionally added)
     if (enableLogging && _logger != null) {
       _dio.interceptors
           .add(DioLoggingInterceptor(logger: _logger, enableLogging: true));
+    }
+
+    if (interceptor != null) {
+      _dio.interceptors.add(interceptor);
     }
 
     // Token Refresh Interceptor (if callback is provided)
@@ -176,9 +184,9 @@ class DioClient {
     // ));
 
     // Cache Interceptor (if configured)
-    // if (cacheConfig != null) {
-    //   _dio.interceptors.add(cacheConfig.interceptor);
-    // }
+    if (cacheConfig != null) {
+      _dio.interceptors.add(cacheConfig.interceptor);
+    }
   }
 
   /// Executes a GET request.

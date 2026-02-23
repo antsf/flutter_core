@@ -45,6 +45,7 @@
 /// ```
 library flutter_core;
 
+import 'package:dio/dio.dart' show Interceptor;
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart' show Dio;
 import 'package:flutter_core/src/core/storage/local_storage.dart';
@@ -116,6 +117,7 @@ class FlutterCore {
     int receiveTimeout = 30000, // 30 seconds
     bool enableLogging = true,
     Duration cacheMaxAge = const Duration(hours: 1),
+    Interceptor? interceptor,
     Future<String?> Function(Dio)?
         refreshToken, // <-- Added refreshToken parameter
   }) async {
@@ -152,6 +154,7 @@ class FlutterCore {
               DateTimeFormat.onlyTimeAndSinceStart, // Log time format
         ),
       ),
+      interceptor: interceptor,
       refreshToken: refreshToken, // <-- Pass refreshToken to DioClient
     );
 
