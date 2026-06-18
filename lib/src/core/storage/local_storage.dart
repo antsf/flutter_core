@@ -2,8 +2,13 @@ import 'dart:convert';
 import 'dart:developer' show log;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Simple key-value storage backed by flutter_secure_storage.
-/// API mirrors SimpleStorageService for easy swapping.
+/// Simple key-value storage backed by [FlutterSecureStorage].
+///
+/// Keys are namespaced by [boxName] using the format `boxName|key`, which
+/// allows logical grouping of related values and bulk operations per box.
+///
+/// Supported types for [get] and [set]: [String], [int], [double], [bool],
+/// [Map<String, dynamic>].
 class LocalStorage {
   static const _options = AndroidOptions(
     encryptedSharedPreferences: true,
@@ -11,8 +16,6 @@ class LocalStorage {
 
   final FlutterSecureStorage _storage;
 
-  /// Creates a [LocalStorage] instance.
-  /// [secureStorage] is optional and used for testing.
   LocalStorage({FlutterSecureStorage? secureStorage})
       : _storage = secureStorage ??
             const FlutterSecureStorage(
@@ -79,17 +82,34 @@ class LocalStorage {
         .toList();
   }
 
-  Future<void> deleteBoxFromDisk(String boxName) async =>
-      await clearBox(boxName);
+  /// Returns all key-value pairs stored under [boxName].
+  ///
+  /// Values that cannot be deserialized to [T] are returned as `null`.
+  Future<Map<String, T?>> getAllValues<T>(String boxName) async {
+    final all = await _storage.readAll();
+    final result = <String, T?>{};
+    for (final entry in all.entries) {
+      if (entry.key.startsWith('$boxName|')) {
+        final key = entry.key.substring(boxName.length + 1);
+        try {
+          result[key] = _fromString<T>(entry.value);
+        } catch (_) {
+          result[key] = null;
+        }
+      }
+    }
+    return result;
+  }
+
+  /// Alias for [clearBox] — removes all keys under [boxName].
+  Future<void> deleteBoxFromDisk(String boxName) async => clearBox(boxName);
 
   /* ---------- private ---------- */
 
   String _key(String boxName, String key) => '$boxName|$key';
 
   String _toString<T>(T value) {
-    if (T == Map<String, dynamic>) {
-      return jsonEncode(value);
-    }
+    if (T == Map<String, dynamic>) return jsonEncode(value);
     return value.toString();
   }
 
@@ -98,6 +118,8 @@ class LocalStorage {
     if (T == int) return int.tryParse(raw) as T?;
     if (T == double) return double.tryParse(raw) as T?;
     if (T == bool) return (raw.toLowerCase() == 'true') as T;
-    throw UnsupportedError('Type $T not supported');
+    if (T == Map<String, dynamic>) return jsonDecode(raw) as T?;
+    throw UnsupportedError(
+        'LocalStorage: Type $T not supported. Supported: String, int, double, bool, Map<String, dynamic>');
   }
 }

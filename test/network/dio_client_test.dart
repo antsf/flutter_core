@@ -1,5 +1,4 @@
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/core/network/dio_client.dart';
 import 'package:flutter_core/src/core/network/dio_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';

@@ -1,6 +1,6 @@
 name: flutter_core
-description: A comprehensive Flutter core package that provides essential utilities and services for building robust Flutter applications. Includes theme management, network handling, secure storage, UI extensions, and more.
-version: 1.0.3
+description: A comprehensive Flutter core package providing theme management, network handling, secure storage, and UI extensions for Indonesian Flutter apps.
+version: 1.1.0
 homepage: https://github.com/antsf/flutter_core
 repository: https://github.com/antsf/flutter_core
 issue_tracker: https://github.com/antsf/flutter_core/issues
@@ -14,30 +14,26 @@ topics:
 
 environment:
   sdk: ">=3.3.1 <4.0.0"
-  flutter: ">=3.32.5" # Updated to match modern Flutter features (e.g., mocktail, hive_flutter)
+  flutter: ">=3.27.0"
 
 dependencies:
-  connectivity_plus: ^6.0.5
-  dio: ^5.4.0
-  dio_cache_interceptor: ^3.5.0
-  # encrypt: ^5.0.3
   flutter:
     sdk: flutter
 
-  # UI
-  flutter_screenutil: ^5.9.0
-  flutter_secure_storage: ^9.0.2
-  google_fonts: ^6.1.0
+  # Network
+  dio: ^5.4.0
+  connectivity_plus: ^6.0.5
 
   # Storage
-  # hive: ^2.2.3
-  # hive_flutter: ^1.1.0
-  intl: ^0.20.2
+  flutter_secure_storage: ^9.0.2
 
-  # Logging & Utilities
+  # UI
+  flutter_screenutil: ^5.9.0
+  google_fonts: ^6.1.0
+
+  # Utilities
+  intl: ^0.20.2
   logger: ^2.0.2+1
-  path_provider: ^2.1.2
-  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_lints: ^3.0.0
@@ -46,7 +42,6 @@ dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.25.15
 
-# Optional: Declare supported platforms explicitly (improves pub.dev listing)
 platforms:
   android:
   ios:
@@ -54,5 +49,3 @@ platforms:
   macos:
   web:
   windows:
-# Optional: Prevent accidental publishing during development
-# publish_to: 'none'

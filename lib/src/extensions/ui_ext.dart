@@ -78,7 +78,7 @@ extension BuildContextExtension on BuildContext {
       IconThemeData(color: theme.colorScheme.secondary.withValues(alpha: .7));
 
   /// Gets the input decoration theme from the current theme.
-  InputDecorationTheme get inputDecorationTheme => theme.inputDecorationTheme;
+  InputDecorationThemeData get inputDecorationTheme => theme.inputDecorationTheme;
 
   /// Gets the button theme data from the current theme.
   ButtonThemeData get buttonTheme => theme.buttonTheme;

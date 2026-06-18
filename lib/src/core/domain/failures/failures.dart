@@ -4,23 +4,22 @@ import 'package:flutter/foundation.dart';
 
 /// A base class for all failures in the application.
 ///
-/// It enforces value equality and provides a standard structure for failure
+/// Enforces value equality and provides a standard structure for failure
 /// information, including a message, the original error, and a stack trace.
 @immutable
 abstract class Failure {
   final String message;
   final dynamic error;
   final StackTrace? stackTrace;
-  final int statusCode; // New property for status code
+  final int statusCode;
 
   const Failure({
     required this.message,
     this.error,
     this.stackTrace,
-    this.statusCode = 200, // New parameter in constructor
+    this.statusCode = 0,
   });
 
-  /// The list of properties that will be used for value-based equality.
   List<Object?> get props => [message, error, stackTrace, statusCode];
 
   @override
@@ -38,13 +37,13 @@ abstract class Failure {
       '$runtimeType(message: $message, error: $error, statusCode: $statusCode)';
 }
 
-/// Represents a failure related to server operations (e.g., server error).
+/// Represents a failure related to server operations (e.g., 5xx errors).
 class ServerFailure extends Failure {
   const ServerFailure({
     required super.message,
     super.error,
     super.stackTrace,
-    super.statusCode, // Pass statusCode to the super constructor
+    super.statusCode,
   });
 }
 
@@ -90,7 +89,7 @@ class ValidationFailure extends Failure {
   }) : super(message: 'One or more validation errors occurred.');
 
   @override
-  List<Object?> get props => super.props..add(errors);
+  List<Object?> get props => [...super.props, errors];
 }
 
 /// Represents a generic or unexpected failure.
@@ -105,11 +104,8 @@ class GenericFailure extends Failure {
 
 // --- 2. Result Type Definition ---
 
-/// A type alias for representing the result of an operation that can either
-/// succeed with data of type [T] or fail with a [Failure].
-///
-/// This is a core component of the error handling strategy, ensuring that
-/// all operations that can fail do so in a predictable and type-safe way.
+/// Represents the result of an operation that can either succeed with [T] or
+/// fail with a [Failure]. Use [Success] and [Error] as concrete implementations.
 abstract class Result<T, F> {
   const Result();
   bool get isSuccess;
@@ -146,21 +142,11 @@ class Error<T, F> extends Result<T, F> {
 
 typedef FutureResult<T> = Future<Result<T, Failure>>;
 
-// --- 3. Result Extension for Safe Handling ---
+// --- 3. Result Extensions ---
 
-/// Provides extension methods on the [Result] type for safe and convenient
-/// handling of success and failure cases.
+/// Safe handling and transformation utilities for [Result].
 extension ResultExtension<T, F> on Result<T, F> {
-  /// Returns `true` if the result is a success (data is not null and failure is null).
-  bool get isSuccess => data != null && failure == null;
-
-  /// Returns `true` if the result is a failure.
-  bool get isFailure => failure != null;
-
-  /// Gets the data from a successful result.
-  ///
-  /// Throws a [StateError] if the result is a failure. This should only be
-  /// used after checking [isSuccess].
+  /// Gets the data, throwing [StateError] if the result is a failure.
   T get requiredData {
     if (isFailure) {
       throw StateError(
@@ -169,16 +155,11 @@ extension ResultExtension<T, F> on Result<T, F> {
     return data as T;
   }
 
-  /// Provides a functional and exhaustive way to handle both success and failure cases.
+  /// Exhaustive handler for both success and failure cases.
   ///
-  /// This is the recommended way to process a [Result], as it forces the
-  /// developer to handle both outcomes, preventing unhandled failure states.
-  ///
-  /// ### Example:
   /// ```dart
-  /// final result = await myRepository.fetchData();
   /// result.when(
-  ///   onSuccess: (user) => print('Success: ${user.name}'),
+  ///   onSuccess: (user) => print('User: ${user.name}'),
   ///   onFailure: (f) => print('Error: ${f.message}'),
   /// );
   /// ```
@@ -186,10 +167,26 @@ extension ResultExtension<T, F> on Result<T, F> {
     required R Function(T value) onSuccess,
     required R Function(F failure) onFailure,
   }) {
-    if (isSuccess) {
+    if (this is Success<T, F>) {
       return onSuccess((this as Success<T, F>).value);
     } else {
       return onFailure((this as Error<T, F>).error);
     }
+  }
+
+  /// Transforms the success value, leaving failures untouched.
+  Result<R, F> map<R>(R Function(T value) transform) {
+    if (this is Success<T, F>) {
+      return Success(transform((this as Success<T, F>).value));
+    }
+    return Error((this as Error<T, F>).error);
+  }
+
+  /// Transforms the failure value, leaving successes untouched.
+  Result<T, G> mapFailure<G>(G Function(F failure) transform) {
+    if (this is Error<T, F>) {
+      return Error(transform((this as Error<T, F>).error));
+    }
+    return Success((this as Success<T, F>).value);
   }
 }

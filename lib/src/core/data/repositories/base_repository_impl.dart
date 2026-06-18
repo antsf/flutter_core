@@ -142,10 +142,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           NetworkFailure(message: 'Remote data source not available'));
     }
 
-    // 1. Define the wrapper function to conform to RemoteCall<List<M>>.
-    // This wrapper handles the exception-throwing call and returns a FutureResult.
-
-    // 2. Use safeRemoteCall to execute the wrapper and transform the success data.
     final result = await safeRemoteCall<List<M>, List<T>>(
       remoteCall: () async {
         try {
@@ -165,7 +161,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       },
     );
 
-    // 3. Return the Success data or the Failure error.
     if (result.isSuccess && result.data != null) {
       return Success(result.data as List<T>);
     } else {
@@ -226,18 +221,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           NetworkFailure(message: 'Remote data source not available'));
     }
 
-    // final RemoteCall<M> remoteCallWrapper = () async {
-    //   try {
-    //     final model = await remoteDataSource!.getById(id);
-    //     return Success(model);
-    //   } catch (e, s) {
-    //     log('getById: Remote fetch failed inside wrapper',
-    //         error: e, stackTrace: s);
-    //     return const  Error(NetworkFailure(
-    //         message: 'Network request failed', error: e, stackTrace: s));
-    //   }
-    // };
-
     final result = await safeRemoteCall<M, T>(
       remoteCall: () async {
         final model = await remoteDataSource!.getById(id);
@@ -260,7 +243,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     });
   }
 
-  /// 🚀 UPDATED to use safeRemoteCall
   @override
   FutureResult<T> create(T entity) async {
     if (remoteDataSource == null) {
@@ -269,18 +251,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     }
 
     final model = toModel(entity);
-
-    // final RemoteCall<M> remoteCallWrapper = () async {
-    //   try {
-    //     final remoteModel = await remoteDataSource!.create(model);
-    //     return Success(remoteModel);
-    //   } catch (e, s) {
-    //     log('create: Remote call failed inside wrapper',
-    //         error: e, stackTrace: s);
-    //     return Error(
-    //         NetworkFailure(message: 'Create failed', error: e, stackTrace: s));
-    //   }
-    // };
 
     final result = await safeRemoteCall<M, T>(
       remoteCall: () async {
@@ -313,7 +283,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     }
   }
 
-  /// 🚀 UPDATED to use safeRemoteCall
   @override
   FutureResult<T> update(T entity) async {
     // Check is done by safeRemoteCall's failure handling if remoteDataSource is null,
@@ -324,18 +293,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     }
 
     final modelToUpdate = toModel(entity);
-
-    // final RemoteCall<M> remoteCallWrapper = () async {
-    //   try {
-    //     final remoteModel = await remoteDataSource!.update(modelToUpdate);
-    //     return Success(remoteModel);
-    //   } catch (e, s) {
-    //     log('update: Remote call failed inside wrapper',
-    //         error: e, stackTrace: s);
-    //     return Error(
-    //         NetworkFailure(message: 'Update failed', error: e, stackTrace: s));
-    //   }
-    // };
 
     final result = await safeRemoteCall<M, T>(
       remoteCall: () async {
@@ -360,7 +317,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
     }
   }
 
-  /// 🚀 UPDATED to use safeRemoteCallVoid
   @override
   FutureResult<void> delete(String id) async {
     if (remoteDataSource == null) {
@@ -368,7 +324,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           message: 'Remote data source required for write operations'));
     }
 
-    // Step 1: Perform the remote operation using safeRemoteCall.
     final remoteResult = await safeRemoteCallVoid<void>(
       remoteCall: () async {
         try {
@@ -384,12 +339,11 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       },
     );
 
-    // Step 2: If the remote operation failed, return the failure immediately.
     if (remoteResult.isFailure) {
       return remoteResult;
     }
 
-    // Step 3: If remote succeeded, try to delete from local cache.
+    // If remote succeeded, try to delete from local cache.
     // A try-catch ensures that any error here is logged but doesn't cause a failure.
     try {
       await localDataSource?.delete(id);
@@ -402,11 +356,9 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       // IMPORTANT: Do not return an Error here.
     }
 
-    // Step 4: Always return Success because the critical remote operation succeeded.
     return const Success(null);
   }
 
-  /// 🚀 UPDATED to use safeRemoteCall
   @override
   FutureResult<List<T>> search(String query) async {
     if (remoteDataSource == null) {
@@ -414,21 +366,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           message: 'Remote data source not available for searching'));
     }
 
-    // 1. Define the wrapper function to conform to RemoteCall<List<M>>.
-    // This wrapper handles the exception-throwing remoteDataSource.search call.
-    // final RemoteCall<List<M>> remoteCallWrapper = () async {
-    //   try {
-    //     final remoteModels = await remoteDataSource!.search(query: query);
-    //     return Success(remoteModels);
-    //   } catch (e, s) {
-    //     log('search: Remote call failed inside wrapper',
-    //         error: e, stackTrace: s);
-    //     return const Error(NetworkFailure(
-    //         message: 'Search request failed', error: e, stackTrace: s));
-    //   }
-    // };
-
-    // 2. Use safeRemoteCall to execute the wrapper and transform the success data.
     final result = await safeRemoteCall<List<M>, List<T>>(
       remoteCall: () async {
         final remoteModels = await remoteDataSource!.search(query: query);
@@ -449,7 +386,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
       genericError: 'Failed to search entities with query "$query".',
     );
 
-    // 3. Return the Success data or the Failure error.
     if (result.isSuccess && result.data != null) {
       return Success(result.data as List<T>);
     } else {
@@ -460,7 +396,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
 
 // -----------------------------------------------------------------------------
 
-  /// 🚀 UPDATED to use safeRemoteCall
   @override
   FutureResult<List<T>> getPaginated({
     required int page,
@@ -473,25 +408,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           message: 'Remote data source not available for pagination'));
     }
 
-    // 1. Define the wrapper function to conform to RemoteCall<List<M>>.
-    // final RemoteCall<List<M>> remoteCallWrapper = () async {
-    //   try {
-    //     final remoteModels = await remoteDataSource!.getPaginated(
-    //       page: page,
-    //       limit: limit,
-    //       sortBy: sortBy,
-    //       descending: descending,
-    //     );
-    //     return Success(remoteModels);
-    //   } catch (e, s) {
-    //     log('getPaginated: Remote call failed inside wrapper',
-    //         error: e, stackTrace: s);
-    //     return const Error(NetworkFailure(
-    //         message: 'Pagination request failed', error: e, stackTrace: s));
-    //   }
-    // };
-
-    // 2. Use safeRemoteCall to execute the wrapper and transform the success data.
     final result = await safeRemoteCall<List<M>, List<T>>(
       remoteCall: () async {
         final remoteModels = await remoteDataSource!.getPaginated(
@@ -518,7 +434,6 @@ abstract class BaseRepositoryImpl<T extends BaseEntity, M extends BaseModel<T>>
           'Failed to get paginated entities (page $page, limit $limit).',
     );
 
-    // 3. Return the Success data or the Failure error.
     if (result.isSuccess && result.data != null) {
       return Success(result.data as List<T>);
     } else {

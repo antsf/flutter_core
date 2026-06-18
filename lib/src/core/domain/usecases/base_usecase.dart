@@ -6,8 +6,8 @@ import '../failures/failures.dart'; // Provides Result typedef and Failure class
 /// Use cases encapsulate the application's business logic and orchestrate interactions
 /// between entities and repositories. Each use case should have a single responsibility.
 ///
-/// ### Type Parameters:
-/// - [Type]: The data type of the successful result of the use case.
+/// ### Output Parameters:
+/// - [Output]: The data type of the successful result of the use case.
 /// - [Params]: The type of parameters required to execute the use case.
 ///   Use [NoParams] if the use case does not require parameters.
 ///
@@ -57,7 +57,7 @@ import '../failures/failures.dart'; // Provides Result typedef and Failure class
 /// //   onFailure: (failure) => print('Error: ${failure.message}'),
 /// // );
 /// ```
-abstract class UseCase<Type, Params> {
+abstract class UseCase<Output, Params> {
   StreamController<void>? _cancelController;
 
   /// Executes the use case with the given [params].
@@ -70,9 +70,9 @@ abstract class UseCase<Type, Params> {
   /// 5. Checks for cancellation again after execution or if an error occurs.
   /// 6. Cleans up the cancellation controller.
   ///
-  /// Returns a [Result] object, which will contain either the success data [Type]
+  /// Returns a [Result] object, which will contain either the success data [Output]
   /// or a [Failure].
-  FutureResult<Type> call(Params params) async {
+  FutureResult<Output> call(Params params) async {
     // Initialize a new controller for this specific call.
     _cancelController = StreamController<void>.broadcast();
 
@@ -109,8 +109,8 @@ abstract class UseCase<Type, Params> {
   /// typically involving calls to one or more repositories.
   ///
   /// [params]: The parameters required for this use case execution.
-  /// Returns a [Future] of [Result<Type>], encapsulating the success data or a failure.
-  FutureResult<Type> execute(Params params);
+  /// Returns a [Future] of [Result<Output>], encapsulating the success data or a failure.
+  FutureResult<Output> execute(Params params);
 
   /// Converts a caught error/exception into a domain-specific [Failure].
   ///
@@ -162,7 +162,7 @@ abstract class UseCase<Type, Params> {
 /// A utility class representing the absence of parameters for a [UseCase].
 ///
 /// When a use case does not require any input parameters, `NoParams` can be used
-/// as the `Params` type argument for `UseCase<Type, NoParams>`.
+/// as the `Params` type argument for `UseCase<Output, NoParams>`.
 /// An instance of `const NoParams()` can then be passed to the `call` method.
 class NoParams {
   /// Creates an instance of [NoParams].

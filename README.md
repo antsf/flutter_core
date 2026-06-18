@@ -1,53 +1,35 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flutter_core
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+A comprehensive Flutter core package providing theme management, network handling, secure storage, and UI extensions optimized for Indonesian Flutter apps.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-# Flutter Core
-
-A comprehensive Flutter core package that provides essential utilities and services for building robust Flutter applications.
+[![pub.dev](https://img.shields.io/pub/v/flutter_core.svg)](https://pub.dev/packages/flutter_core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
 
-- **Theme Management**
-  - Light/Dark theme support
-  - Custom color schemes
-  - Responsive text scaling
-  - Theme persistence
-
-- **Network Layer**
-  - Dio-based HTTP client
-  - Request/response caching
-  - Error handling
-  - Connectivity checking
-  - Request/response logging
-
-- **Storage**
-  - Secure, encrypted, and versioned storage (with migration and backup)
-  - Simple multi-box Hive storage
-
-- **UI Extensions**
-  - Screen size adaptation
-  - Responsive layouts
-  - Navigation helpers
-  - Dialog builders
-  - Snackbar utilities
+- **Theme Management** — light/dark mode with persistence, Material 3, custom color schemes, responsive typography (Google Fonts Inter)
+- **Network Layer** — Dio-based HTTP client with automatic retry (exponential backoff), token refresh, connectivity pre-flight, structured error hierarchy
+- **Secure Storage** — flutter_secure_storage wrapper with box namespacing, type-safe API, and `Map<String, dynamic>` support
+- **Extensions** — 17+ extension files for `DateTime`, `num`, `String`, `BuildContext`, navigation, dialogs, UI layout, streams, and more
+- **Clean Architecture** — optional domain/data layer base classes (`UseCase`, `BaseRepository`, `Result` type)
+- **Indonesian Locale** — built-in Rupiah formatting, Indonesian date formats, phone number utilities
 
 ## Getting Started
 
-Add the package to your `pubspec.yaml`:
+Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_core: ^0.0.1
+  flutter_core:
+    git:
+      url: https://github.com/antsf/flutter_core
+      ref: main
+```
+
+Import everything from one place:
+
+```dart
+import 'package:flutter_core/flutter_core.dart';
 ```
 
 ## Usage
@@ -55,8 +37,6 @@ dependencies:
 ### Theme Setup
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeProvider.instance.loadThemeMode();
@@ -68,12 +48,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: ThemeProvider.instance,
-      builder: (context, _) {
-        return MaterialApp(
-          theme: ThemeProvider.instance.currentTheme,
-          home: const HomePage(),
-        );
-      },
+      builder: (context, _) => MaterialApp(
+        theme: ThemeProvider.instance.currentTheme,
+        darkTheme: ThemeProvider.instance.darkTheme,
+        themeMode: ThemeProvider.instance.themeMode,
+        home: const HomePage(),
+      ),
     );
   }
 }
@@ -82,108 +62,216 @@ class MyApp extends StatelessWidget {
 ### Network Requests
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
-
-final dioClient = DioClient(
+final client = DioClient(
   baseUrl: 'https://api.example.com',
-  connectTimeout: 30000,
-  receiveTimeout: 30000,
-  enableLogging: true,
-  cacheConfig: const DioCacheConfig(
-    maxAge: Duration(minutes: 5),
-  ),
+  logger: Logger(),
+  retryOptions: const RetryOptions(maxAttempts: 3),
+  refreshToken: (dio) async {
+    final res = await dio.post('/auth/refresh');
+    return res.data['accessToken'];
+  },
 );
 
-Future<void> fetchData() async {
-  final result = await dioClient.get('/posts/1');
+client.setAuthToken('your_token');
+
+// Result-based API (recommended)
+final result = await client.getWithSafeCallApi<User>(
+  '/users/me',
+  dataBuilder: (data) => User.fromJson(data),
+);
+if (result.isSuccessful) {
   print(result.data);
+}
+
+// Throw-based API
+try {
+  final response = await client.get('/posts');
+  print(response.data);
+} on UnauthorizedException catch (e) {
+  print('Not logged in: ${e.message}');
+} on NetworkException catch (e) {
+  print('Network error: ${e.message}');
 }
 ```
 
 ### Secure Storage
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
+final storage = LocalStorage();
 
-final storage = SecureStorageService(version: 1);
+// Store and retrieve typed values
+await storage.set<String>('auth', 'token', 'eyJhbGci...');
+await storage.set<bool>('settings', 'darkMode', true);
+await storage.set<Map<String, dynamic>>('user', 'profile', {'name': 'Andi'});
 
-await storage.initialize();
-await storage.save('user', {'name': 'John', 'age': 30});
-final user = await storage.load<Map<String, dynamic>>('user');
+final token = await storage.get<String>('auth', 'token');
+final profile = await storage.get<Map<String, dynamic>>('user', 'profile');
+
+// Get all values in a box
+final allSettings = await storage.getAllValues<bool>('settings');
+
+// Clear entire box
+await storage.clearBox('auth');
 ```
 
-### Simple Multi-Box Storage
+### Extensions
+
+#### DateTime (Indonesian locale)
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
-
-final storage = SimpleStorageService();
-await storage.init();
-await storage.set('users', 'user1', {'name': 'Alice'});
-final user = await storage.get<Map<String, dynamic>>('users', 'user1');
+DateTime.now().toIndonesianDate()        // "26 Juni 2025"
+DateTime.now().toShortMonthName()        // "26 Jun 2025"
+DateTime.now().toIndonesianDateWithDay() // "Kamis, 26 Juni 2025"
+DateTime.now().toTime()                  // "14:30"
+DateTime.now().toDbFormat()              // "2025-06-26"
 ```
 
-### UI Extensions
+#### Numbers (Rupiah)
 
 ```dart
-// Screen size adaptation
-SizedBox(height: 16.h);  // 16 logical pixels in height
-SizedBox(width: 16.w);   // 16 logical pixels in width
-EdgeInsets.all(16.r);    // 16 logical pixels in radius
+60000.toRupiah()          // "Rp 60.000"
+1500000.toShortRupiah()   // "Rp 1,5jt"
+6500.toK()                // "6,5K"
+```
+
+#### Strings
+
+```dart
+'john.doe@example.com'.maskEmail()      // "jxxxxxxx@xxxxple.com"
+'081234567890'.maskPhoneNumber()         // "xxxxxxxxx890"
+'081234567890'.formatPhoneNumber()       // "62 812 3456 7890"
+'hello world'.capitalizeWords           // "Hello World"
+'test@email.com'.isValidEmail           // true
+'08123456789'.isValidIndonesianPhone    // true
+```
+
+#### Context (dialogs, navigation, UI)
+
+```dart
+// Dialogs
+context.showLoadingDialog(message: 'Memuat...');
+context.showErrorAlert('Terjadi kesalahan');
+context.showSuccessAlert('Berhasil disimpan');
+final confirmed = await context.showConfirmationDialog(
+  message: 'Hapus data ini?',
+  confirmText: 'Ya',
+  cancelText: 'Tidak',
+);
+await context.showIndonesianDatePicker();
 
 // Navigation
-context.push(NextPage());           // Push new page
-context.pushReplacement(NextPage());// Replace current page
-context.pop();                      // Go back
+context.push(const NextPage());
+context.pushReplacement(const HomePage());
+context.back();
 
-// Dialogs
-context.showLoadingDialog();        // Show loading dialog
-context.showErrorDialog('Error');   // Show error dialog
-context.showSnackBar('Message');    // Show snackbar
+// Screen info
+context.screenWidth
+context.isTablet
+context.isKeyboardVisible
+context.isDarkMode
 ```
 
-## Exports
-
-All features are available via:
+#### Layout & UI
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
+// Spacing (multiples of kPadding = 16)
+1.spacing        // SizedBox(16x16)
+2.spacingHeight  // SizedBox(height: 32)
+1.padding        // EdgeInsets.all(16)
+1.paddingX       // EdgeInsets.symmetric(horizontal: 16)
+0.5.radius       // BorderRadius.circular(5)
 ```
 
-## Exports Overview
+#### Streams
 
-- Theme: `theme.dart`, `theme_provider.dart`, `text_theme.dart`, `color_schemes.dart`
-- Network: `dio_client.dart`, `dio_interceptor.dart`, `dio_cache_config.dart`, `dio_retry_interceptor.dart`
-- Storage: `secure_storage_service.dart`, `key_manager.dart`, `simple_storage_service.dart`, `local_storage.dart`
-- Services: `connectivity_service.dart`
-- Constants: `constants.dart`, `colors.dart`, `default.dart`
-- Utils: `utils.dart`, `path_utils.dart`, `ui_helper.dart`
-<!-- - Domain/Data: All base entities, repositories, usecases, models, datasources -->
-- Extensions: All widget, context, and style extensions
+```dart
+searchController.stream
+  .debounceMs(300)   // wait 300ms of silence
+  .throttleMs(500)   // emit at most once per 500ms
+```
+
+### Result Type
+
+```dart
+// Clean error handling without try-catch
+FutureResult<User> getUser(String id) async {
+  final response = await _api.get('/users/$id');
+  if (response.isSuccessful) {
+    return Success(User.fromJson(response.data));
+  }
+  return const Error(NetworkFailure(message: 'Not found'));
+}
+
+// Usage
+final result = await getUser('123');
+result.when(
+  onSuccess: (user) => print('Hello ${user.name}'),
+  onFailure: (f) => print('Error: ${f.message}'),
+);
+
+// Transform
+final name = result.map((user) => user.name);
+```
+
+### UseCase (Clean Architecture)
+
+```dart
+class GetUserParams {
+  final String userId;
+  const GetUserParams(this.userId);
+}
+
+class GetUserUseCase extends UseCase<User, GetUserParams> {
+  final UserRepository _repository;
+  GetUserUseCase(this._repository);
+
+  @override
+  FutureResult<User> execute(GetUserParams params) =>
+      _repository.getById(params.userId);
+}
+
+// Usage
+final result = await getUserUseCase(GetUserParams('123'));
+```
+
+## API Reference
+
+### NetworkException types
+`TimeoutException`, `NoInternetConnectionException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerErrorException`, `BadGatewayException`, `ServiceUnavailableException`, `GatewayTimeoutException`, `CancelledException`, `UnknownNetworkException`
+
+### Failure types
+`ServerFailure`, `NetworkFailure`, `CacheFailure`, `AuthFailure`, `ValidationFailure`, `GenericFailure`
+
+### RetryOptions
+
+```dart
+const RetryOptions(
+  maxAttempts: 3,           // default
+  baseDelayMs: 1000,        // default
+  maxDelayMs: 10000,        // default
+  useExponentialBackoff: true, // default
+  retryableStatusCodes: [408, 500, 502, 503, 504], // default
+)
+```
 
 ## Dependencies
 
-- flutter_screenutil
-- dio
-- dio_cache_interceptor
-- dio_cache_interceptor_hive_store
-- connectivity_plus
-- hive
-- hive_flutter
-- flutter_secure_storage
-- path_provider
-- google_fonts
-- logger
-- encrypt
+| Package | Purpose |
+|---|---|
+| `dio` | HTTP client |
+| `connectivity_plus` | Network connectivity |
+| `flutter_secure_storage` | Encrypted key-value storage |
+| `flutter_screenutil` | Responsive UI scaling |
+| `google_fonts` | Inter font family |
+| `intl` | Locale-aware formatting |
+| `logger` | Structured logging |
 
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+Pull requests are welcome. Please open an issue first to discuss major changes.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-See [LICENSE](LICENSE).
-
-## Additional information
-
-For more details, see the documentation or open an issue on GitHub.
+[MIT](LICENSE)

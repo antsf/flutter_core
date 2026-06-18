@@ -1,26 +1,16 @@
 import 'package:flutter_core/flutter_core.dart';
-import 'api_response.dart'; // Import the new ApiResponse
 
-/// A utility function to safely execute a remote data source call and wrap the result.
+/// Safely executes a remote data source call and wraps the result in [ApiResponse].
 ///
-/// It executes the [call] function, expecting it to throw a [NetworkException] on failure.
-/// It wraps the successful result [T] in an [ApiResponse.success] or the caught
-/// [NetworkException] in an [ApiResponse.failure].
-///
-/// [T] is the expected return type of the successful call.
-/// [call] is the asynchronous function that executes the remote API call and DTO parsing.
+/// Returns [ApiResponse.success] on success, [ApiResponse.failure] on any error.
+/// A null result from [call] (2xx but no data) is treated as a failure.
 Future<ApiResponse<T>> safeCall<T>(Future<T?> Function() call) async {
   try {
-    // Execute the API call. The function 'call' is expected to handle DTO parsing
-    // and only return null if the parsed data is intentionally empty or missing.
     final result = await call();
 
     if (result != null) {
-      // If the result is not null, it's a successful API response
       return ApiResponse.success(result);
     } else {
-      // This handles a business logic failure: 2xx status, but the resulting DTO was null.
-      // This is wrapped as a ClientErrorException for consistency.
       return ApiResponse.failure(
         ClientErrorException(
           specificMessage:
@@ -32,17 +22,12 @@ Future<ApiResponse<T>> safeCall<T>(Future<T?> Function() call) async {
       );
     }
   } on DioException catch (e) {
-    // Convert DioException to a custom NetworkException
-    final exception = NetworkException.fromDioException(e);
-    return ApiResponse.failure(exception);
+    return ApiResponse.failure(NetworkException.fromDioException(e));
   } on Exception catch (e) {
-    // Catch-all for non-network exceptions (e.g., JSON parsing errors, other runtime errors)
     return ApiResponse.failure(
       UnknownNetworkException(
         dioException: DioException(
-          requestOptions:
-              DioException(requestOptions: RequestOptions(path: 'safeCall'))
-                  .requestOptions,
+          requestOptions: RequestOptions(path: 'safeCall'),
           message: e.toString(),
         ),
       ),
