@@ -64,7 +64,6 @@ class MyApp extends StatelessWidget {
 ```dart
 final client = DioClient(
   baseUrl: 'https://api.example.com',
-  logger: Logger(),
   retryOptions: const RetryOptions(maxAttempts: 3),
   refreshToken: (dio) async {
     final res = await dio.post('/auth/refresh');
@@ -74,24 +73,34 @@ final client = DioClient(
 
 client.setAuthToken('your_token');
 
-// Result-based API (recommended)
-final result = await client.getWithSafeCallApi<User>(
-  '/users/me',
-  dataBuilder: (data) => User.fromJson(data),
+// All methods return ApiResponse<T> — no try-catch needed
+final result = await client.get('/users/me',
+  fromJson: (data) => User.fromJson(data),
 );
-if (result.isSuccessful) {
-  print(result.data);
-}
+result.when(
+  onSuccess: (user) => print(user?.name),
+  onFailure: (err) => print(err.message),
+);
 
-// Throw-based API
-try {
-  final response = await client.get('/posts');
-  print(response.data);
-} on UnauthorizedException catch (e) {
-  print('Not logged in: ${e.message}');
-} on NetworkException catch (e) {
-  print('Network error: ${e.message}');
-}
+// GET with 5-minute in-memory cache
+final users = await client.get('/users',
+  fromJson: (data) => (data as List).map(User.fromJson).toList(),
+  cacheTtl: const Duration(minutes: 5),
+);
+
+// POST / PUT / PATCH — use `body:` for request payload
+final created = await client.post('/users',
+  body: {'name': 'Andi', 'email': 'andi@example.com'},
+  fromJson: (data) => User.fromJson(data),
+);
+
+// DELETE — response body optional
+final deleted = await client.delete('/users/123');
+if (deleted.isSuccessful) print('User deleted');
+
+// Cache management
+client.invalidateCache('/users');
+client.clearCache();
 ```
 
 ### Secure Storage

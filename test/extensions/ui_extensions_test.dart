@@ -327,7 +327,7 @@ void main() {
       // --- END FIX ---
 
       // Check other theme pass-throughs (testing for type is sufficient)
-      expect(testContext.inputDecorationTheme, isA<InputDecorationTheme>());
+      expect(testContext.inputDecorationTheme, isA<InputDecorationThemeData>());
       expect(testContext.buttonTheme, isA<ButtonThemeData>());
       expect(testContext.elevatedButtonTheme, isA<ElevatedButtonThemeData>());
       expect(testContext.textButtonTheme, isA<TextButtonThemeData>());

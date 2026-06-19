@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 1.2.0 — 2026-06-19
+
+### Breaking Changes
+- **`DioClient`**: Removed the dual throw-based API (`get/post/put/delete/patch` returning `Response<T>`) and the verbose `*WithSafeCallApi` methods. All HTTP methods now return `ApiResponse<T>` — no try-catch needed at the call site.
+- **`DioClient.post/put/delete/patch`**: Body parameter renamed from `data` to `body` for clarity.
+- **`DioClient`**: `dataBuilder` (required) replaced by `fromJson` (optional). If omitted, `response.data` is returned as-is.
+- **`ApiResponse.isSuccessful`**: Now returns `error == null` (was `data != null && error == null`). A successful 204 No Content response is now correctly `isSuccessful = true` with `data = null`.
+- **`ApiResponse.success`**: Factory now accepts an optional argument — `ApiResponse.success()` creates a success with `null` data.
+- **`FlutterCore.initialize`**: `cacheMaxAge` parameter removed (was unused since `dio_cache_interceptor` was dropped in 1.1.0).
+- **Deleted**: 8 internal Clean Architecture files that were not publicly exported (see Removed section).
+
+### New Features
+- **`DioClient` in-memory GET cache**: `cacheTtl` parameter caches responses per URL + query parameters. `forceRefresh: true` bypasses the cache.
+- **`DioClient.clearCache()`**: Clears all cached responses.
+- **`DioClient.invalidateCache(path)`**: Removes a single cache entry.
+- **`ApiResponse.when()`**: Exhaustive handler directly on `ApiResponse` — `result.when(onSuccess: ..., onFailure: ...)`.
+
+### Removed
+- Deleted internal Clean Architecture boilerplate (not publicly exported, not needed for MVVM):
+  - `lib/src/core/data/datasources/base_local_data_source.dart`
+  - `lib/src/core/data/datasources/base_remote_data_source.dart`
+  - `lib/src/core/data/models/base_model.dart`
+  - `lib/src/core/data/repositories/base_repository_impl.dart`
+  - `lib/src/core/data/repositories/data_source_strategy.dart`
+  - `lib/src/core/domain/entities/base_entity.dart`
+  - `lib/src/core/domain/repositories/base_repository.dart`
+  - `lib/src/core/domain/usecases/example_use_case.dart`
+- Corresponding test files for the above removed
+
+### Architecture Change: MVVM-friendly
+The package no longer ships an opinionated Clean Architecture scaffold. Instead:
+- Use `DioClient` directly in your repository classes
+- Return `ApiResponse<T>` or map to `Result<T, Failure>` using `safeRemoteCall`
+- Keep `Failure`, `Result`, `UseCase` for domain logic where needed — they're still exported
+
+---
+
 ## 1.1.0 — 2026-06-18
 
 ### Bug Fixes

@@ -107,17 +107,13 @@ class FlutterCore {
   /// - [connectTimeout]: Connection timeout for network requests in milliseconds (default: 30000ms).
   /// - [receiveTimeout]: Receive timeout for network requests in milliseconds (default: 30000ms).
   /// - [enableLogging]: Enables network request and response logging via [Logger] (default: true).
-  /// - [cacheMaxAge]: Default maximum age for cached network responses (default: 1 hour).
-  ///
   /// If called more than once, subsequent calls will be ignored and a debug message will be printed.
   static Future<void> initialize({
     required String baseUrl,
-    int connectTimeout = 30000, // 30 seconds
-    int receiveTimeout = 30000, // 30 seconds
+    int connectTimeout = 30000,
+    int receiveTimeout = 30000,
     bool enableLogging = true,
-    Duration cacheMaxAge = const Duration(hours: 1),
-    Future<String?> Function(Dio)?
-        refreshToken, // <-- Added refreshToken parameter
+    Future<String?> Function(Dio)? refreshToken,
   }) async {
     if (_isInitialized) {
       debugPrint(

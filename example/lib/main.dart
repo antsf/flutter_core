@@ -27,7 +27,6 @@ void main() async {
     connectTimeout: 30000,
     receiveTimeout: 30000,
     enableLogging: true,
-    cacheMaxAge: const Duration(minutes: 5),
   );
 
   // Initialize the LocalStorage service before use

@@ -1,8 +1,8 @@
 # Refactor Plan — flutter_core
 
 > Dibuat: 2026-06-18  
-> Diimplementasikan: 2026-06-18 di branch `refactor/core-cleanup`  
-> Status: **Tahap 1–3 SELESAI** | Tahap 4 perlu diskusi tim
+> Diimplementasikan: 2026-06-19 di branch `refactor/core-cleanup`  
+> Status: **Semua tahap SELESAI** ✅
 
 ---
 
@@ -84,17 +84,37 @@ File `dio_retry_interceptor.dart` di-uncomment dan dibersihkan.
 
 ---
 
-## Tahap 4 — Pertimbangkan (Perlu Diskusi Tim)
+## Tahap 4 — MVVM + DioClient Refactor ✅ SELESAI
 
-Item berikut membutuhkan keputusan lebih besar — pertimbangkan jika package ini akan dipublikasikan ke pub.dev atau dipakai lintas tim.
+### 4.1 DioClient — Unified API + In-Memory Cache ✅
+**File:** `lib/src/core/network/dio_client.dart`
 
-| Item | Opsi A | Opsi B |
-|---|---|---|
-| `BaseRepositoryImpl` | Pertahankan tapi dokumentasikan keterbatasan vs Riverpod/BLoC | Pindahkan ke package terpisah `flutter_core_arch` |
-| `UseCase` base class | Pertahankan untuk tim yang pakai clean arch | Hapus, ganti dengan README/contoh pattern saja |
-| `BaseModel<T>` | Pertahankan | Hapus, buat consumer pakai `freezed` langsung |
-| `ThemeProvider` | Pertahankan (ChangeNotifier) | Sediakan juga versi Riverpod/BLoC |
-| `flutter_screenutil` coupling | Pertahankan | Jadikan optional agar package tidak memaksa ScreenUtil |
+- Dihapus: 5 throw-based methods (`get/post/put/delete/patch` returning `Response<T>`)
+- Dihapus: 5 `*WithSafeCallApi` methods dengan nama panjang
+- Diganti: satu unified API — semua method return `ApiResponse<T>`, `fromJson` opsional
+- Ditambahkan: in-memory cache untuk GET requests via `cacheTtl` + `forceRefresh`
+- Ditambahkan: `clearCache()` dan `invalidateCache(path)` 
+- Ukuran: 446 baris → 246 baris (–45%)
+
+### 4.2 ApiResponse — Fix isSuccessful ✅
+**File:** `lib/src/core/network/api_response.dart`
+
+- `isSuccessful` diubah ke `error == null` (sebelumnya butuh `data != null`)
+- `ApiResponse.success([T? data])` — parameter opsional untuk 204 No Content
+- Ditambahkan `when()` method langsung di `ApiResponse`
+
+### 4.3 Hapus Clean Architecture Boilerplate ✅
+Dihapus 8 file internal yang tidak diekspor publik:
+- `data/datasources/base_local_data_source.dart`
+- `data/datasources/base_remote_data_source.dart`
+- `data/models/base_model.dart`
+- `data/repositories/base_repository_impl.dart`
+- `data/repositories/data_source_strategy.dart`
+- `domain/entities/base_entity.dart`
+- `domain/repositories/base_repository.dart`
+- `domain/usecases/example_use_case.dart`
+
+Package sekarang MVVM-friendly: consumer bebas membuat repository langsung dengan `DioClient`.
 
 ---
 
@@ -103,7 +123,8 @@ Item berikut membutuhkan keputusan lebih besar — pertimbangkan jika package in
 ```
 flutter analyze → No issues found ✅
 Dependency berkurang: -3 (rxdart, dio_cache_interceptor, path_provider)
-File dihapus: 4 stub files
-Breaking changes: UseCase type param Type→Output, Failure.statusCode default 0→200, rxdart tidak di-re-export
-Versi: 1.0.3 → 1.1.0
+File dihapus: 4 stub files (v1.1.0) + 8 internal files (v1.2.0)
+DioClient: 446 → 246 baris (-45%)
+Breaking changes: lihat CHANGELOG.md v1.1.0 dan v1.2.0
+Versi: 1.0.3 → 1.1.0 → 1.2.0
 ```
