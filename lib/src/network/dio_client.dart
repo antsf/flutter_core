@@ -61,6 +61,7 @@ class DioClient {
     Logger? logger,
     bool enableLogging = true,
     RetryOptions retryOptions = const RetryOptions(),
+    Interceptor? interceptor,
     Future<String?> Function(Dio)? refreshToken,
   })  : _dio = dio ??
             Dio(BaseOptions(
@@ -74,6 +75,7 @@ class DioClient {
     _setupInterceptors(
       enableLogging: enableLogging,
       retryOptions: retryOptions,
+      interceptor: interceptor,
       refreshTokenCallback: refreshToken,
     );
   }
@@ -315,11 +317,17 @@ class DioClient {
   void _setupInterceptors({
     required bool enableLogging,
     required RetryOptions retryOptions,
+    Interceptor? interceptor,
     required Future<String?> Function(Dio)? refreshTokenCallback,
   }) {
     if (enableLogging && _logger != null) {
       _dio.interceptors
           .add(DioLoggingInterceptor(logger: _logger, enableLogging: true));
+    }
+
+    // Optional caller-supplied interceptor (e.g. a cache or auth interceptor).
+    if (interceptor != null) {
+      _dio.interceptors.add(interceptor);
     }
 
     if (refreshTokenCallback != null) {

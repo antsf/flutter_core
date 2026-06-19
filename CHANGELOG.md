@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file.
   modern Flutter ecosystem (Riverpod/Bloc + repositories). Bring your own
   use-case base class if you need one — `Result` / `Failure` remain exported.
 
+### New Features
+- **`DioClient` / `FlutterCore.initialize`**: optional `Interceptor? interceptor`
+  parameter to inject a custom Dio interceptor (ported from `main`'s
+  `feat(network)` work and adapted to the refactored layout).
+
 ### Changed
 - Reorganized `lib/src/domain/` into content-matched folders (no `domain/`):
   `result/failures.dart`, `result/result.dart`, `usecase/usecase.dart` (now
@@ -24,6 +29,16 @@ All notable changes to this project will be documented in this file.
 - Added GitHub Actions CI (format, analyze, test, publish dry-run).
 - Bumped `google_fonts` `^6.1.0` → `^8.0.0` (the pinned 6.2.1 failed to compile
   under the current Dart SDK).
+
+### Merge note
+- Merged `main`'s `feat(network): integrate response caching and custom
+  interceptors`. The custom-interceptor part was kept (see above). The
+  **Hive-backed persistent HTTP cache** (`DioCacheConfig` +
+  `dio_cache_interceptor` + `dio_cache_interceptor_hive_store` + `hive` /
+  `hive_flutter`) was **not** re-introduced — it conflicts with this refactor's
+  deliberate dependency reduction and the lightweight in-memory GET cache
+  (`cacheTtl` / `forceRefresh`). The two GET-caching strategies are mutually
+  exclusive; revisit if persistent HTTP caching is desired.
 
 ---
 

@@ -45,6 +45,7 @@
 /// ```
 library flutter_core;
 
+import 'package:dio/dio.dart' show Interceptor;
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart' show Dio;
 import 'package:flutter_core/src/storage/local_storage.dart';
@@ -111,6 +112,7 @@ class FlutterCore {
     int connectTimeout = 30000,
     int receiveTimeout = 30000,
     bool enableLogging = true,
+    Interceptor? interceptor,
     Future<String?> Function(Dio)? refreshToken,
   }) async {
     if (_isInitialized) {
@@ -146,6 +148,7 @@ class FlutterCore {
               DateTimeFormat.onlyTimeAndSinceStart, // Log time format
         ),
       ),
+      interceptor: interceptor,
       refreshToken: refreshToken, // <-- Pass refreshToken to DioClient
     );
 
