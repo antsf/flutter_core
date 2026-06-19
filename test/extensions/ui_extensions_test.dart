@@ -108,7 +108,8 @@ extension BuildContextExtension on BuildContext {
   IconThemeData get accentIconTheme =>
       IconThemeData(color: theme.colorScheme.secondary.withValues(alpha: .7));
 
-  InputDecorationThemeData get inputDecorationTheme => theme.inputDecorationTheme;
+  InputDecorationThemeData get inputDecorationTheme =>
+      theme.inputDecorationTheme;
   ButtonThemeData get buttonTheme => theme.buttonTheme;
   ElevatedButtonThemeData get elevatedButtonTheme => theme.elevatedButtonTheme;
   TextButtonThemeData get textButtonTheme => theme.textButtonTheme;

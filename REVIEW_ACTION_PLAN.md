@@ -4,6 +4,8 @@
 > Sumber: brutal review v1.2.0 (branch `refactor/core-cleanup`)
 > Status awal: **TIDAK BISA COMPILE** — `flutter analyze` = 168 error / 175 issue
 > Skor awal: **2.5 / 10** — Publish: TIDAK · Production: TIDAK
+>
+> **Update 2026-06-20 — P0 SELESAI ✅:** `flutter analyze --fatal-infos` = 0 issue · `flutter test` = **295 lulus** · CI ditambahkan. Selanjutnya: P1 (keamanan produksi).
 
 Kerjakan **berurutan dari atas ke bawah**. Setiap item punya: lokasi file:line, kriteria selesai (DoD), dan severity. Centang `[x]` jika selesai.
 
@@ -15,29 +17,39 @@ Kerjakan **berurutan dari atas ke bawah**. Setiap item punya: lokasi file:line, 
 
 > Tanpa ini, semua hal lain tidak relevan. Target: `flutter analyze` = 0 error, `flutter test` hijau.
 
-### [ ] C1. Perbaiki semua path import/export yang rusak setelah pindah file
-Severity: 10/10
+### [x] C1. Perbaiki semua path import/export yang rusak setelah pindah file ✅
+Severity: 10/10 — **SELESAI** (commit menyusul). `flutter analyze` = **No issues found!**
 File pindah dari `lib/src/core/*` → `lib/src/*` tapi barrel & file internal masih menunjuk path lama.
-- [ ] `lib/flutter_core.dart:13,16,17,18,19,20,23,26,35` — perbaiki export `src/core/...` → `src/...`
-- [ ] `lib/core.dart:50,55,57` — perbaiki import `src/core/...` → `src/...`
-- [ ] `lib/src/domain/usecase.dart:2` — `'../failures/failures.dart'` → `'failures.dart'`
-- [ ] `lib/src/theme/theme_provider.dart:2` — `package:flutter_core/src/core/storage/local_storage.dart` → path baru
-- [ ] Cek ulang semua file lain yang masih mengandung `src/core/` (`grep -rn "src/core/" lib test example`)
-- **DoD:** `flutter analyze` tidak lagi memunculkan error `uri_does_not_exist` / `undefined_class` / `undefined_function`.
+- [x] `lib/flutter_core.dart:13,16,17,18,19,20,23,26,35` — perbaiki export `src/core/...` → `src/...`
+- [x] `lib/core.dart:50,55,57` — perbaiki import `src/core/...` → `src/...` (+ hapus 2 baris import terkomentar mati)
+- [x] `lib/src/domain/usecase.dart:2` — `'../failures/failures.dart'` → `'failures.dart'`
+- [x] `lib/src/theme/theme_provider.dart:2` — path baru
+- [x] Tests: `mock_local_storage.dart`, `failure_test.dart`, `local_storage_test.dart`, `dio_client_test.dart`, `connectivity_service_test.dart`
+- [x] Verifikasi: `grep -rn "src/core/" lib test example` = kosong
+- **DoD:** ✅ `flutter analyze` = 0 error (No issues found!).
 
-### [ ] C2. Tambahkan CI/CD (akar penyebab C1 bisa lolos)
-Severity: 9/10 — saat ini tidak ada `.github/`
-- [ ] Buat `.github/workflows/ci.yml`: `pub get` → `dart format --set-exit-if-changed .` → `flutter analyze --fatal-warnings` → `flutter test --coverage` → `dart pub publish --dry-run`
-- [ ] Jalankan di setiap PR + push ke `main`
-- **DoD:** Workflow hijau di GitHub Actions; PR yang gagal analyze/test diblokir.
+### [x] C2. Tambahkan CI/CD (akar penyebab C1 bisa lolos) ✅
+Severity: 9/10 — **SELESAI**. Dibuat `.github/workflows/ci.yml`.
+- [x] Workflow: `pub get` → `dart format --set-exit-if-changed .` → `flutter analyze --fatal-infos` → `flutter test --timeout 60s` → `dart pub publish --dry-run`
+- [x] Jalankan di setiap PR + push ke `main`
+- [x] Seluruh gate diverifikasi lulus lokal (format, analyze --fatal-infos, test, dry-run bersih di checkout bersih)
+- **DoD:** ✅ Workflow siap; gate akan memblokir PR yang gagal. (Perlu push ke GitHub agar Actions aktif.)
+- **Catatan:** `dart pub publish --dry-run` memberi *hint* bahwa nama `flutter_core` sudah ada di pub.dev (versi 1.0.2). Distribusi saat ini via git dependency (lihat README). Bukan blocker CI, tapi nama harus dibereskan jika ingin publish ke pub.dev. → tracked sebagai catatan P2/P3.
 
-### [ ] C3. Perbaiki agar test suite bisa jalan
-Severity: 9/10 — coverage efektif saat ini = 0
-- [ ] Perbaiki import path test: `test/domain/failures/failure_test.dart:1`, `test/network/dio_client_test.dart:2`, `test/services/connectivity_service_test.dart:5`, `test/storage/local_storage_test.dart:3`
-- [ ] Perbaiki error `const_initialized_with_non_constant_value` di `failure_test.dart:178,181,190,201,204,211,...`
-- [ ] Perbaiki mock rusak: `test/mocks/mock_local_storage.dart:5` & `test/network/dio_client_test.dart:9` (`implements_non_class`)
-- [ ] Perbaiki `isOnline` undefined di `test/services/connectivity_service_test.dart:25,29,33,37`
-- **DoD:** `flutter test` compile & hijau seluruhnya.
+### [x] C3. Perbaiki agar test suite bisa jalan ✅
+Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT 0.
+- [x] Path import test diperbaiki (bagian dari C1) — semua file load
+- [x] `const`/`implements_non_class`/`isOnline` errors hilang setelah path fix
+- [x] **Deadlock navigation test**: `await context.toNamed(...)` menunggu push future yang tak pernah pop → hang 10 menit. Diganti `unawaited(...)` (14 lokasi) + `import 'dart:async'`.
+- [x] **TestPage duplikat judul** di AppBar & body → `find.text` menemukan 2 widget. Judul dirender sekali.
+- [x] **`removeUntil` dead-context**: `canBack()` pakai context home yang sudah dihapus → assertion. Diganti context halaman baru via `tester.element(...)`.
+- [x] **Library fix**: `to`/`toReplacement`/`toAndRemoveUntil` pakai `MaterialPageRoute<T>` agar tipe hasil pop ter-propagate (`back with result`).
+- [x] **Library fix**: `hasFocus` (dulu `primaryFocus != null` → hampir selalu true). Kini cek node non-scope yang `hasPrimaryFocus`. Test fokus pakai `node.hasPrimaryFocus`/`hasFocus`.
+- [x] **google_fonts 6.2.1 const-eval error** (blokir compile 8 file test di SDK Dart terbaru) → bump ke `^8.0.0` (8.1.0). API `GoogleFonts.inter()` tetap.
+- [x] **maskEmail test usang**: ekspektasi lama `jxxxxxxxxxxxxple.com` → benar `jxxxxxxx@xxxxple.com` (sesuai impl/README/CHANGELOG 1.1.0).
+- [x] **debounce/throttle flaky** (timer wall-clock 50ms, margin ~10ms) → `fakeAsync` (virtual time, deterministik, lulus 3× berturut). `fake_async` ditambah ke dev_dependencies.
+- [x] Repo diformat (`dart format`) agar gate format CI jujur.
+- **DoD:** ✅ `flutter test` compile & hijau (295 lulus); `flutter analyze --fatal-infos` = 0 issue.
 
 ---
 

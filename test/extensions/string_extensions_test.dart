@@ -145,8 +145,9 @@ void main() {
   group('String Extensions Tests', () {
     group('StringExt', () {
       test('maskEmail handles valid email', () {
-        // john.doe@example.com -> jxxxxxxxple.cxxxxxxxom
-        expect('john.doe@example.com'.maskEmail(), 'jxxxxxxxxxxxxple.com');
+        // local "john.doe" -> "j" + 7×x; domain keeps last 7 ("ple.com"),
+        // masks the rest -> "xxxxple.com". Separator "@" is preserved.
+        expect('john.doe@example.com'.maskEmail(), 'jxxxxxxx@xxxxple.com');
       });
       // test('maskEmail handles short local part', () {
       //   // jo@example.com -> jo@exxxxxxxxm

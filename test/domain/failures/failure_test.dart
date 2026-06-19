@@ -1,4 +1,4 @@
-import 'package:flutter_core/src/core/domain/failures/failures.dart';
+import 'package:flutter_core/src/domain/failures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

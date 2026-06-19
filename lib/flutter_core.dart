@@ -10,20 +10,20 @@ export 'src/theme/text_theme.dart';
 export 'src/theme/color_schemes.dart';
 
 // Failures & Result
-export 'src/core/domain/failures/failures.dart';
+export 'src/domain/failures.dart';
 
 // Network exceptions & utilities
-export 'src/core/network/exceptions/network_exceptions.dart';
-export 'src/core/network/dio_client.dart';
-export 'src/core/network/dio_retry_interceptor.dart';
-export 'src/core/network/api_response.dart';
-export 'src/core/data/repositories/safe_call.dart';
+export 'src/network/exceptions/network_exceptions.dart';
+export 'src/network/dio_client.dart';
+export 'src/network/dio_retry_interceptor.dart';
+export 'src/network/api_response.dart';
+export 'src/domain/safe_call.dart';
 
 // Services
-export 'src/core/services/connectivity_service.dart';
+export 'src/services/connectivity_service.dart';
 
 // Storage
-export 'src/core/storage/local_storage.dart';
+export 'src/storage/local_storage.dart';
 
 // Constants
 export 'src/constants/constants.dart';
@@ -32,7 +32,7 @@ export 'src/constants/constants.dart';
 export 'src/utils/utils.dart';
 
 // Domain
-export 'src/core/domain/usecases/base_usecase.dart';
+export 'src/domain/usecase.dart';
 
 // Extensions
 export 'src/extensions/extensions.dart';

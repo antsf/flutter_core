@@ -1,5 +1,5 @@
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/core/network/dio_interceptor.dart';
+import 'package:flutter_core/src/network/dio_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
@@ -85,8 +85,7 @@ void main() {
     test('should add token refresh interceptor when refreshToken is provided',
         () {
       expect(
-        dioClient.dioInstance.interceptors
-            .any((i) => i is InterceptorsWrapper),
+        dioClient.dioInstance.interceptors.any((i) => i is InterceptorsWrapper),
         isTrue,
       );
     });
@@ -374,7 +373,8 @@ void main() {
       expect(result.error, isA<UnauthorizedException>());
     });
 
-    test('returns ApiResponse.failure with TimeoutException on connection timeout',
+    test(
+        'returns ApiResponse.failure with TimeoutException on connection timeout',
         () async {
       final dioException = DioException(
         requestOptions: RequestOptions(path: testPath),
@@ -404,16 +404,13 @@ void main() {
 
     test('adds custom header', () {
       dioClient.addHeader('Custom-Header', 'value');
-      expect(
-          dioClient.dioInstance.options.headers['Custom-Header'], 'value');
+      expect(dioClient.dioInstance.options.headers['Custom-Header'], 'value');
     });
 
     test('removes header', () {
       dioClient.addHeader('Custom-Header', 'value');
       dioClient.removeHeader('Custom-Header');
-      expect(
-          dioClient.dioInstance.options.headers
-              .containsKey('Custom-Header'),
+      expect(dioClient.dioInstance.options.headers.containsKey('Custom-Header'),
           isFalse);
     });
 
@@ -502,8 +499,7 @@ void main() {
 
       verifyNever(() => mockLogger.i(any()));
       verifyNever(() => mockLogger.e(any(),
-          error: any(named: 'error'),
-          stackTrace: any(named: 'stackTrace')));
+          error: any(named: 'error'), stackTrace: any(named: 'stackTrace')));
       verify(() => handler.next(dioException)).called(1);
     });
   });
@@ -526,8 +522,7 @@ void main() {
                 cancelToken: any(named: 'cancelToken'),
                 onReceiveProgress: any(named: 'onReceiveProgress'),
               ))
-          .thenAnswer(
-              (_) async => Response(requestOptions: RequestOptions()));
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions()));
 
       await dioClient.download(urlPath, savePath: savePath);
 

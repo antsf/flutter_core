@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_core/src/extensions/navigation_ext.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -154,8 +156,10 @@ class TestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Render [title] exactly once so `find.text(title)` matches a single
+    // widget. (A title in both AppBar and body would match twice.)
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: const Text('Test App Bar')),
       body: Center(child: Text(title)),
     );
   }
@@ -203,7 +207,7 @@ void main() {
       await tester.pumpAndSettle(); // Wait for initial route to settle
 
       // Navigate to route2
-      await context.toNamed(route2);
+      unawaited(context.toNamed(route2));
       await tester.pumpAndSettle();
 
       // Verify that the new page is displayed
@@ -216,12 +220,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. Push an intermediate route (Route 1)
-      await context.toNamed(route1);
+      unawaited(context.toNamed(route1));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
 
       // 2. Replace Route 1 with Route 2
-      await context.toReplacementNamed(route2);
+      unawaited(context.toReplacementNamed(route2));
       await tester.pumpAndSettle();
 
       // Verify Route 2 is visible
@@ -242,18 +246,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. Push an intermediate route (Route 1)
-      await context.toNamed(route1);
+      unawaited(context.toNamed(route1));
       await tester.pumpAndSettle();
 
       // 2. Push Route 3 and remove all others
-      await context.toNamedAndRemoveUntil(route3);
+      unawaited(context.toNamedAndRemoveUntil(route3));
       await tester.pumpAndSettle();
 
       // Verify Route 3 is visible
       expect(find.text('Settings'), findsOneWidget);
 
       // 3. Try to go back. The app should not be able to pop anymore.
-      expect(context.canBack(), isFalse);
+      // Use the new route's (live) context — the original home context was
+      // removed from the tree by pushNamedAndRemoveUntil.
+      expect(tester.element(find.text('Settings')).canBack(), isFalse);
     });
 
     testWidgets('to pushes a new MaterialPageRoute',
@@ -261,7 +267,7 @@ void main() {
       await tester.pumpWidget(testApp);
       await tester.pumpAndSettle();
 
-      await context.to(const TestPage(title: 'Pushed Page'));
+      unawaited(context.to(const TestPage(title: 'Pushed Page')));
       await tester.pumpAndSettle();
 
       expect(find.text('Pushed Page'), findsOneWidget);
@@ -273,18 +279,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. Push an intermediate route (Route 1)
-      await context.to(const TestPage(title: 'Intermediate Page'));
+      unawaited(context.to(const TestPage(title: 'Intermediate Page')));
       await tester.pumpAndSettle();
 
       // 2. Push Final Page and remove all others
-      await context.toAndRemoveUntil(const TestPage(title: 'Final Page'));
+      unawaited(context.toAndRemoveUntil(const TestPage(title: 'Final Page')));
       await tester.pumpAndSettle();
 
       // Verify Final Page is visible
       expect(find.text('Final Page'), findsOneWidget);
 
       // 3. Try to go back. The app should not be able to pop anymore.
-      expect(context.canBack(), isFalse);
+      // Use the new route's (live) context — the original home context was
+      // removed from the tree by pushAndRemoveUntil.
+      expect(tester.element(find.text('Final Page')).canBack(), isFalse);
     });
 
     testWidgets('toReplacement replaces the current route with a widget',
@@ -293,12 +301,13 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. Push an intermediate route (Route 1)
-      await context.to(const TestPage(title: 'Original Route'));
+      unawaited(context.to(const TestPage(title: 'Original Route')));
       await tester.pumpAndSettle();
       expect(find.text('Original Route'), findsOneWidget);
 
       // 2. Replace Original Route with Replacement Route
-      await context.toReplacement(const TestPage(title: 'Replacement Route'));
+      unawaited(
+          context.toReplacement(const TestPage(title: 'Replacement Route')));
       await tester.pumpAndSettle();
 
       // Verify Replacement Route is visible
@@ -316,7 +325,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 1. Push a route
-      await context.toNamed(route1);
+      unawaited(context.toNamed(route1));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
 
@@ -333,16 +342,18 @@ void main() {
       await tester.pumpWidget(testApp);
       await tester.pumpAndSettle();
 
-      // Push a route and capture the result
-      // The context here is the Builder's context, which is the previous route.
+      // Push a typed route and capture the result future.
+      // (Named routes go through onGenerateRoute, which yields an untyped
+      // MaterialPageRoute<dynamic>; the typed `to<String>` wrapper preserves
+      // the result type so the pop value round-trips correctly.)
       final resultFuture =
-          context.toNamed<String>(route1, arguments: 'from Home');
-      await tester.pump(); // Start navigation
+          context.to<String>(const TestPage(title: 'Result Page'));
+      await tester.pumpAndSettle();
 
-      // Get the context of the newly pushed route (Route 1)
-      final poppedContext = tester.element(find.text('Home'));
+      // Get the context of the newly pushed route.
+      final poppedContext = tester.element(find.text('Result Page'));
 
-      // Pop the route with a result using the new route's context
+      // Pop the route with a result using the new route's context.
       poppedContext.back<String>('Success');
       await tester.pumpAndSettle();
 
@@ -360,7 +371,7 @@ void main() {
       expect(context.canBack(), isFalse);
 
       // Push a route
-      await context.toNamed(route1);
+      unawaited(context.toNamed(route1));
       await tester.pumpAndSettle();
 
       // After push: canBack is true
@@ -380,9 +391,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Push multiple routes
-      await context.toNamed(route1);
+      unawaited(context.toNamed(route1));
       await tester.pumpAndSettle();
-      await context.toNamed(route2);
+      unawaited(context.toNamed(route2));
       await tester.pumpAndSettle();
       expect(find.text('Details'), findsOneWidget); // Current screen
 
@@ -486,19 +497,26 @@ void main() {
       await tester.pumpWidget(focusTestApp);
       await tester.pumpAndSettle();
 
+      final node1 =
+          (tester.firstWidget(find.byKey(const ValueKey('textField1')))
+                  as TextField)
+              .focusNode!;
+
       // 1. Tap to focus the first TextField
       await tester.tap(find.byKey(const ValueKey('textField1')));
       await tester.pump();
 
-      // Verify focus is set
-      expect(FocusManager.instance.primaryFocus, isNotNull);
+      // Verify focus is set on the field
+      expect(node1.hasPrimaryFocus, isTrue);
 
       // 2. Unfocus using the extension
       focusDialogContext.unfocusKeyboard();
       await tester.pump();
 
-      // 3. Verify primaryFocus is null
-      expect(FocusManager.instance.primaryFocus, isNull);
+      // 3. Verify the field no longer has focus.
+      // (primaryFocus itself is never null — it falls back to the enclosing
+      // FocusScopeNode — so assert on the field's own focus state instead.)
+      expect(node1.hasFocus, isFalse);
     });
 
     testWidgets('requestFocus transfers focus to the new node',
@@ -506,7 +524,11 @@ void main() {
       await tester.pumpWidget(focusTestApp);
       await tester.pumpAndSettle();
 
-      // Get the FocusNode of the second TextField
+      // Get the FocusNodes of both TextFields
+      final node1 =
+          (tester.firstWidget(find.byKey(const ValueKey('textField1')))
+                  as TextField)
+              .focusNode!;
       final node2 =
           (tester.firstWidget(find.byKey(const ValueKey('textField2')))
                   as TextField)
@@ -517,19 +539,16 @@ void main() {
       await tester.pump();
 
       // Verify initial focus is on the first node
-      final focusedWidgetKey1 =
-          FocusManager.instance.primaryFocus?.context?.widget.key;
-      expect(focusedWidgetKey1, const ValueKey('textField1'));
+      expect(node1.hasPrimaryFocus, isTrue);
 
       // 2. Request focus for the second node using the extension
       focusDialogContext.requestFocus(node2);
       await tester.pump();
 
       // 3. Verify focus moved to the second node
-      final focusedWidgetKey2 =
-          FocusManager.instance.primaryFocus?.context?.widget.key;
+      expect(node2.hasPrimaryFocus, isTrue);
+      expect(node1.hasPrimaryFocus, isFalse);
       expect(FocusManager.instance.primaryFocus, node2);
-      expect(focusedWidgetKey2, const ValueKey('textField2'));
     });
 
     testWidgets('hasFocus reflects current focus state',

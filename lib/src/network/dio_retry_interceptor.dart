@@ -31,8 +31,7 @@ class RetryOptions {
 
   int calculateDelay(int attempt) {
     if (!useExponentialBackoff) return baseDelayMs;
-    final exponentialDelay =
-        baseDelayMs * pow(2, (attempt - 1).clamp(0, 30));
+    final exponentialDelay = baseDelayMs * pow(2, (attempt - 1).clamp(0, 30));
     return exponentialDelay > maxDelayMs
         ? maxDelayMs
         : exponentialDelay.toInt();
@@ -63,7 +62,8 @@ class DioRetryInterceptor extends Interceptor {
   }
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
     final requestOptions = err.requestOptions;
     final currentAttempt = requestOptions.extra['retry_attempt'] as int? ?? 1;
 

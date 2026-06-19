@@ -66,7 +66,7 @@ extension NavigationExtension on BuildContext {
   /// Wraps `Navigator.of(this).push()` with a [MaterialPageRoute].
   /// [page]: The widget representing the new screen.
   Future<T?> to<T extends Object?>(Widget page) => Navigator.of(this).push<T>(
-        MaterialPageRoute(builder: (_) => page),
+        MaterialPageRoute<T>(builder: (_) => page),
       );
 
   /// Replaces the current screen with a new one by pushing the given [page] widget.
@@ -75,7 +75,7 @@ extension NavigationExtension on BuildContext {
   /// [page]: The widget representing the new screen.
   Future<T?> toReplacement<T extends Object?>(Widget page) =>
       Navigator.of(this).pushReplacement<T, Object?>(
-        MaterialPageRoute(builder: (_) => page),
+        MaterialPageRoute<T>(builder: (_) => page),
       );
 
   /// Navigates to a new screen by pushing the given [page] widget and removes
@@ -85,7 +85,7 @@ extension NavigationExtension on BuildContext {
   /// [page]: The widget representing the new screen.
   Future<T?> toAndRemoveUntil<T extends Object?>(Widget page) =>
       Navigator.of(this).pushAndRemoveUntil<T>(
-        MaterialPageRoute(builder: (_) => page),
+        MaterialPageRoute<T>(builder: (_) => page),
         (_) =>
             false, // Predicate that always returns false to remove all routes
       );
@@ -125,8 +125,16 @@ extension NavigationExtension on BuildContext {
     FocusScope.of(this).requestFocus(node);
   }
 
-  /// Returns true if any input field currently has focus.
-  bool get hasFocus => FocusManager.instance.primaryFocus != null;
+  /// Returns true if a focusable node (e.g. a text field) currently holds
+  /// primary focus.
+  ///
+  /// Note: this deliberately excludes [FocusScopeNode]. The root focus scope is
+  /// almost always the primary focus when nothing is focused, so a plain
+  /// `primaryFocus != null` check would report `true` even with no field active.
+  bool get hasFocus {
+    final focus = FocusManager.instance.primaryFocus;
+    return focus != null && focus is! FocusScopeNode && focus.hasPrimaryFocus;
+  }
 
   /// Returns true if the keyboard is currently visible.
   // bool get isKeyboardVisible => MediaQuery.of(this).viewInsets.bottom > 0;

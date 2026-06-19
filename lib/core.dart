@@ -47,15 +47,13 @@ library flutter_core;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart' show Dio;
-import 'package:flutter_core/src/core/storage/local_storage.dart';
+import 'package:flutter_core/src/storage/local_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 
-import 'src/core/network/dio_client.dart';
-// import 'src/core/network/dio_cache_config.dart';
-import 'src/core/services/connectivity_service.dart';
-// import 'src/core/storage/secure_storage_service.dart';
+import 'src/network/dio_client.dart';
+import 'src/services/connectivity_service.dart';
 // import 'src/theme/theme_provider.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.

@@ -11,8 +11,7 @@ class _CacheEntry {
   final dynamic rawData;
   final DateTime expiresAt;
 
-  _CacheEntry(this.rawData, Duration ttl)
-      : expiresAt = DateTime.now().add(ttl);
+  _CacheEntry(this.rawData, Duration ttl) : expiresAt = DateTime.now().add(ttl);
 
   bool get isValid => DateTime.now().isBefore(expiresAt);
 }
@@ -241,8 +240,7 @@ class DioClient {
 
   void clearAuthToken() => _dio.options.headers.remove('Authorization');
 
-  void addHeader(String key, String value) =>
-      _dio.options.headers[key] = value;
+  void addHeader(String key, String value) => _dio.options.headers[key] = value;
 
   void removeHeader(String key) => _dio.options.headers.remove(key);
 
@@ -281,7 +279,8 @@ class DioClient {
     }
   }
 
-  ApiResponse<T> _parseResponse<T>(dynamic rawData, T Function(dynamic)? fromJson) {
+  ApiResponse<T> _parseResponse<T>(
+      dynamic rawData, T Function(dynamic)? fromJson) {
     try {
       if (rawData == null) return ApiResponse.success();
       final parsed = fromJson != null ? fromJson(rawData) : rawData as T?;
@@ -337,8 +336,7 @@ class DioClient {
                 _logger?.i('DioClient: Token refreshed. Retrying request.');
                 error.requestOptions.headers['Authorization'] =
                     'Bearer $newToken';
-                return handler
-                    .resolve(await _dio.fetch(error.requestOptions));
+                return handler.resolve(await _dio.fetch(error.requestOptions));
               }
               _logger?.w('DioClient: Token refresh returned null.');
             } catch (e, s) {

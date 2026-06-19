@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/core/storage/local_storage.dart'
-    show LocalStorage;
+import 'package:flutter_core/src/storage/local_storage.dart' show LocalStorage;
 import 'theme.dart';
 
 /// The main provider for managing and notifying listeners of theme changes.
