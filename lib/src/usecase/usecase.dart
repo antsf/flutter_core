@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'failures.dart'; // Provides Result typedef and Failure classes
+
+import '../result/failures.dart';
+import '../result/result.dart';
 
 /// An abstract class representing a single, discrete business operation or use case.
 ///

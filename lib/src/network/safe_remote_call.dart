@@ -1,13 +1,9 @@
-import 'package:flutter_core/flutter_core.dart'
-    show
-        FutureResult,
-        Success,
-        Error,
-        NetworkException,
-        NetworkFailure,
-        GenericFailure;
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+
+import '../result/failures.dart';
+import '../result/result.dart';
+import 'exceptions/network_exceptions.dart';
 
 final _logger = Logger(
   printer: PrettyPrinter(

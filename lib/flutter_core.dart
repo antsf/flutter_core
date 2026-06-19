@@ -10,14 +10,15 @@ export 'src/theme/text_theme.dart';
 export 'src/theme/color_schemes.dart';
 
 // Failures & Result
-export 'src/domain/failures.dart';
+export 'src/result/failures.dart';
+export 'src/result/result.dart';
 
 // Network exceptions & utilities
 export 'src/network/exceptions/network_exceptions.dart';
 export 'src/network/dio_client.dart';
 export 'src/network/dio_retry_interceptor.dart';
 export 'src/network/api_response.dart';
-export 'src/domain/safe_call.dart';
+export 'src/network/safe_remote_call.dart';
 
 // Services
 export 'src/services/connectivity_service.dart';
@@ -32,7 +33,7 @@ export 'src/constants/constants.dart';
 export 'src/utils/utils.dart';
 
 // Domain
-export 'src/domain/usecase.dart';
+export 'src/usecase/usecase.dart';
 
 // Extensions
 export 'src/extensions/extensions.dart';
