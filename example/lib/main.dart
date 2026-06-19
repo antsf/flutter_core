@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/core/storage/local_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +27,6 @@ void main() async {
     connectTimeout: 30000,
     receiveTimeout: 30000,
     enableLogging: true,
-    cacheMaxAge: const Duration(minutes: 5),
   );
 
   // Initialize the LocalStorage service before use

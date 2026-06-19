@@ -15,6 +15,10 @@ void main() {
   setUp(() {
     initScreenUtilForTests();
 
+    // ThemeProvider is a singleton; reset it so state (e.g. dark mode) doesn't
+    // leak in from other theme tests and make this order-dependent.
+    ThemeProvider.reset();
+
     mockStorage = MockLocalStorage();
 
     // ✅ Use thenAnswer for async methods (returning Future)

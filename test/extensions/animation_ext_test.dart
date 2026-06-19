@@ -320,8 +320,16 @@ void main() {
     testWidgets('animatedCrossFade wraps widget in AnimatedCrossFade',
         (tester) async {
       const secondChild = Text('Second');
+      // AnimatedCrossFade's internal AnimatedSize resolves a directional
+      // alignment, so it needs a Directionality ancestor. Wrapping the full
+      // MaterialApp `testWidget` inside the cross-fade would leave that
+      // AnimatedSize at the root with no Directionality, so cross-fade plain
+      // widgets under an explicit Directionality instead.
       await tester.pumpWidget(
-        testWidget.animatedCrossFade(secondChild: secondChild),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: const Text('Test').animatedCrossFade(secondChild: secondChild),
+        ),
       );
 
       // Find the AnimatedCrossFade

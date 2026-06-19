@@ -48,15 +48,13 @@ library flutter_core;
 import 'package:dio/dio.dart' show Interceptor;
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart' show Dio;
-import 'package:flutter_core/src/core/storage/local_storage.dart';
+import 'package:flutter_core/src/storage/local_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 
-import 'src/core/network/dio_client.dart';
-// import 'src/core/network/dio_cache_config.dart';
-import 'src/core/services/connectivity_service.dart';
-// import 'src/core/storage/secure_storage_service.dart';
+import 'src/network/dio_client.dart';
+import 'src/services/connectivity_service.dart';
 // import 'src/theme/theme_provider.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.
@@ -108,18 +106,14 @@ class FlutterCore {
   /// - [connectTimeout]: Connection timeout for network requests in milliseconds (default: 30000ms).
   /// - [receiveTimeout]: Receive timeout for network requests in milliseconds (default: 30000ms).
   /// - [enableLogging]: Enables network request and response logging via [Logger] (default: true).
-  /// - [cacheMaxAge]: Default maximum age for cached network responses (default: 1 hour).
-  ///
   /// If called more than once, subsequent calls will be ignored and a debug message will be printed.
   static Future<void> initialize({
     required String baseUrl,
-    int connectTimeout = 30000, // 30 seconds
-    int receiveTimeout = 30000, // 30 seconds
+    int connectTimeout = 30000,
+    int receiveTimeout = 30000,
     bool enableLogging = true,
-    Duration cacheMaxAge = const Duration(hours: 1),
     Interceptor? interceptor,
-    Future<String?> Function(Dio)?
-        refreshToken, // <-- Added refreshToken parameter
+    Future<String?> Function(Dio)? refreshToken,
   }) async {
     if (_isInitialized) {
       debugPrint(

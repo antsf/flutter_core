@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_core/flutter_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -71,60 +72,63 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('StreamX (RxDart Extensions)', () {
-    test('debounceMs only emits the last value within the debounce period',
-        () async {
-      final controller = StreamController<int>();
-      final debouncedStream = controller.stream.debounceMs(50);
-      final emittedValues = <int>[];
+    // Uses fakeAsync to drive virtual time — deterministic, not wall-clock
+    // dependent (the previous real-timer version flaked under load).
+    test('debounceMs only emits the last value within the debounce period', () {
+      fakeAsync((async) {
+        final controller = StreamController<int>();
+        final emittedValues = <int>[];
 
-      debouncedStream.listen(emittedValues.add);
+        controller.stream.debounceMs(50).listen(emittedValues.add);
 
-      // Emit values quickly
-      controller.add(1);
-      controller.add(2);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      controller.add(3); // This will be emitted
+        // Emit values quickly
+        controller.add(1);
+        controller.add(2);
+        async.elapse(const Duration(milliseconds: 20));
+        controller.add(3); // This will be emitted
 
-      // Wait for the debounce period to pass
-      await Future<void>.delayed(const Duration(milliseconds: 60));
-      expect(emittedValues, [3]);
+        // Wait for the debounce period to pass
+        async.elapse(const Duration(milliseconds: 60));
+        expect(emittedValues, [3]);
 
-      // Emit a new value and wait to ensure it's emitted
-      controller.add(4);
-      await Future<void>.delayed(const Duration(milliseconds: 60));
-      expect(emittedValues, [3, 4]);
+        // Emit a new value and wait to ensure it's emitted
+        controller.add(4);
+        async.elapse(const Duration(milliseconds: 60));
+        expect(emittedValues, [3, 4]);
 
-      await controller.close();
+        controller.close();
+      });
     });
 
     test('throttleMs only emits the first value within the throttle period',
-        () async {
-      final controller = StreamController<int>();
-      final throttledStream = controller.stream.throttleMs(50);
-      final emittedValues = <int>[];
+        () {
+      fakeAsync((async) {
+        final controller = StreamController<int>();
+        final emittedValues = <int>[];
 
-      throttledStream.listen(emittedValues.add);
+        controller.stream.throttleMs(50).listen(emittedValues.add);
 
-      // Emit the first value - should be emitted immediately
-      controller.add(1);
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      expect(emittedValues, [1]);
+        // Emit the first value - should be emitted immediately
+        controller.add(1);
+        async.elapse(const Duration(milliseconds: 5));
+        expect(emittedValues, [1]);
 
-      // Emit values quickly - should be ignored due to throttle
-      controller.add(2);
-      controller.add(3);
-      await Future<void>.delayed(const Duration(milliseconds: 40));
-      controller.add(4); // Ignored
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+        // Emit values quickly - should be ignored due to throttle
+        controller.add(2);
+        controller.add(3);
+        async.elapse(const Duration(milliseconds: 40));
+        controller.add(4); // Ignored (still within the throttle window)
+        async.elapse(const Duration(milliseconds: 20));
 
-      expect(emittedValues, [1]);
+        expect(emittedValues, [1]);
 
-      // The throttle period should have passed now. Emit a new value.
-      controller.add(5);
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      expect(emittedValues, [1, 5]);
+        // The throttle period should have passed now. Emit a new value.
+        controller.add(5);
+        async.elapse(const Duration(milliseconds: 5));
+        expect(emittedValues, [1, 5]);
 
-      await controller.close();
+        controller.close();
+      });
     });
   });
 

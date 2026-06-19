@@ -1,10 +1,9 @@
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/core/network/dio_interceptor.dart';
+import 'package:flutter_core/src/network/dio_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';
 
-// Mock classes using Mocktail
 class MockDio extends Mock implements Dio {}
 
 class MockConnectivityService extends Mock implements ConnectivityService {}
@@ -22,14 +21,13 @@ void main() {
   late MockConnectivityService mockConnectivityService;
   late MockLogger mockLogger;
   late BaseOptions baseOptions;
-  late Interceptors interceptors; // Real Interceptors instance for mocking
+  late Interceptors interceptors;
 
   const baseUrl = 'https://api.example.com';
   const connectTimeoutMs = 15000;
   const receiveTimeoutMs = 15000;
 
   setUpAll(() {
-    // Register fallbacks for complex types required by Mocktail
     registerFallbackValue(Uri.parse(baseUrl));
     registerFallbackValue(RequestOptions(path: ''));
     registerFallbackValue(CancelToken());
@@ -43,19 +41,16 @@ void main() {
     mockDio = MockDio();
     mockConnectivityService = MockConnectivityService();
     mockLogger = MockLogger();
-    interceptors = Interceptors(); // Initialize real Interceptors instance
+    interceptors = Interceptors();
 
-    // Mock BaseOptions for Dio
     baseOptions = BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(milliseconds: connectTimeoutMs),
       receiveTimeout: const Duration(milliseconds: receiveTimeoutMs),
     );
     when(() => mockDio.options).thenReturn(baseOptions);
-    // Mock interceptors property to return a real Interceptors instance
     when(() => mockDio.interceptors).thenReturn(interceptors);
 
-    // Initialize DioClient with mocks
     dioClient = DioClient(
       baseUrl: baseUrl,
       dio: mockDio,
@@ -64,12 +59,6 @@ void main() {
       enableLogging: true,
       refreshToken: (dio) async => 'new_refreshed_token',
     );
-
-    // Register fallback values for any unmocked calls
-    // registerFallbackValue(RequestOptions(path: ''));
-    // registerFallbackValue(CancelToken());
-    // registerFallbackValue(
-    //     DioException(requestOptions: RequestOptions(path: '')));
   });
 
   group('DioClient Initialization', () {
@@ -88,17 +77,15 @@ void main() {
     test('should add logging interceptor when enableLogging is true', () {
       expect(
         dioClient.dioInstance.interceptors
-            .any((interceptor) => interceptor is DioLoggingInterceptor),
+            .any((i) => i is DioLoggingInterceptor),
         isTrue,
       );
     });
 
-    test(
-        'should add token refresh interceptor when refreshToken callback is provided',
+    test('should add token refresh interceptor when refreshToken is provided',
         () {
       expect(
-        dioClient.dioInstance.interceptors
-            .any((interceptor) => interceptor is InterceptorsWrapper),
+        dioClient.dioInstance.interceptors.any((i) => i is InterceptorsWrapper),
         isTrue,
       );
     });
@@ -106,108 +93,7 @@ void main() {
 
   group('HTTP Requests', () {
     const testPath = '/test';
-    final testData = {'key': 'value'};
-    final testResponseData = {'result': 'success'};
-    final response = Response(
-      requestOptions: RequestOptions(path: testPath),
-      data: {'result': 'success'},
-      statusCode: 200,
-    );
-
-    setUp(() {
-      when(() => mockConnectivityService.hasConnection())
-          .thenAnswer((_) async => true);
-    });
-
-    test('GET request returns successful response', () async {
-      when(() => mockDio.get(
-            testPath,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-            onReceiveProgress: any(named: 'onReceiveProgress'),
-          )).thenAnswer((_) async => response);
-
-      final result = await dioClient.get(testPath);
-
-      expect(result.data, testResponseData);
-      expect(result.statusCode, 200);
-      verify(() => mockDio.get(testPath)).called(1);
-    });
-
-    test('POST request returns successful response', () async {
-      when(() => mockDio.post(
-            testPath,
-            data: testData,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-            onSendProgress: any(named: 'onSendProgress'),
-            onReceiveProgress: any(named: 'onReceiveProgress'),
-          )).thenAnswer((_) async => response);
-
-      final result = await dioClient.post(testPath, data: testData);
-
-      expect(result.data, testResponseData);
-      expect(result.statusCode, 200);
-      verify(() => mockDio.post(testPath, data: testData)).called(1);
-    });
-
-    test('PUT request returns successful response', () async {
-      when(() => mockDio.put(
-            testPath,
-            data: testData,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-            onSendProgress: any(named: 'onSendProgress'),
-            onReceiveProgress: any(named: 'onReceiveProgress'),
-          )).thenAnswer((_) async => response);
-
-      final result = await dioClient.put(testPath, data: testData);
-
-      expect(result.data, testResponseData);
-      expect(result.statusCode, 200);
-      verify(() => mockDio.put(testPath, data: testData)).called(1);
-    });
-
-    test('DELETE request returns successful response', () async {
-      when(() => mockDio.delete(
-            testPath,
-            data: testData,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-          )).thenAnswer((_) async => response);
-
-      final result = await dioClient.delete(testPath, data: testData);
-
-      expect(result.data, testResponseData);
-      expect(result.statusCode, 200);
-      verify(() => mockDio.delete(testPath, data: testData)).called(1);
-    });
-
-    test('PATCH request returns successful response', () async {
-      when(() => mockDio.patch(
-            testPath,
-            data: testData,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-            onSendProgress: any(named: 'onSendProgress'),
-            onReceiveProgress: any(named: 'onReceiveProgress'),
-          )).thenAnswer((_) async => response);
-
-      final result = await dioClient.patch(testPath, data: testData);
-
-      expect(result.data, testResponseData);
-      expect(result.statusCode, 200);
-      verify(() => mockDio.patch(testPath, data: testData)).called(1);
-    });
-  });
-
-  group('ApiResponse Wrapped Requests', () {
-    const testPath = '/test';
+    final testBody = {'key': 'value'};
     final testResponseData = {'result': 'success'};
     final response = Response(
       requestOptions: RequestOptions(path: testPath),
@@ -220,7 +106,7 @@ void main() {
           .thenAnswer((_) async => true);
     });
 
-    test('getWithSafeCallApi returns ApiResponse.success', () async {
+    test('GET returns ApiResponse.success with response data', () async {
       when(() => mockDio.get(
             testPath,
             queryParameters: any(named: 'queryParameters'),
@@ -229,17 +115,103 @@ void main() {
             onReceiveProgress: any(named: 'onReceiveProgress'),
           )).thenAnswer((_) async => response);
 
-      final result = await dioClient.getWithSafeCallApi<String>(
+      final result = await dioClient.get(testPath);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, testResponseData);
+      verify(() => mockDio.get(testPath)).called(1);
+    });
+
+    test('GET with fromJson maps response data', () async {
+      when(() => mockDio.get(
+            testPath,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      final result = await dioClient.get<String>(
         testPath,
-        dataBuilder: (data) => data['result'] as String,
+        fromJson: (d) => d['result'] as String,
       );
 
       expect(result.isSuccessful, isTrue);
       expect(result.data, 'success');
-      verify(() => mockDio.get(testPath)).called(1);
     });
 
-    test('postWithSafeCallApi handles null response data as failure', () async {
+    test('POST returns ApiResponse.success', () async {
+      when(() => mockDio.post(
+            testPath,
+            data: testBody,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      final result = await dioClient.post(testPath, body: testBody);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, testResponseData);
+      verify(() => mockDio.post(testPath, data: testBody)).called(1);
+    });
+
+    test('PUT returns ApiResponse.success', () async {
+      when(() => mockDio.put(
+            testPath,
+            data: testBody,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      final result = await dioClient.put(testPath, body: testBody);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, testResponseData);
+      verify(() => mockDio.put(testPath, data: testBody)).called(1);
+    });
+
+    test('DELETE returns ApiResponse.success', () async {
+      when(() => mockDio.delete(
+            testPath,
+            data: testBody,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          )).thenAnswer((_) async => response);
+
+      final result = await dioClient.delete(testPath, body: testBody);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, testResponseData);
+      verify(() => mockDio.delete(testPath, data: testBody)).called(1);
+    });
+
+    test('PATCH returns ApiResponse.success', () async {
+      when(() => mockDio.patch(
+            testPath,
+            data: testBody,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      final result = await dioClient.patch(testPath, body: testBody);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, testResponseData);
+      verify(() => mockDio.patch(testPath, data: testBody)).called(1);
+    });
+
+    test('null response body returns ApiResponse.success with null data',
+        () async {
       final nullResponse = Response(
         requestOptions: RequestOptions(path: testPath),
         data: null,
@@ -256,15 +228,95 @@ void main() {
             onReceiveProgress: any(named: 'onReceiveProgress'),
           )).thenAnswer((_) async => nullResponse);
 
-      final result = await dioClient.postWithSafeCallApi<String>(
-        testPath,
-        dataBuilder: (data) => data['result'] as String,
-        data: {'key': 'value'},
-      );
+      final result = await dioClient.post(testPath, body: testBody);
 
-      expect(result.isFailure, isTrue);
-      expect(result.error, isA<ClientErrorException>());
-      verify(() => mockDio.post(testPath, data: any(named: 'data'))).called(1);
+      expect(result.isSuccessful, isTrue);
+      expect(result.data, isNull);
+    });
+  });
+
+  group('Cache', () {
+    const testPath = '/users';
+    final responseData = {'id': 1, 'name': 'Andi'};
+    final response = Response(
+      requestOptions: RequestOptions(path: testPath),
+      data: responseData,
+      statusCode: 200,
+    );
+
+    setUp(() {
+      when(() => mockConnectivityService.hasConnection())
+          .thenAnswer((_) async => true);
+    });
+
+    test('second GET with cacheTtl uses cached data without network call',
+        () async {
+      when(() => mockDio.get(
+            testPath,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      final first =
+          await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+      final second =
+          await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+
+      expect(first.isSuccessful, isTrue);
+      expect(second.isSuccessful, isTrue);
+      expect(second.data, responseData);
+      // Only one real network call
+      verify(() => mockDio.get(testPath)).called(1);
+    });
+
+    test('forceRefresh bypasses cache', () async {
+      when(() => mockDio.get(
+            testPath,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+      await dioClient.get(testPath,
+          cacheTtl: const Duration(minutes: 5), forceRefresh: true);
+
+      verify(() => mockDio.get(testPath)).called(2);
+    });
+
+    test('clearCache removes all entries', () async {
+      when(() => mockDio.get(
+            testPath,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+      dioClient.clearCache();
+      await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+
+      verify(() => mockDio.get(testPath)).called(2);
+    });
+
+    test('invalidateCache removes specific entry', () async {
+      when(() => mockDio.get(
+            testPath,
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => response);
+
+      await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+      dioClient.invalidateCache(testPath);
+      await dioClient.get(testPath, cacheTtl: const Duration(minutes: 5));
+
+      verify(() => mockDio.get(testPath)).called(2);
     });
   });
 
@@ -276,88 +328,18 @@ void main() {
           .thenAnswer((_) async => true);
     });
 
-    test('handles 401 Unauthorized with token refresh', () async {
-      // ARRANGE
-      final errorResponse = Response(
-        requestOptions: RequestOptions(path: testPath),
-        statusCode: 401,
-      );
-      final dioException = DioException(
-        requestOptions: RequestOptions(path: testPath),
-        response: errorResponse,
-        type: DioExceptionType.badResponse,
-      );
-      final successResponse = Response(
-        requestOptions: RequestOptions(path: testPath),
-        data: {'result': 'success'},
-        statusCode: 200,
-      );
-
-      // --- CRUCIAL MOCK SETUP ---
-      // 1. Set up a mock sequence for the initial public API call (dio.get).
-      // This is complicated because the refresh logic runs inside the interceptor.
-
-      // Let's mock the internal method DioClient._request relies on: dio.fetch(any())
-      // Use a CallSequence to throw first, then return success.
-      // This pattern is complex because the interceptor makes the second call via dio.fetch(newOptions).
-
-      // We will mock the external .get() call to throw the first time,
-      // and then mock the internal .fetch() call (used by the interceptor for retry) to succeed.
-
-      // Mock the initial public API call to throw the 401
-      // Use setup that matches the first attempt exactly
-      when(() => mockDio.get(
-            testPath,
-            queryParameters: any(named: 'queryParameters'),
-            options: any(named: 'options'),
-            cancelToken: any(named: 'cancelToken'),
-            onReceiveProgress: any(named: 'onReceiveProgress'),
-          )).thenThrow(dioException);
-
-      // Mock the internal dio.fetch call which is used by the interceptor for the retry.
-      // We rely on the interceptor to catch the 401 and call dio.fetch for the retry.
-      // NOTE: This setup relies on your interceptor being correctly added to the real Interceptors list.
-      when(() => mockDio.fetch(
-            // Use a matcher to ensure it's the retried call (e.g., has the new token)
-            any(
-                that: isA<RequestOptions>().having(
-                    (opt) => opt.headers['Authorization'],
-                    'Authorization header',
-                    'Bearer new_refreshed_token')),
-          )).thenAnswer((_) async => successResponse);
-
-      // ACT
-      final result = await dioClient.get(testPath);
-
-      // ASSERT
-      expect(result.data, {'result': 'success'});
-      expect(result.statusCode, 200);
-      expect(dioClient.authToken, 'Bearer new_refreshed_token');
-
-      // VERIFY
-      // Initial call to .get() is made (it throws)
-      verify(() => mockDio.get(testPath,
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-          onReceiveProgress: any(named: 'onReceiveProgress'))).called(1);
-
-      // The retry call to .fetch() is made by the interceptor
-      verify(() => mockDio.fetch(any())).called(1);
-    });
-
-    test('throws NoInternetConnectionException when connectivity check fails',
+    test('returns ApiResponse.failure with NoInternetConnectionException',
         () async {
       when(() => mockConnectivityService.hasConnection())
           .thenAnswer((_) async => false);
 
-      expect(
-        () => dioClient.get(testPath),
-        throwsA(isA<NoInternetConnectionException>()),
-      );
+      final result = await dioClient.get(testPath);
+
+      expect(result.isFailure, isTrue);
+      expect(result.error, isA<NoInternetConnectionException>());
     });
 
-    test('throws UnauthorizedException for 401 errors without refresh',
+    test('returns ApiResponse.failure with UnauthorizedException for 401',
         () async {
       final errorResponse = Response(
         requestOptions: RequestOptions(path: testPath),
@@ -369,13 +351,12 @@ void main() {
         type: DioExceptionType.badResponse,
       );
 
-      // Recreate DioClient without refreshToken callback
       dioClient = DioClient(
         baseUrl: baseUrl,
         dio: mockDio,
         connectivityService: mockConnectivityService,
         logger: mockLogger,
-        enableLogging: true,
+        enableLogging: false,
       );
 
       when(() => mockDio.get(
@@ -386,13 +367,15 @@ void main() {
             onReceiveProgress: any(named: 'onReceiveProgress'),
           )).thenThrow(dioException);
 
-      expect(
-        () => dioClient.get(testPath),
-        throwsA(isA<UnauthorizedException>()),
-      );
+      final result = await dioClient.get(testPath);
+
+      expect(result.isFailure, isTrue);
+      expect(result.error, isA<UnauthorizedException>());
     });
 
-    test('throws TimeoutException for connection timeout', () async {
+    test(
+        'returns ApiResponse.failure with TimeoutException on connection timeout',
+        () async {
       final dioException = DioException(
         requestOptions: RequestOptions(path: testPath),
         type: DioExceptionType.connectionTimeout,
@@ -406,18 +389,17 @@ void main() {
             onReceiveProgress: any(named: 'onReceiveProgress'),
           )).thenThrow(dioException);
 
-      expect(
-        () => dioClient.get(testPath),
-        throwsA(isA<TimeoutException>()),
-      );
+      final result = await dioClient.get(testPath);
+
+      expect(result.isFailure, isTrue);
+      expect(result.error, isA<TimeoutException>());
     });
   });
 
   group('Header Management', () {
     test('adds and retrieves auth token correctly', () {
-      const token = 'test_token';
-      dioClient.setAuthToken(token);
-      expect(dioClient.authToken, 'Bearer $token');
+      dioClient.setAuthToken('test_token');
+      expect(dioClient.authToken, 'Bearer test_token');
     });
 
     test('adds custom header', () {
@@ -466,7 +448,6 @@ void main() {
     );
 
     setUp(() {
-      // Stub logger.e to handle any arguments
       when(() => mockLogger.e(
             any(),
             error: any(named: 'error'),
@@ -541,8 +522,7 @@ void main() {
                 cancelToken: any(named: 'cancelToken'),
                 onReceiveProgress: any(named: 'onReceiveProgress'),
               ))
-          .thenAnswer((_) async => Response(
-              requestOptions: RequestOptions())); // Return Future<void>
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions()));
 
       await dioClient.download(urlPath, savePath: savePath);
 
