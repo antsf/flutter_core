@@ -11,7 +11,7 @@ A comprehensive Flutter core package providing theme management, network handlin
 - **Network Layer** — Dio-based HTTP client with automatic retry (exponential backoff), token refresh, connectivity pre-flight, structured error hierarchy
 - **Secure Storage** — flutter_secure_storage wrapper with box namespacing, type-safe API, and `Map<String, dynamic>` support
 - **Extensions** — 17+ extension files for `DateTime`, `num`, `String`, `BuildContext`, navigation, dialogs, UI layout, streams, and more
-- **Clean Architecture** — optional domain/data layer base classes (`UseCase`, `BaseRepository`, `Result` type)
+- **Result Type** — lightweight `Result<T, Failure>` with `Success`/`Error`, `when`/`map`, and a `Failure` hierarchy for clean, try-catch-free error handling
 - **Indonesian Locale** — built-in Rupiah formatting, Indonesian date formats, phone number utilities
 
 ## Getting Started
@@ -220,27 +220,6 @@ result.when(
 
 // Transform
 final name = result.map((user) => user.name);
-```
-
-### UseCase (Clean Architecture)
-
-```dart
-class GetUserParams {
-  final String userId;
-  const GetUserParams(this.userId);
-}
-
-class GetUserUseCase extends UseCase<User, GetUserParams> {
-  final UserRepository _repository;
-  GetUserUseCase(this._repository);
-
-  @override
-  FutureResult<User> execute(GetUserParams params) =>
-      _repository.getById(params.userId);
-}
-
-// Usage
-final result = await getUserUseCase(GetUserParams('123'));
 ```
 
 ## API Reference

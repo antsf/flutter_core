@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## Unreleased
+
+### Breaking Changes
+- **Removed `UseCase` / `NoParams`** (`lib/src/usecase/`). The base class was
+  unused, untested, and its cooperative-cancellation feature was non-functional
+  (the running `execute()` never observed `cancel()`). It also conflicted with
+  the package's own principle of not shipping abstractions that compete with the
+  modern Flutter ecosystem (Riverpod/Bloc + repositories). Bring your own
+  use-case base class if you need one — `Result` / `Failure` remain exported.
+
+### Changed
+- Reorganized `lib/src/domain/` into content-matched folders (no `domain/`):
+  `result/failures.dart`, `result/result.dart`, `usecase/usecase.dart` (now
+  removed), and `network/safe_remote_call.dart` (was `domain/safe_call.dart`,
+  renamed to avoid colliding with `network/safe_call.dart`).
+- Fixed broken import/export paths left by the `src/core/*` → `src/*` move; the
+  package now compiles and the full test suite passes.
+- Added GitHub Actions CI (format, analyze, test, publish dry-run).
+- Bumped `google_fonts` `^6.1.0` → `^8.0.0` (the pinned 6.2.1 failed to compile
+  under the current Dart SDK).
+
+---
+
 ## 1.2.0 — 2026-06-19
 
 ### Breaking Changes

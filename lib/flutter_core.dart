@@ -32,9 +32,6 @@ export 'src/constants/constants.dart';
 // Utils
 export 'src/utils/utils.dart';
 
-// Domain
-export 'src/usecase/usecase.dart';
-
 // Extensions
 export 'src/extensions/extensions.dart';
 
