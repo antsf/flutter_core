@@ -53,42 +53,34 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 
 ---
 
-## P1 — KEAMANAN PRODUKSI (fintech/banking footguns)
+## P1 — KEAMANAN PRODUKSI (fintech/banking footguns) — ✅ SELESAI
 
-> Bug yang membuat package BERBAHAYA, bukan sekadar rusak.
+> Bug yang membuat package BERBAHAYA, bukan sekadar rusak. Semua diselesaikan +
+> ditambah test (commit `00d9b54`). Full suite: **308 lulus**.
 
-### [ ] C4. Retry hanya untuk method idempotent (risiko transaksi ganda)
-Severity: 9/10 — `lib/src/network/dio_retry_interceptor.dart:66-106`
-Saat ini POST/PUT/PATCH/DELETE ikut diretry pada timeout & 5xx → potensi double payment.
-- [ ] Default: retry hanya GET/HEAD/OPTIONS; POST wajib opt-in via idempotency key
-- [ ] Tambah jitter pada backoff (`calculateDelay`, `:32-39`) untuk hindari thundering herd
-- **DoD:** Test membuktikan POST tidak diretry by default; GET tetap diretry; ada test idempotency-key.
-```dart
-bool _isIdempotent(RequestOptions o) =>
-    const {'GET', 'HEAD', 'OPTIONS'}.contains(o.method.toUpperCase()) ||
-    o.extra['idempotencyKey'] != null;
-```
+### [x] C4. Retry hanya untuk method idempotent (risiko transaksi ganda) ✅
+`lib/src/network/dio_retry_interceptor.dart`
+- [x] Default retry hanya `{GET, HEAD, OPTIONS}` (`RetryOptions.retryableMethods`); POST/PUT/PATCH tidak diretry
+- [x] Opt-in per-request via `Options(extra: {'retry': true})`
+- [x] Jitter pada backoff (`RetryOptions.useJitter`, default on)
+- [x] **8 test** (`test/network/dio_retry_interceptor_test.dart`)
 
-### [ ] C5. Serialisasi token refresh (cegah stampede)
-Severity: 8/10 — `lib/src/network/dio_client.dart:326-352`
-Tidak ada lock → 401 paralel memicu banyak refresh bersamaan → logout acak.
-- [ ] Gunakan single in-flight `Completer`/`Future`; antrekan request lain & replay setelah satu refresh selesai
-- **DoD:** Test: N request 401 bersamaan hanya memicu 1 pemanggilan `refreshToken`.
+### [x] C5. Serialisasi token refresh (cegah stampede) ✅
+`lib/src/network/dio_client.dart` (`_ongoingRefresh` + `_refreshAuthToken`)
+- [x] Single in-flight refresh dibagi semua 401 paralel (coalescing)
+- [x] Guard `__retried_after_refresh` cegah loop refresh→retry tak terhingga
+- [x] **2 test** integrasi (`dio_client_refresh_test.dart`): 5×401 → 1 refresh; 401 persisten → gagal tanpa loop
 
-### [ ] M5. Cache: beri batas LRU + key yang sadar identitas
-Severity: 7/10 — `lib/src/network/dio_client.dart:54,99,309-314`
-Cache unbounded (memory leak) + key path+query saja → data user A bisa terbaca user B.
-- [ ] Batasi ukuran cache (LRU) + eviction entry kedaluwarsa
-- [ ] Sertakan komponen identitas/token ke dalam `_cacheKey`
-- [ ] Kosongkan/invalidate cache saat `setAuthToken`/`clearAuthToken`
-- **DoD:** Test: ganti token → cache lama tidak terpakai; cache tidak tumbuh tak terbatas.
+### [x] M5. Cache: batas LRU + key sadar identitas ✅
+`lib/src/network/dio_client.dart`
+- [x] LRU bound via `DioClient(maxCacheEntries: 100)` + eviction kedaluwarsa
+- [x] `_cacheKey` menyertakan hash identitas (token) → data user A tidak bocor ke user B
+- [x] **3 test** (`dio_client_cache_test.dart`): isolasi identitas, eviction LRU, forceRefresh
 
-### [ ] M6. Jangan log data sensitif tanpa syarat
-Severity: 7/10 — `lib/src/domain/safe_call.dart:12-19,31,68`
-Logger module-level mencatat full result (PII/token) tanpa guard release.
-- [ ] Gate semua log di belakang flag (mis. `kReleaseMode` / parameter)
-- [ ] Jangan pernah log full payload secara default
-- **DoD:** Build release tidak mengeluarkan body response ke log.
+### [x] M6. Jangan log data sensitif tanpa syarat ✅
+`lib/src/network/safe_remote_call.dart`
+- [x] Hapus log full result (`_logger.d('... result: $result')`) → tidak ada PII/token di log
+- [x] Log error di-gate ke debug saja (`kReleaseMode`)
 
 ---
 
