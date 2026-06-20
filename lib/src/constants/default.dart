@@ -2,7 +2,7 @@
 ///
 /// This library defines common values for padding, radius, durations,
 /// standard UI element heights, and other reusable constants.
-library fc_defaults;
+library;
 
 import 'dart:typed_data';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

@@ -1,5 +1,5 @@
 /// Theme configurations and helpers for the Flutter Core package.
-library theme;
+library;
 
 import 'package:flutter/material.dart';
 import 'text_theme.dart';

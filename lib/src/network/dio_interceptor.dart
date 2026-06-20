@@ -3,7 +3,7 @@
 /// This library contains [DioInterceptor], which can be added to a Dio instance
 /// to automatically log information about outgoing requests, successful responses,
 /// and errors.
-library dio_logging_interceptor; // Changed library name for clarity
+library;
 
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart'; // Assuming 'logger' package is used

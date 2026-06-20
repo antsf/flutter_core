@@ -5,7 +5,7 @@
 /// status and listening to connectivity changes. It also provides a utility
 /// extension [ConnectivityX] on `List<ConnectivityResult>` to easily determine
 /// if an online connection is active.
-library connectivity_service;
+library;
 
 import 'dart:async';
 import 'dart:developer' show log;

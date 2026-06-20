@@ -1,5 +1,5 @@
 /// Exports all color and constant definitions for the package.
-library constants;
+library;
 
 // Constants barrel file
 export 'colors.dart';

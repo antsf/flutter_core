@@ -10,7 +10,7 @@
 ///   style: TextStyle().bold.italic.fontSize(16).withColor(Colors.blue).underline,
 /// );
 /// ```
-library text_style_extension;
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

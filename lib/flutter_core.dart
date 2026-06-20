@@ -1,4 +1,4 @@
-library flutter_core;
+library;
 
 // Core initialization
 export 'core.dart';

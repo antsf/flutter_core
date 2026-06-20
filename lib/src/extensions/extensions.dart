@@ -1,5 +1,5 @@
 /// Exports all extension helpers for widgets, navigation, and UI.
-library extensions;
+library;
 
 export 'animation_ext.dart';
 export 'color_scheme_ext.dart';

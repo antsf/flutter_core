@@ -43,7 +43,7 @@
 ///   }
 /// }
 /// ```
-library flutter_core;
+library;
 
 import 'package:dio/dio.dart' show Dio, Interceptor;
 import 'package:flutter/material.dart';

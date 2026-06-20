@@ -8,7 +8,7 @@
 /// // Navigate to a named route
 /// context.pushNamed('/details', arguments: {'id': 123});
 /// ```
-library navigation_extensions;
+library;
 
 import 'package:flutter/material.dart';
 

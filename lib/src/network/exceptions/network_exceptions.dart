@@ -1,4 +1,4 @@
-library network_exceptions;
+library;
 
 import 'package:dio/dio.dart';
 

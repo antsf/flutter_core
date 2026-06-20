@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_core/src/extensions/ui_ext.dart';
 
-/// Extensions on List<Widget>
+/// Extensions on `List<Widget>`.
 extension ListWidgetX on List<Widget> {
   /// Adds [separator] between every existing widget
   List<Widget> separatedBy(Widget separator) {

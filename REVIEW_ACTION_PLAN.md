@@ -134,12 +134,12 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 - **DoD:** ✅ Semua contoh README & example compile terhadap API nyata (analyze 0 issue).
 
 ### [ ] Minor — kebersihan kode & konfigurasi
-- [ ] Hapus dead code terkomentar: `core.dart:85-93,124-127,176-197`; `formatter.dart:109-116`; self-import aneh `core.dart:49`
-- [ ] Kurangi global singleton: `FlutterCore` `static late final` (`core.dart:79,87`), `ThemeProvider` static + `static LocalStorage localStorage` (`theme_provider.dart:12`) → arah DI/testable
-- [ ] Hapus string ID hardcoded di lib inti: `domain/safe_call.dart:27` ('Terjadi kesalahan tak terduga') → buat localizable
-- [ ] Selaraskan semantik null-success: `api_response.dart:31` (null = sukses) vs `network/safe_call.dart:11-23` (null = gagal)
-- [ ] `PhoneFormatter`/`CreditCardFormatter` (`formatter.dart:51-107`) — jaga posisi caret saat edit di tengah
-- [ ] Naikkan `flutter_lints: ^3.0.0` → `^6.0.0`; aktifkan lint tambahan di `analysis_options.yaml` (`strict-casts`, `prefer_const`, dll.)
+- [x] Hapus dead code terkomentar di `core.dart` + self-import aneh (commit `874e7bf`)
+- [x] Naikkan `flutter_lints ^3 → ^6` (commit menyusul); semua temuan baru dibereskan (17× `unnecessary_library_name` → `library;` anonim, 2× angle-bracket di doc comment). `strict-casts` = follow-up opsional terpisah.
+- [ ] (opsional) Kurangi global singleton `FlutterCore`/`ThemeProvider` → DI — perubahan arsitektural besar, butuh diskusi
+- [ ] (opsional) String ID hardcoded `safe_remote_call genericError` — sudah bisa di-override via parameter; rendah prioritas
+- [ ] (opsional) Semantik null-success — sebagian besar sudah ditangani M1 (`toResult`); review jika perlu
+- [ ] (opsional) `PhoneFormatter`/`CreditCardFormatter` — jaga posisi caret saat edit di tengah
 
 ---
 
