@@ -24,6 +24,8 @@ Public identifiers were renamed so each name reflects its value/role. Update cal
 - Num ext: `paddingX/paddingY` → `paddingHorizontal/paddingVertical`, `radiusX` → `radiusHorizontal`
 - TextStyle ext: `heightSpace` → `withLineHeight`, `letterSpace` → `withLetterSpacing`
 - Map ext: `get(key)` → `valueOrNull(key)`
+- Navigation ext: `maybeBack` → `popToRoot`; `isDialogOpen` → `isCoveredByRoute`; `closeDialog` → `dismissTopRoute`
+- Stream ext: `debounceMs(int)`/`throttleMs(int)` → `debounce(Duration)`/`throttle(Duration)`
 - `UiHelper.shadow` → `defaultBoxShadow`; `insetAxis(x,y)` → `insetSymmetric(horizontal,vertical)`; `visualDensity(x,y)` → `visualDensity(horizontal,vertical)`
 - `kDelayed` (one-shot future) → `defaultDelay()` (returns a fresh delay each call)
 - `SecureStorage.deleteBoxFromDisk()` removed (use `clearBox()`)

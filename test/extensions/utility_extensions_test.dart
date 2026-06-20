@@ -7,10 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 // extension StreamExtension<T> on Stream<T> {
 //   /// Shortcut for debounceTime(Duration(milliseconds: ms))
-//   Stream<T> debounceMs(int ms) => debounceTime(Duration(milliseconds: ms));
+//   Stream<T> debounce(int ms) => debounceTime(Duration(milliseconds: ms));
 
 //   /// Shortcut for throttleTime(Duration(milliseconds: ms))
-//   Stream<T> throttleMs(int ms) => throttleTime(Duration(milliseconds: ms));
+//   Stream<T> throttle(int ms) => throttleTime(Duration(milliseconds: ms));
 // }
 
 // extension NullableExtension<T> on T? {
@@ -74,12 +74,14 @@ void main() {
   group('StreamExtension (RxDart Extensions)', () {
     // Uses fakeAsync to drive virtual time — deterministic, not wall-clock
     // dependent (the previous real-timer version flaked under load).
-    test('debounceMs only emits the last value within the debounce period', () {
+    test('debounce only emits the last value within the debounce period', () {
       fakeAsync((async) {
         final controller = StreamController<int>();
         final emittedValues = <int>[];
 
-        controller.stream.debounceMs(50).listen(emittedValues.add);
+        controller.stream
+            .debounce(const Duration(milliseconds: 50))
+            .listen(emittedValues.add);
 
         // Emit values quickly
         controller.add(1);
@@ -100,13 +102,14 @@ void main() {
       });
     });
 
-    test('throttleMs only emits the first value within the throttle period',
-        () {
+    test('throttle only emits the first value within the throttle period', () {
       fakeAsync((async) {
         final controller = StreamController<int>();
         final emittedValues = <int>[];
 
-        controller.stream.throttleMs(50).listen(emittedValues.add);
+        controller.stream
+            .throttle(const Duration(milliseconds: 50))
+            .listen(emittedValues.add);
 
         // Emit the first value - should be emitted immediately
         controller.add(1);

@@ -233,6 +233,9 @@ class FcColors {
         onErrorContainer: onErrorContainer,
         surface: surface,
         onSurface: onSurface,
+        // The neutral [background] (Grey 50) is intentionally reused as the
+        // container tone: a subtle step below the white [surface] (M3 merged the
+        // old `background` role into surface, so this constant has no other home).
         surfaceContainer: background,
         surfaceContainerHighest: surfaceVariant,
         onSurfaceVariant: onSurfaceVariant,

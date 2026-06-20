@@ -201,8 +201,8 @@ context.isDarkMode
 
 ```dart
 searchController.stream
-  .debounceMs(300)   // wait 300ms of silence
-  .throttleMs(500)   // emit at most once per 500ms
+  .debounce(const Duration(milliseconds: 300))   // wait 300ms of silence
+  .throttle(const Duration(milliseconds: 500))   // emit at most once per 500ms
 ```
 
 ### Result Type

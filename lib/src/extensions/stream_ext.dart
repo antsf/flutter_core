@@ -2,8 +2,8 @@ import 'dart:async';
 
 /// Stream utility extensions — debounce and throttle without external dependencies.
 extension StreamExtension<T> on Stream<T> {
-  /// Emits a value only after [ms] milliseconds of silence (no new events).
-  Stream<T> debounceMs(int ms) {
+  /// Emits a value only after [duration] of silence (no new events).
+  Stream<T> debounce(Duration duration) {
     final controller = StreamController<T>.broadcast();
     Timer? timer;
     StreamSubscription<T>? sub;
@@ -13,7 +13,7 @@ extension StreamExtension<T> on Stream<T> {
       sub = listen(
         (event) {
           timer?.cancel();
-          timer = Timer(Duration(milliseconds: ms), () {
+          timer = Timer(duration, () {
             if (!controller.isClosed) controller.add(event);
           });
         },
@@ -35,8 +35,8 @@ extension StreamExtension<T> on Stream<T> {
     return controller.stream;
   }
 
-  /// Emits the first event then ignores subsequent events for [ms] milliseconds.
-  Stream<T> throttleMs(int ms) {
+  /// Emits the first event then ignores subsequent events for [duration].
+  Stream<T> throttle(Duration duration) {
     final controller = StreamController<T>.broadcast();
     bool throttled = false;
     StreamSubscription<T>? sub;
@@ -46,7 +46,7 @@ extension StreamExtension<T> on Stream<T> {
           if (!throttled) {
             throttled = true;
             if (!controller.isClosed) controller.add(event);
-            Timer(Duration(milliseconds: ms), () => throttled = false);
+            Timer(duration, () => throttled = false);
           }
         },
         onError: (Object e, StackTrace s) {

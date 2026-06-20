@@ -106,7 +106,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   ///
 //   /// **Caution**: This will pop all routes above the very first route in the stack.
 //   /// Ensure this is the desired behavior.
-//   void maybeBack<T extends Object?>([T? result]) {
+//   void popToRoot<T extends Object?>([T? result]) {
 //     while (canGoBack()) {
 //       back<T>(result);
 //     }
@@ -134,14 +134,14 @@ import 'package:flutter_test/flutter_test.dart';
 //   /// This is a heuristic and might not be universally accurate for all types of
 //   /// modal routes or dialog implementations. It checks if the current route
 //   /// associated with this context is the topmost active route.
-//   bool get isDialogOpen => ModalRoute.of(this)?.isCurrent != true;
+//   bool get isCoveredByRoute => ModalRoute.of(this)?.isCurrent != true;
 
-//   /// Attempts to close an open dialog if [isDialogOpen] is true.
+//   /// Attempts to close an open dialog if [isCoveredByRoute] is true.
 //   ///
 //   /// Uses [back] to pop the current route, which is assumed to be a dialog.
-//   /// See caveats for [isDialogOpen].
-//   void closeDialog() {
-//     if (isDialogOpen) {
+//   /// See caveats for [isCoveredByRoute].
+//   void dismissTopRoute() {
+//     if (isCoveredByRoute) {
 //       back();
 //     }
 //   }
@@ -385,7 +385,7 @@ void main() {
       expect(context.canGoBack(), isFalse);
     });
 
-    testWidgets('maybeBack pops all routes until the root',
+    testWidgets('popToRoot pops all routes until the root',
         (WidgetTester tester) async {
       await tester.pumpWidget(testApp);
       await tester.pumpAndSettle();
@@ -397,8 +397,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Details'), findsOneWidget); // Current screen
 
-      // maybeBack
-      context.maybeBack();
+      // popToRoot
+      context.popToRoot();
       await tester.pumpAndSettle();
 
       // Should be back at the root
@@ -438,16 +438,16 @@ void main() {
       ),
     );
 
-    testWidgets('isDialogOpen is false when no dialog is present',
+    testWidgets('isCoveredByRoute is false when no dialog is present',
         (WidgetTester tester) async {
       await tester.pumpWidget(focusTestApp);
       await tester.pumpAndSettle();
 
       // No dialog open
-      expect(focusDialogContext.isDialogOpen, isFalse);
+      expect(focusDialogContext.isCoveredByRoute, isFalse);
     });
 
-    testWidgets('isDialogOpen is true when a dialog is present',
+    testWidgets('isCoveredByRoute is true when a dialog is present',
         (WidgetTester tester) async {
       await tester.pumpWidget(focusTestApp);
       await tester.pumpAndSettle();
@@ -460,14 +460,14 @@ void main() {
       await tester.pump(); // Start the dialog animation
 
       // isCurrent should be false for the original route
-      expect(focusDialogContext.isDialogOpen, isTrue);
+      expect(focusDialogContext.isCoveredByRoute, isTrue);
 
       // Pop the dialog manually to clean up
       Navigator.of(focusDialogContext).pop();
       await tester.pumpAndSettle();
     });
 
-    testWidgets('closeDialog closes an open dialog',
+    testWidgets('dismissTopRoute closes an open dialog',
         (WidgetTester tester) async {
       await tester.pumpWidget(focusTestApp);
       await tester.pumpAndSettle();
@@ -481,15 +481,15 @@ void main() {
 
       // Verify dialog is open
       expect(find.text('Test Dialog'), findsOneWidget);
-      expect(focusDialogContext.isDialogOpen, isTrue);
+      expect(focusDialogContext.isCoveredByRoute, isTrue);
 
       // Close the dialog using the extension
-      focusDialogContext.closeDialog();
+      focusDialogContext.dismissTopRoute();
       await tester.pumpAndSettle();
 
       // Verify dialog is closed
       expect(find.text('Test Dialog'), findsNothing);
-      expect(focusDialogContext.isDialogOpen, isFalse);
+      expect(focusDialogContext.isCoveredByRoute, isFalse);
     });
 
     testWidgets('unfocusKeyboard unfocuses all nodes',
