@@ -1,18 +1,18 @@
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:flutter_core/src/storage/local_storage.dart';
+import 'package:flutter_core/src/storage/secure_storage.dart';
 
 import '../mocks/mock_flutter_secure_storage.dart'
     show MockFlutterSecureStorage;
 
 void main() {
   late MockFlutterSecureStorage mockStorage;
-  late LocalStorage localStorage;
+  late SecureStorage localStorage;
 
   setUp(() {
     mockStorage = MockFlutterSecureStorage();
     // Inject mock via dynamic (since _storage is private)
-    localStorage = LocalStorage(secureStorage: mockStorage);
+    localStorage = SecureStorage(secureStorage: mockStorage);
   });
 
   test('set and get store/retrieve string correctly', () async {

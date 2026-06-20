@@ -1,5 +1,5 @@
 /// UI and device adaptation extension methods for BuildContext and num.
-library ui_extensions;
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

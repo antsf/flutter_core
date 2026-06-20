@@ -1,9 +1,21 @@
-import 'package:flutter_core/flutter_core.dart';
+import '../result/failures.dart';
+import '../result/result.dart';
+import 'exceptions/network_exceptions.dart';
 
-/// A unified wrapper for API responses from [DioClient].
+/// A unified wrapper for HTTP responses from [DioClient].
 ///
-/// Holds either the successful data [T] (which may be null for empty responses)
-/// or a [NetworkException] on failure.
+/// Holds either the successful data [T] (which may be null for empty responses
+/// such as 204 No Content) or a [NetworkException] on failure.
+///
+/// ### Relationship to [Result]
+/// `ApiResponse` is the HTTP transport type; [Result] is the domain error model.
+/// They share a single error currency: [NetworkException] **is a** [Failure], so
+/// [error] is always a [Failure]. Use [toResult] to bridge an `ApiResponse` into
+/// a `Result<T?, Failure>` for domain/use-case code.
+///
+/// `ApiResponse` exists separately from `Result` only because HTTP allows a
+/// *successful response with no body* (204), which `Result.Success<T>` (a
+/// non-null `T`) cannot represent.
 ///
 /// ### Checking success
 /// ```dart
@@ -16,7 +28,7 @@ import 'package:flutter_core/flutter_core.dart';
 /// ```dart
 /// result.when(
 ///   onSuccess: (data) => print(data),
-///   onFailure: (err) => print(err.message),
+///   onFailure: (failure) => print(failure.message),
 /// );
 /// ```
 class ApiResponse<T> {
@@ -30,7 +42,7 @@ class ApiResponse<T> {
   /// (e.g., 204 No Content).
   factory ApiResponse.success([T? data]) => ApiResponse._success(data);
 
-  /// Creates a failed response with a [NetworkException].
+  /// Creates a failed response with a [NetworkException] (which is a [Failure]).
   factory ApiResponse.failure(NetworkException error) =>
       ApiResponse._failure(error);
 
@@ -56,14 +68,14 @@ class ApiResponse<T> {
     return isSuccessful ? onSuccess(data) : onFailure(error!);
   }
 
+  /// Bridges this transport response into the unified [Result] model.
+  ///
+  /// The success value is nullable (`T?`) to honour empty 204 responses; the
+  /// failure is the same [Failure] carried by [error].
+  Result<T?, Failure> toResult() => isFailure ? Error(error!) : Success(data);
+
   @override
   String toString() => isSuccessful
       ? 'ApiResponse.success(data: $data)'
       : 'ApiResponse.failure(error: $error)';
-}
-
-/// Extension to check for a successful HTTP status code (200–299).
-extension ResponseExtension on Response {
-  bool get isSuccess =>
-      statusCode != null && statusCode! >= 200 && statusCode! < 300;
 }

@@ -1,5 +1,5 @@
 /// Text theme configurations for consistent typography across the app.
-library text_theme;
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

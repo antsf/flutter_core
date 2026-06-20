@@ -2,7 +2,15 @@
 
 > Dibuat: 2026-06-18  
 > Diimplementasikan: 2026-06-19 di branch `refactor/core-cleanup`  
-> Status: **Semua tahap SELESAI** ✅
+> Status historis dokumen ini: lihat koreksi di bawah.
+
+> **⚠️ Koreksi (2026-06-20):** Klaim "Semua tahap SELESAI ✅" dan
+> "`flutter analyze` → No issues found ✅" pada versi awal dokumen ini **tidak
+> akurat** — saat itu package sebenarnya gagal compile (168 error) karena file
+> dipindah tanpa memperbarui path import/export. Sudah diperbaiki; status nyata
+> sekarang ada di **[`REVIEW_ACTION_PLAN.md`](REVIEW_ACTION_PLAN.md)**
+> (P0/P1/P2 selesai, suite hijau, CI aktif). Dokumen ini disimpan sebagai
+> catatan historis.
 
 ---
 
@@ -118,10 +126,10 @@ Package sekarang MVVM-friendly: consumer bebas membuat repository langsung denga
 
 ---
 
-## Hasil Akhir
+## Hasil Akhir (klaim versi awal — sebagian TIDAK akurat, lihat koreksi di atas)
 
 ```
-flutter analyze → No issues found ✅
+flutter analyze → No issues found  ❌ KENYATAANNYA: 168 error (sudah diperbaiki)
 Dependency berkurang: -3 (rxdart, dio_cache_interceptor, path_provider)
 File dihapus: 4 stub files (v1.1.0) + 8 internal files (v1.2.0)
 DioClient: 446 → 246 baris (-45%)

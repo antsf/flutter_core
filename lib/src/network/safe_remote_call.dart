@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:logger/logger.dart';
 
 import '../result/failures.dart';
@@ -14,6 +15,15 @@ final _logger = Logger(
   ),
 );
 
+/// Logs an error message in debug builds only.
+///
+/// We never log the full response/result here — those routinely contain PII or
+/// tokens, and logging them in production is a compliance risk. Only short error
+/// messages are logged, and only when not in release mode.
+void _logError(String message) {
+  if (!kReleaseMode) _logger.e(message);
+}
+
 typedef RemoteCall<T> = FutureResult<T> Function();
 
 FutureResult<R?> safeRemoteCall<T, R>({
@@ -24,7 +34,6 @@ FutureResult<R?> safeRemoteCall<T, R>({
 }) async {
   try {
     final result = await remoteCall();
-    _logger.d('safeRemoteCall result: $result');
 
     if (result.isSuccess) {
       final data = result.data;
@@ -35,17 +44,16 @@ FutureResult<R?> safeRemoteCall<T, R>({
       return Error(result.failure ?? GenericFailure(message: genericError));
     }
   } on NetworkException catch (e) {
-    _logger.e('NetworkException: ${e.message}');
-    return Error(
-        NetworkFailure(message: e.message, statusCode: e.statusCode ?? 0));
+    // NetworkException is a Failure — return it directly, preserving its
+    // specific type (Unauthorized/NotFound/...) instead of flattening it.
+    _logError('NetworkException: ${e.message}');
+    return Error(e);
   } on DioException catch (e) {
     final networkException = NetworkException.fromDioException(e);
-    _logger.e('DioException: ${networkException.message}');
-    return Error(NetworkFailure(
-        message: networkException.message,
-        statusCode: networkException.statusCode ?? 0));
+    _logError('DioException: ${networkException.message}');
+    return Error(networkException);
   } catch (e) {
-    _logger.e('Unexpected error: $e');
+    _logError('Unexpected error: $e');
     return Error(GenericFailure(message: e.toString()));
   }
 }
@@ -61,6 +69,5 @@ FutureResult<void> safeRemoteCallVoid<T>({
     onBeforeSuccess: onBeforeSuccess,
     genericError: genericError,
   );
-  _logger.d('safeRemoteCallVoid result: $result');
   return result;
 }

@@ -43,19 +43,16 @@
 ///   }
 /// }
 /// ```
-library flutter_core;
+library;
 
-import 'package:dio/dio.dart' show Interceptor;
+import 'package:dio/dio.dart' show Dio, Interceptor;
 import 'package:flutter/material.dart';
-import 'package:flutter_core/flutter_core.dart' show Dio;
-import 'package:flutter_core/src/storage/local_storage.dart';
+import 'package:flutter_core/src/storage/secure_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 
 import 'src/network/dio_client.dart';
 import 'src/services/connectivity_service.dart';
-// import 'src/theme/theme_provider.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.
 ///
@@ -77,25 +74,17 @@ class FlutterCore {
   /// Throws a [LateInitializationError] if accessed before initialization.
   static late final DioClient dioClient;
 
-  /// Provides access to the [SecureStorageService] instance for secure data persistence.
+  /// Provides access to the [SecureStorage] instance for secure data persistence.
   ///
   /// Available after [initialize] has been successfully called.
   /// Throws a [LateInitializationError] if accessed before initialization.
-  // static late final SecureStorageService storageService;
-
-  static late final LocalStorage localStorage;
-
-  /// Provides access to the singleton [ThemeProvider] instance for managing app themes.
-  ///
-  /// This getter retrieves the instance from [ThemeProvider.instance].
-  /// The [ThemeProvider] itself is configured via [initializeUI].
-  // static ThemeProvider get themeProvider => ThemeProvider.instance;
+  static late final SecureStorage localStorage;
 
   /// Initializes core non-UI services of the Flutter Core package.
   ///
   /// This method sets up:
-  /// - [SecureStorageService]: For secure local data storage.
-  /// - [DioClient]: For network communication, configured with base URL, timeouts, logging, and caching.
+  /// - [SecureStorage]: For secure local data storage.
+  /// - [DioClient]: For network communication, configured with base URL, timeouts, and logging.
   /// - [ConnectivityService]: To monitor network connectivity status.
   ///
   /// This method **must be called once** at application startup, typically in `main()`,
@@ -121,24 +110,16 @@ class FlutterCore {
       return;
     }
 
-    // 1. Initialize Secure Storage Service
-    // This service is used for securely storing sensitive data.
-    // storageService = SecureStorageService();
-    // await storageService.initialize();
-
-    localStorage = LocalStorage();
-
+    // 1. Initialize secure storage.
+    localStorage = SecureStorage();
     await localStorage.init();
 
-    // 2. Initialize Network Client (Dio)
-    // Configures Dio with caching, logging, and timeout settings.
-    // final cacheConfig = DioCacheConfig(maxAge: cacheMaxAge);
+    // 2. Initialize the network client (Dio).
     dioClient = DioClient(
       baseUrl: baseUrl,
       connectTimeoutMs: connectTimeout,
       receiveTimeoutMs: receiveTimeout,
       enableLogging: enableLogging,
-      // cacheConfig: cacheConfig,
       logger: Logger(
         printer: PrettyPrinter(
           methodCount: 0, // Hides method stack trace in logs
@@ -161,62 +142,20 @@ class FlutterCore {
     debugPrint("FlutterCore initialized successfully.");
   }
 
-  /// Initializes UI-related services and configurations.
+  /// Resets the initialization flag of FlutterCore.
   ///
-  /// This method typically handles:
-  /// - Google Fonts initialization (e.g., pre-loading specific fonts).
-  /// - ThemeProvider configuration with custom or default light/dark themes, text themes, and color schemes.
+  /// Primarily for testing, where services may need re-initialization between
+  /// tests.
   ///
-  /// This should generally be called after [initialize] and before `runApp()`.
-  ///
-  /// Parameters:
-  /// - [lightTheme]: Optional custom [ThemeData] for the light mode.
-  /// - [darkTheme]: Optional custom [ThemeData] for the dark mode.
-  /// - [textTheme]: Optional custom global [TextTheme].
-  /// - [colorScheme]: Optional custom global [ColorScheme].
-  // static Future<void> initializeUI({
-  //   ThemeData? lightTheme,
-  //   ThemeData? darkTheme,
-  //   TextTheme? textTheme,
-  //   ColorScheme? colorScheme,
-  // }) async {
-  //   // Initialize Google Fonts.
-  //   // Example: Pre-load 'Inter' font. This can be expanded to accept a list of fonts.
-  //   await GoogleFonts.pendingFonts([
-  //     GoogleFonts.inter(), // Commonly used sans-serif font
-  //   ]);
-
-  //   // Configure the ThemeProvider with custom or default themes.
-  //   // If parameters are null, ThemeProvider will use its internal defaults.
-  //   ThemeProvider.configure(
-  //     lightTheme: lightTheme,
-  //     darkTheme: darkTheme,
-  //     textTheme: textTheme,
-  //     colorScheme: colorScheme,
-  //   );
-  //   debugPrint("FlutterCore UI initialized successfully.");
-  // }
-
-  /// Cleans up resources and resets the initialization state of FlutterCore.
-  ///
-  /// This method is primarily intended for use in testing environments where
-  /// re-initialization of services might be necessary between tests.
-  /// It clears data from [storageService] and resets the `_isInitialized` flag.
-  ///
-  /// **Note:** In a typical application lifecycle, this method should not be needed.
-  /// Resetting static fields for services like `dioClient` is not straightforward
-  /// in Dart without more complex dependency injection patterns. This cleanup
-  /// mainly focuses on storage and the initialization flag.
+  /// **Note:** the `late final` static fields (`dioClient`, `localStorage`)
+  /// cannot be reset without restarting the app or a proper DI container, so
+  /// this only resets the `_isInitialized` flag.
   static Future<void> cleanup() async {
     if (!_isInitialized) {
       debugPrint("FlutterCore.cleanup() called but core is not initialized.");
       return;
     }
 
-    // await storageService.clear();
-    // Note: dioClient and other late final static fields cannot be easily "reset"
-    // to an uninitialized state without restarting the app or using more
-    // sophisticated DI. This cleanup is partial.
     _isInitialized = false;
     debugPrint(
         "FlutterCore cleaned up. Ready for re-initialization if needed.");

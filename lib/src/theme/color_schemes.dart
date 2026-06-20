@@ -1,5 +1,5 @@
 /// Additional color schemes for the app, including blue, green, purple, and more.
-library color_schemes;
+library;
 
 import 'package:flutter/material.dart';
 

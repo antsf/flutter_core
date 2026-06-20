@@ -2,21 +2,33 @@ import 'dart:convert';
 import 'dart:developer' show log;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Simple key-value storage backed by [FlutterSecureStorage].
+/// Encrypted key-value storage backed by [FlutterSecureStorage].
 ///
-/// Keys are namespaced by [boxName] using the format `boxName|key`, which
-/// allows logical grouping of related values and bulk operations per box.
+/// **Use this for small, sensitive values** — auth/refresh tokens, API keys,
+/// PINs. It is NOT a general-purpose app database.
 ///
-/// Supported types for [get] and [set]: [String], [int], [double], [bool],
-/// [Map<String, dynamic>].
-class LocalStorage {
+/// ### Performance & security caveats
+/// - Backed by the platform Keychain (iOS/macOS) / Keystore-encrypted prefs
+///   (Android). Reads/writes are far slower than `shared_preferences` or a DB,
+///   so don't use it for large or frequently-accessed non-sensitive data.
+/// - The bulk helpers ([clearBox], [getKeys], [getAllValues]) call `readAll()`,
+///   which reads and **decrypts every stored entry** (O(n)). Keep boxes small.
+/// - Security guarantees vary by platform. On the web there is no OS keychain,
+///   so data is **not** strongly protected — avoid storing high-value secrets
+///   on web targets.
+///
+/// Keys are namespaced by [boxName] using the format `boxName|key`.
+///
+/// Supported value types for [get]/[set]: [String], [int], [double], [bool],
+/// `Map<String, dynamic>`, and `List<dynamic>` (the last two are JSON-encoded).
+class SecureStorage {
   static const _options = AndroidOptions(
     encryptedSharedPreferences: true,
   );
 
   final FlutterSecureStorage _storage;
 
-  LocalStorage({FlutterSecureStorage? secureStorage})
+  SecureStorage({FlutterSecureStorage? secureStorage})
       : _storage = secureStorage ??
             const FlutterSecureStorage(
               aOptions: _options,
@@ -27,7 +39,7 @@ class LocalStorage {
 
   /// No-op on secure-storage; kept for API compatibility.
   Future<void> init() async {
-    log('LocalStorage: ready (FlutterSecureStorage)');
+    log('SecureStorage: ready (FlutterSecureStorage)');
   }
 
   /* ---------- single-value CRUD ---------- */
@@ -37,7 +49,7 @@ class LocalStorage {
       final raw = await _storage.read(key: _key(boxName, key));
       return raw == null ? null : _fromString<T>(raw);
     } catch (e, s) {
-      log('LocalStorage: get failed', error: e, stackTrace: s);
+      log('SecureStorage: get failed', error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -49,7 +61,7 @@ class LocalStorage {
         value: _toString<T>(value),
       );
     } catch (e, s) {
-      log('LocalStorage: set failed', error: e, stackTrace: s);
+      log('SecureStorage: set failed', error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -58,7 +70,7 @@ class LocalStorage {
     try {
       await _storage.delete(key: _key(boxName, key));
     } catch (e, s) {
-      log('LocalStorage: delete failed', error: e, stackTrace: s);
+      log('SecureStorage: delete failed', error: e, stackTrace: s);
       rethrow;
     }
   }
@@ -68,12 +80,18 @@ class LocalStorage {
 
   /* ---------- bulk helpers ---------- */
 
+  /// Removes all keys under [boxName].
+  ///
+  /// Note: reads (and decrypts) all stored entries to find matching keys.
   Future<void> clearBox(String boxName) async {
     final all = await _storage.readAll();
     final keysToDelete = all.keys.where((k) => k.startsWith('$boxName|'));
     await Future.wait(keysToDelete.map((key) => _storage.delete(key: key)));
   }
 
+  /// Returns the keys under [boxName].
+  ///
+  /// Note: reads (and decrypts) all stored entries.
   Future<List<String>> getKeys(String boxName) async {
     final all = await _storage.readAll();
     return all.keys
@@ -85,6 +103,7 @@ class LocalStorage {
   /// Returns all key-value pairs stored under [boxName].
   ///
   /// Values that cannot be deserialized to [T] are returned as `null`.
+  /// Note: reads (and decrypts) all stored entries.
   Future<Map<String, T?>> getAllValues<T>(String boxName) async {
     final all = await _storage.readAll();
     final result = <String, T?>{};
@@ -109,7 +128,7 @@ class LocalStorage {
   String _key(String boxName, String key) => '$boxName|$key';
 
   String _toString<T>(T value) {
-    if (T == Map<String, dynamic>) return jsonEncode(value);
+    if (value is Map || value is List) return jsonEncode(value);
     return value.toString();
   }
 
@@ -119,7 +138,17 @@ class LocalStorage {
     if (T == double) return double.tryParse(raw) as T?;
     if (T == bool) return (raw.toLowerCase() == 'true') as T;
     if (T == Map<String, dynamic>) return jsonDecode(raw) as T?;
+    if (T == List<dynamic>) return jsonDecode(raw) as T?;
     throw UnsupportedError(
-        'LocalStorage: Type $T not supported. Supported: String, int, double, bool, Map<String, dynamic>');
+        'SecureStorage: Type $T not supported. Supported: String, int, double, '
+        'bool, Map<String, dynamic>, List<dynamic>');
   }
 }
+
+/// Deprecated alias for [SecureStorage].
+///
+/// Renamed to make it explicit that this is encrypted secure storage (backed by
+/// flutter_secure_storage), not general-purpose local storage. Will be removed
+/// in a future release.
+@Deprecated('Renamed to SecureStorage. Will be removed in a future release.')
+typedef LocalStorage = SecureStorage;

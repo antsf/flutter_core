@@ -4,7 +4,7 @@
 /// definitions used throughout the Flutter Core package and applications using it.
 /// It includes named color constants, methods for color manipulation (like darken, lighten),
 /// and pre-defined light and dark [ColorScheme]s.
-library fc_colors;
+library;
 
 import 'package:flutter/material.dart';
 

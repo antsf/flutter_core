@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/storage/local_storage.dart' show LocalStorage;
+import 'package:flutter_core/src/storage/secure_storage.dart'
+    show SecureStorage;
 import 'theme.dart';
 
 /// The main provider for managing and notifying listeners of theme changes.
@@ -8,7 +9,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String themeBoxName = 'theme_box';
   static const String themeKey = 'theme_mode';
   static const String _colorSchemeKey = 'color_scheme';
-  static LocalStorage localStorage = LocalStorage();
+  static SecureStorage localStorage = SecureStorage();
 
   // These are the themes that can be customized during configuration
   ThemeData? _customLightTheme;
@@ -40,7 +41,7 @@ class ThemeProvider extends ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   String get currentColorScheme => _currentColorScheme;
 
-  /// Load saved theme settings from LocalStorage.
+  /// Load saved theme settings from [SecureStorage].
   Future<void> loadThemeMode() async {
     final isDark = await localStorage.get<bool>(themeBoxName, themeKey);
     final scheme =
@@ -58,7 +59,7 @@ class ThemeProvider extends ChangeNotifier {
         : (_customLightTheme ?? AppTheme.defaultLightTheme);
   }
 
-  /// Save current theme settings to LocalStorage.
+  /// Save current theme settings to [SecureStorage].
   Future<void> _saveThemeSettings() async {
     await localStorage.set<bool>(themeBoxName, themeKey, _isDarkMode);
     await localStorage.set<String>(

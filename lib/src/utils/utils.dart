@@ -1,5 +1,5 @@
 /// Exports all utility helpers for the package.
-library utils;
+library;
 
 export 'formatter.dart';
 export 'path_utils.dart';

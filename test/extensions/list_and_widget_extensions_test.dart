@@ -12,7 +12,7 @@ extension MockUiExt on num {
 
 // --- EXTENSIONS UNDER TEST (Copied/Inlined for testing environment) ---
 
-/// Extensions on List<Widget>
+/// Extensions on `List<Widget>`.
 extension ListWidgetX on List<Widget> {
   /// Adds [separator] between every existing widget
   List<Widget> separatedBy(Widget separator) {

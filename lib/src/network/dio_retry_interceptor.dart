@@ -1,8 +1,12 @@
 import 'dart:async';
-import 'dart:math' show pow;
+import 'dart:math' show pow, Random;
 
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+
+/// Random source for backoff jitter. A single shared instance is fine — jitter
+/// only needs to de-correlate retries across requests, not be cryptographic.
+final _retryRandom = Random();
 
 /// Configuration options for retrying failed Dio HTTP requests.
 class RetryOptions {
@@ -18,30 +22,55 @@ class RetryOptions {
   /// Whether to use exponential backoff. Defaults to `true`.
   final bool useExponentialBackoff;
 
+  /// Whether to add random jitter to the backoff delay. Defaults to `true`.
+  ///
+  /// Jitter spreads retries across clients so they don't all retry at the same
+  /// instant (a "thundering herd") and hammer a recovering server in lockstep.
+  final bool useJitter;
+
   /// HTTP status codes that trigger a retry. Defaults to transient error codes.
   final List<int> retryableStatusCodes;
+
+  /// HTTP methods that are safe to retry automatically. Defaults to the
+  /// idempotent methods only.
+  ///
+  /// **Why this matters:** a non-idempotent request (e.g. `POST`) that times out
+  /// or returns a 5xx may have *already been processed* server-side. Blindly
+  /// retrying it can duplicate the operation — a double payment, a duplicate
+  /// order, a double transfer. Methods outside this set are therefore not
+  /// retried unless the individual request explicitly opts in via
+  /// `Options(extra: {'retry': true})` (use that only when the endpoint is
+  /// idempotent or guarded by an idempotency key).
+  final Set<String> retryableMethods;
 
   const RetryOptions({
     this.maxAttempts = 3,
     this.baseDelayMs = 1000,
     this.maxDelayMs = 10000,
     this.useExponentialBackoff = true,
+    this.useJitter = true,
     this.retryableStatusCodes = const [408, 500, 502, 503, 504],
+    this.retryableMethods = const {'GET', 'HEAD', 'OPTIONS'},
   });
 
+  /// Computes the delay (ms) before the given 1-based [attempt].
   int calculateDelay(int attempt) {
-    if (!useExponentialBackoff) return baseDelayMs;
-    final exponentialDelay = baseDelayMs * pow(2, (attempt - 1).clamp(0, 30));
-    return exponentialDelay > maxDelayMs
-        ? maxDelayMs
-        : exponentialDelay.toInt();
+    final raw = useExponentialBackoff
+        ? baseDelayMs * pow(2, (attempt - 1).clamp(0, 30))
+        : baseDelayMs;
+    final capped = (raw > maxDelayMs ? maxDelayMs : raw).toInt();
+    if (!useJitter || capped <= 0) return capped;
+    // Equal jitter: keep half the delay fixed, randomize the other half.
+    final half = capped ~/ 2;
+    return half + _retryRandom.nextInt(capped - half + 1);
   }
 }
 
 /// Dio interceptor that automatically retries failed HTTP requests.
 ///
 /// Retries on timeout/connection errors and configurable HTTP status codes,
-/// with optional exponential backoff via [RetryOptions].
+/// with exponential backoff + jitter via [RetryOptions]. By default only
+/// idempotent methods are retried (see [RetryOptions.retryableMethods]).
 class DioRetryInterceptor extends Interceptor {
   final Dio dio;
   final RetryOptions options;
@@ -111,6 +140,13 @@ class DioRetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    // Never retry a non-idempotent method unless the request explicitly opts in.
+    final method = err.requestOptions.method.toUpperCase();
+    final optedIn = err.requestOptions.extra['retry'] == true;
+    if (!optedIn && !options.retryableMethods.contains(method)) {
+      return false;
+    }
+
     if (err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout ||
         err.type == DioExceptionType.receiveTimeout ||

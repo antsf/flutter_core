@@ -13,11 +13,72 @@ All notable changes to this project will be documented in this file.
   the package's own principle of not shipping abstractions that compete with the
   modern Flutter ecosystem (Riverpod/Bloc + repositories). Bring your own
   use-case base class if you need one — `Result` / `Failure` remain exported.
+- **`TimeoutException` → `NetworkTimeoutException`** (M10) to stop shadowing
+  `dart:async`'s `TimeoutException`.
+- **`LocalStorage` → `SecureStorage`** (M2), file `storage/local_storage.dart` →
+  `storage/secure_storage.dart`. `LocalStorage` remains as a `@Deprecated`
+  typedef alias for now. The rename makes it explicit that this is encrypted
+  secure storage (flutter_secure_storage), not general key-value storage.
+- **Connectivity pre-flight is now opt-in** (M3):
+  `DioClient(checkConnectivityBeforeRequest: false)` by default. See below.
 
 ### New Features
 - **`DioClient` / `FlutterCore.initialize`**: optional `Interceptor? interceptor`
   parameter to inject a custom Dio interceptor (ported from `main`'s
   `feat(network)` work and adapted to the refactored layout).
+
+### API & design cleanup (M2, M3, M7, M9, M10)
+- **Fixed duplicate `back()` on `BuildContext` (M9):** it was defined on both
+  `NavigationExtension` and `DialogsAndAlerts`, making `context.back()` ambiguous
+  for anyone importing the extensions barrel. It now lives only on
+  `NavigationExtension`.
+- **Trimmed barrel re-exports (M7):** `google_fonts` and `intl` are no longer
+  re-exported from `package:flutter_core/flutter_core.dart` — they're internal
+  implementation details. `dio`, `connectivity_plus`, and `flutter_screenutil`
+  are still re-exported because their types appear in the public API. If you
+  used `Intl`/`GoogleFonts` via the barrel, import those packages directly.
+- **`SecureStorage`** now documents its performance/security caveats (slow,
+  bulk ops decrypt all keys, web is not strongly protected) and gained
+  `List<dynamic>` support.
+- **Connectivity pre-flight off by default**: `connectivity_plus` reports the
+  network interface, not real reachability (a captive portal reads "online"),
+  and the check added a platform-channel round-trip per request. With it off, a
+  failed connection still surfaces as `NoInternetConnectionException` (mapped
+  from Dio's `connectionError`). Re-enable with
+  `DioClient(checkConnectivityBeforeRequest: true)`.
+
+### Unified error model (M1)
+- **`Failure` is now the single error currency.** `NetworkException` (and all its
+  subtypes — `UnauthorizedException`, `NotFoundException`, …) now **extend
+  `Failure`**, so network errors flow directly into the `Result<T, Failure>`
+  domain model without a lossy remap.
+- **`ApiResponse.toResult()`** bridges the HTTP transport type into
+  `Result<T?, Failure>`. `ApiResponse` remains the `DioClient` return type
+  because HTTP allows a *success with no body* (204) that `Result.Success<T>`
+  can't represent; the two now share one error type and convert cleanly.
+- **Removed the dead, unexported `network/safe_call.dart`** (the duplicate
+  helper) and the unused `ResponseExtension`. `safeRemoteCall` no longer
+  re-wraps `NetworkException` into a generic `NetworkFailure` — it returns the
+  specific failure as-is.
+
+### Security & reliability (production hardening)
+- **Retries are now idempotency-aware** (`RetryOptions.retryableMethods`,
+  default `{GET, HEAD, OPTIONS}`). Non-idempotent requests (POST/PUT/PATCH/...)
+  are **no longer auto-retried** on timeout/5xx — which previously risked
+  **duplicate transactions** (double payment/order). A request can opt in with
+  `Options(extra: {'retry': true})` when it's safe. Backoff now adds **jitter**
+  (`RetryOptions.useJitter`, default on) to avoid a thundering herd.
+- **Token refresh is coalesced.** Concurrent 401s now share a single in-flight
+  refresh instead of each firing its own — preventing a refresh **stampede**
+  that (with single-use/rotating tokens) logged users out at random. A
+  per-request guard also prevents infinite refresh→retry loops.
+- **GET cache is bounded and identity-scoped.** The in-memory cache now has an
+  LRU bound (`DioClient(maxCacheEntries: 100)`) so it can't grow without limit,
+  and cache keys include the auth-token identity so a cached response for one
+  user can never be served to another after the token changes.
+- **No more PII in logs.** `safeRemoteCall` no longer logs full response bodies
+  (which routinely contain PII/tokens); remaining error logs are gated to debug
+  builds only.
 
 ### Changed
 - Reorganized `lib/src/domain/` into content-matched folders (no `domain/`):

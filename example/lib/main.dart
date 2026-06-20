@@ -29,8 +29,8 @@ void main() async {
     enableLogging: true,
   );
 
-  // Initialize the LocalStorage service before use
-  final localStorage = LocalStorage();
+  // Initialize the SecureStorage service before use
+  final localStorage = SecureStorage();
   await localStorage.init();
 
   // Example of providing a custom dark theme
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
   String response = '';
   bool isLoading = false;
 
-  final localStorage = LocalStorage();
+  final localStorage = SecureStorage();
 
   Future<void> loadData() async {
     setState(() => isLoading = true);
@@ -136,17 +136,6 @@ class _HomePageState extends State<HomePage> {
               },
               child: Text(
                 'Toggle Theme',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                // Example of setting a custom color scheme (doesn't change theme in this simple example)
-                themeProvider.setColorScheme('blue');
-              },
-              child: Text(
-                'Set Blue Scheme',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),

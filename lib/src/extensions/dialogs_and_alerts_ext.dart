@@ -19,11 +19,9 @@ import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 /// context.back(); // To dismiss the loading dialog
 /// ```
 extension DialogsAndAlerts on BuildContext {
-  /// Returns the current color scheme from the theme.
-  // ColorScheme get colorScheme => Theme.of(this).colorScheme;
-
-  /// A shortcut to `Navigator.of(this).pop(result)`.
-  void back<T extends Object?>([T? result]) => Navigator.of(this).pop(result);
+  // Note: `back()` lives on NavigationExtension (navigation_ext.dart) — defining
+  // it here too made `context.back()` ambiguous for anyone importing the
+  // extensions barrel. The calls below resolve to that single definition.
 
   /// Shows a success snack bar with a green background.
   void showSuccessAlert(String message, {VoidCallback? onClose}) {
