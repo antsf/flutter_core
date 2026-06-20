@@ -1,5 +1,45 @@
 import 'package:flutter/services.dart';
 
+bool _isDigitCode(int c) => c >= 0x30 && c <= 0x39;
+
+/// Counts digits (0-9) in [text] before [offset].
+int _digitsBefore(String text, int offset) {
+  final end = offset < 0 ? text.length : offset.clamp(0, text.length);
+  var count = 0;
+  for (var i = 0; i < end; i++) {
+    if (_isDigitCode(text.codeUnitAt(i))) count++;
+  }
+  return count;
+}
+
+/// The offset in [formatted] just after [digitCount] digits — used to keep the
+/// caret next to the same digit the user was editing, instead of jumping to the
+/// end of the field.
+int _offsetAfterDigits(String formatted, int digitCount) {
+  if (digitCount <= 0) return 0;
+  var seen = 0;
+  for (var i = 0; i < formatted.length; i++) {
+    if (_isDigitCode(formatted.codeUnitAt(i))) {
+      seen++;
+      if (seen == digitCount) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+
+TextEditingValue _withCaret(
+  TextEditingValue newValue,
+  String formatted,
+) {
+  final digitsBefore =
+      _digitsBefore(newValue.text, newValue.selection.baseOffset);
+  return TextEditingValue(
+    text: formatted,
+    selection: TextSelection.collapsed(
+        offset: _offsetAfterDigits(formatted, digitsBefore)),
+  );
+}
+
 /// Adds thousand separators while the user types.
 ///
 /// For example: `1000000` becomes `1.000.000`.
@@ -24,11 +64,7 @@ class ThousandsFormatter extends TextInputFormatter {
       return oldValue;
     }
 
-    final formatted = _formatNumber(intValue);
-    return newValue.copyWith(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
+    return _withCaret(newValue, _formatNumber(intValue));
   }
 
   /// Formats the integer with thousand separators.
@@ -62,17 +98,16 @@ class PhoneFormatter extends TextInputFormatter {
 
     final buffer = StringBuffer();
     for (int i = 0; i < digits.length; i++) {
-      if (i == 3 || i == 7) {
+      // Group in fours, e.g. "081234567890" -> "0812 3456 7890" (matches the
+      // documented format; the previous `i == 3 || i == 7` produced "081 2345
+      // 67890", which disagreed with the doc).
+      if (i > 0 && i % 4 == 0) {
         buffer.write(' ');
       }
       buffer.write(digits[i]);
     }
 
-    final text = buffer.toString();
-    return newValue.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
+    return _withCaret(newValue, buffer.toString());
   }
 }
 
@@ -98,19 +133,6 @@ class CreditCardFormatter extends TextInputFormatter {
       buffer.write(digits[i]);
     }
 
-    final text = buffer.toString();
-    return newValue.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
+    return _withCaret(newValue, buffer.toString());
   }
 }
-
-// A simple main function to demonstrate the usage.
-// void main() {
-//   // This cannot be run directly in a main function as TextInputFormatter
-//   // is designed to be used with a TextFormField, but this illustrates the purpose.
-//   print('This file contains Flutter TextInputFormatters.');
-//   print('You can use them with a `TextFormField` or `TextField`.');
-//   print('Example: `TextFormField(inputFormatters: [ThousandsFormatter()])`');
-// }

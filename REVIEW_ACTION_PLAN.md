@@ -139,7 +139,7 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 - [ ] (opsional) Kurangi global singleton `FlutterCore`/`ThemeProvider` → DI — perubahan arsitektural besar, butuh diskusi
 - [ ] (opsional) String ID hardcoded `safe_remote_call genericError` — sudah bisa di-override via parameter; rendah prioritas
 - [ ] (opsional) Semantik null-success — sebagian besar sudah ditangani M1 (`toResult`); review jika perlu
-- [ ] (opsional) `PhoneFormatter`/`CreditCardFormatter` — jaga posisi caret saat edit di tengah
+- [x] `PhoneFormatter`/`CreditCardFormatter`/`ThousandsFormatter` — caret dipertahankan saat edit di tengah (hitung digit sebelum caret). Bonus: fix grouping `PhoneFormatter` agar cocok dengan doc (`0812 3456 7890`, bukan `081 2345 67890`). +6 test (commit menyusul).
 
 ---
 
