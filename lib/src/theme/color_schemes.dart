@@ -34,7 +34,7 @@ class ColorSchemes {
       );
 
   /// Purple color scheme
-  static ColorScheme get purple => const ColorScheme.light(
+  static ColorScheme get purpleScheme => const ColorScheme.light(
         primary: Color(0xFF6A1B9A),
         secondary: Color(0xFF9C27B0),
         surface: Colors.white,
@@ -47,7 +47,7 @@ class ColorSchemes {
       );
 
   /// Orange color scheme
-  static ColorScheme get orange => const ColorScheme.light(
+  static ColorScheme get orangeScheme => const ColorScheme.light(
         primary: Color(0xFFE65100),
         secondary: Color(0xFFFF9800),
         surface: Colors.white,
@@ -60,7 +60,7 @@ class ColorSchemes {
       );
 
   /// Dark blue color scheme
-  static ColorScheme get darkBlue => const ColorScheme.dark(
+  static ColorScheme get darkBlueScheme => const ColorScheme.dark(
         primary: Color(0xFF1565C0),
         secondary: Color(0xFF1976D2),
         surface: Color(0xFF121212),
@@ -73,7 +73,7 @@ class ColorSchemes {
       );
 
   /// Dark green color scheme
-  static ColorScheme get darkGreen => const ColorScheme.dark(
+  static ColorScheme get darkGreenScheme => const ColorScheme.dark(
         primary: Color(0xFF1B5E20),
         secondary: Color(0xFF2E7D32),
         surface: Color(0xFF121212),

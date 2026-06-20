@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_corekit/src/extensions/ui_ext.dart';
 
 /// Extensions on `List<Widget>`.
-extension ListWidgetX on List<Widget> {
+extension WidgetListExtension on List<Widget> {
   /// Adds [separator] between every existing widget
   List<Widget> separatedBy(Widget separator) {
     if (isEmpty) return this;
@@ -56,7 +56,7 @@ extension ListWidgetX on List<Widget> {
 }
 
 /// Extensions on a single Widget
-extension WidgetX on Widget {
+extension SingleWidgetExtension on Widget {
   /// Returns a list containing only this widget
   List<Widget> get asList => [this];
 

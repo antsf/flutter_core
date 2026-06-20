@@ -30,8 +30,8 @@ void main() async {
   );
 
   // Initialize the SecureStorage service before use
-  final localStorage = SecureStorage();
-  await localStorage.init();
+  final secureStorage = SecureStorage();
+  await secureStorage.init();
 
   // Example of providing a custom dark theme
   final customDarkTheme = AppTheme.defaultDarkTheme.copyWith(
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
   String response = '';
   bool isLoading = false;
 
-  final localStorage = SecureStorage();
+  final secureStorage = SecureStorage();
 
   Future<void> loadData() async {
     setState(() => isLoading = true);
@@ -98,12 +98,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void localStorageVoid() async {
-    await localStorage.set<String>('prefs', 'token', 'abc123');
-    final token = await localStorage.get<String>('prefs', 'token');
+    await secureStorage.set<String>('prefs', 'token', 'abc123');
+    final token = await secureStorage.get<String>('prefs', 'token');
     if (token.isNotNullOrEmpty) {
-      await localStorage.set('prefs', 'token', token!);
+      await secureStorage.set('prefs', 'token', token!);
     }
-    await localStorage.delete('prefs', 'token');
+    await secureStorage.delete('prefs', 'token');
   }
 
   @override

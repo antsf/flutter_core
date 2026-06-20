@@ -81,20 +81,20 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('getCurrentConnectivity returns results on success', () async {
+    test('getCurrentConnectivityResults returns results on success', () async {
       final mockResults = [ConnectivityResult.mobile];
       when(() => mockConnectivity.checkConnectivity())
           .thenAnswer((_) async => mockResults);
 
-      final result = await service.getCurrentConnectivity();
+      final result = await service.getCurrentConnectivityResults();
       expect(result, mockResults);
     });
 
-    test('getCurrentConnectivity returns empty list on error', () async {
+    test('getCurrentConnectivityResults returns empty list on error', () async {
       when(() => mockConnectivity.checkConnectivity())
           .thenThrow(Exception('Network error'));
 
-      final result = await service.getCurrentConnectivity();
+      final result = await service.getCurrentConnectivityResults();
       expect(result, isEmpty);
     });
 

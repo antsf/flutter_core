@@ -1,6 +1,7 @@
 /// UI and device adaptation extension methods for BuildContext and num.
 library;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -73,8 +74,8 @@ extension BuildContextExtension on BuildContext {
   /// Gets the primary icon theme data from the current theme.
   IconThemeData get primaryIconTheme => theme.primaryIconTheme;
 
-  /// Gets the accent icon theme data from the current theme.
-  IconThemeData get accentIconTheme =>
+  /// An icon theme derived from the color scheme's secondary color (at 70% alpha).
+  IconThemeData get secondaryIconTheme =>
       IconThemeData(color: theme.colorScheme.secondary.withValues(alpha: .7));
 
   /// Gets the input decoration theme from the current theme.
@@ -155,8 +156,11 @@ extension BuildContextExtension on BuildContext {
   /// Checks if the platform is Fuchsia.
   bool get isFuchsia => platform == TargetPlatform.fuchsia;
 
-  /// Checks if the platform is Web. Note: This check is not ideal; consider using `kIsWeb` for better accuracy.
-  bool get isWeb => platform == TargetPlatform.linux;
+  /// Checks if the app is running on the web.
+  ///
+  /// Uses the compile-time constant `kIsWeb`, which is the only reliable way to
+  /// detect web. (`platform` reports the host OS even in a browser.)
+  bool get isWeb => kIsWeb;
 
   /// Checks if the platform is a desktop operating system.
   bool get isDesktop => isMacOS || isWindows || isLinux;
@@ -184,8 +188,11 @@ extension BuildContextExtension on BuildContext {
   /// Checks if the device is a foldable phone.
   bool get isFoldable => isAndroid && screenWidth >= 600 && screenWidth < 800;
 
-  /// Checks if the device is a wearable device.
-  bool get isWearable => isWatch || isTV || isCar || isFoldable;
+  /// Checks if the device is a wearable device (i.e. a watch).
+  ///
+  /// Note: TVs, car displays, and foldables are distinct form factors — use
+  /// [isTV], [isCar], and [isFoldable] for those.
+  bool get isWearable => isWatch;
 
   /// Checks if the device is a handheld device (phone or tablet).
   bool get isHandheld => isPhone || isTablet;
@@ -249,7 +256,7 @@ extension NumExtension on num {
   EdgeInsets get padding => EdgeInsets.all((this * kPadding).w);
 
   /// Returns [EdgeInsets] with horizontal sides as multiples of [kPadding].
-  EdgeInsets get paddingX =>
+  EdgeInsets get paddingHorizontal =>
       EdgeInsets.symmetric(horizontal: (this * kPadding).w);
 
   /// Returns [EdgeInsets] with a left padding as a multiple of [kPadding].
@@ -265,14 +272,14 @@ extension NumExtension on num {
   EdgeInsets get paddingBottom => EdgeInsets.only(bottom: (this * kPadding).w);
 
   /// Returns [EdgeInsets] with horizontal sides as multiples of [kPadding].
-  EdgeInsets get paddingY =>
+  EdgeInsets get paddingVertical =>
       EdgeInsets.symmetric(vertical: (this * kPadding).w);
 
   /// Returns a [BorderRadius] with all corners as multiples of [kRadius].
   BorderRadius get radius => BorderRadius.circular((this * kRadius).r);
 
   /// Returns a [BorderRadius.horizontal] with all corners as multiples of [kRadius].
-  BorderRadius get radiusX =>
+  BorderRadius get radiusHorizontal =>
       BorderRadius.horizontal(left: cornerRadius, right: cornerRadius);
 
   /// Returns a [BorderRadius.top] with all corners as multiples of [kRadius].
@@ -288,7 +295,7 @@ extension NumExtension on num {
 /// --- EdgeInsets Extensions ---
 /// (Scaling)
 /// Extension methods for [EdgeInsets] to provide scaling.
-extension EdgeInsetsX on EdgeInsets {
+extension EdgeInsetsScaleExtension on EdgeInsets {
   /// Returns a scaled [EdgeInsets] using [ScreenUtil].
   EdgeInsets get scaled =>
       copyWith(left: left.w, right: right.w, top: top.h, bottom: bottom.h);
@@ -297,7 +304,7 @@ extension EdgeInsetsX on EdgeInsets {
 /// --- BorderRadius Extensions ---
 /// (Scaling)
 /// Extension methods for [BorderRadius] to provide scaling.
-extension BorderRadiusX on BorderRadius {
+extension BorderRadiusScaleExtension on BorderRadius {
   /// Returns a scaled [BorderRadius] using [ScreenUtil].
   BorderRadius get scaled => BorderRadius.only(
         topLeft: Radius.circular(topLeft.x.r),

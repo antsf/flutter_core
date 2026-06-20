@@ -8,6 +8,29 @@ library;
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart'; // Assuming 'logger' package is used
 
+/// Header names whose values are secrets and must never be logged verbatim.
+const _sensitiveHeaders = <String>{
+  'authorization',
+  'cookie',
+  'set-cookie',
+  'x-api-key',
+  'proxy-authorization',
+};
+
+/// Returns the header value, or `<redacted>` for sensitive headers so tokens
+/// and cookies don't leak into logs.
+String redactedHeaderValue(String key, Object? value) =>
+    _sensitiveHeaders.contains(key.toLowerCase()) ? '<redacted>' : '$value';
+
+/// Stringifies a request/response body, truncating long payloads (which often
+/// contain PII) to [maxLength] characters.
+String _truncateBody(Object? data, [int maxLength = 1000]) {
+  final text = data.toString();
+  return text.length > maxLength
+      ? '${text.substring(0, maxLength)}… (${text.length} chars total)'
+      : text;
+}
+
 /// A [Dio] interceptor that logs HTTP requests, responses, and errors.
 ///
 /// This interceptor can be useful for debugging network interactions during development.
@@ -55,12 +78,11 @@ class DioLoggingInterceptor extends Interceptor {
       logMessage.writeln('URI: ${options.uri}');
       if (options.headers.isNotEmpty) {
         logMessage.writeln('Headers:');
-        options.headers
-            .forEach((key, value) => logMessage.writeln('  $key: $value'));
+        options.headers.forEach((key, value) =>
+            logMessage.writeln('  $key: ${redactedHeaderValue(key, value)}'));
       }
       if (options.data != null) {
-        logMessage.writeln('Data: ${options.data}');
-        // 'Data: ${options.data.toString().length > 200 ? "${options.data.toString().substring(0, 200)}..." : options.data}');
+        logMessage.writeln('Data: ${_truncateBody(options.data)}');
       }
       logMessage.write('-------------------');
       logger!.i(logMessage.toString());
@@ -80,8 +102,7 @@ class DioLoggingInterceptor extends Interceptor {
       logMessage.writeln('Status Code: ${response.statusCode}');
       logMessage.writeln('Status Message: ${response.statusMessage}');
       if (response.data != null) {
-        logMessage.writeln('Data: ${response.data}');
-        // 'Data: ${response.data.toString().length > 200 ? "${response.data.toString().substring(0, 200)}..." : response.data}');
+        logMessage.writeln('Data: ${_truncateBody(response.data)}');
       }
       logMessage.write('--------------------');
       logger!.i(logMessage.toString());
@@ -105,8 +126,8 @@ class DioLoggingInterceptor extends Interceptor {
         logMessage.writeln('Status Code: ${err.response!.statusCode}');
         logMessage.writeln('Status Message: ${err.response!.statusMessage}');
         if (err.response!.data != null) {
-          logMessage.writeln(
-              'Response Data: ${err.response!.data.toString().length > 200 ? "${err.response!.data.toString().substring(0, 200)}..." : err.response!.data}');
+          logMessage
+              .writeln('Response Data: ${_truncateBody(err.response!.data)}');
         }
       }
       logMessage.write('-----------------');

@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 3.0.0 — 2026-06-21
+
+### Breaking Changes — identifier renames
+
+Public identifiers were renamed so each name reflects its value/role. Update call sites accordingly:
+
+- `FlutterCore.localStorage` → `FlutterCore.secureStorage`; `FlutterCore.cleanup()` → `resetInitialization()`
+- `ThemeProvider.setThemeMode(bool)` → `setDarkMode(bool)`
+- `Failure.error` field → `Failure.cause` (all subclasses + `NetworkException`)
+- `ConnectivityService.getCurrentConnectivity()` → `getCurrentConnectivityResults()`
+- `DioClient.authToken` getter → `authorizationHeader` (returns the `Bearer …` header)
+- `ColorSchemes.purple/orange/darkBlue/darkGreen` → `…Scheme`
+- Date ext: `toDbFormat` → `toIsoDate`, `toDateTime` → `toIndonesianDateTimeString`, `toIndonesiandMMMyyyy` → `toShortMonthNameWithDay`
+- Number ext: `toFormattedString` → `toGroupedDigits`
+- String ext: `toRemove62` → `withoutCountryCode62`, `toPhoneNumber62` → `toIndonesianPhoneDigits`, `jsonDecode` → `decodedJson`
+- `BuildContext.accentIconTheme` → `secondaryIconTheme`; `canBack` → `canGoBack`; `withOpacity` → `colorWithOpacity`
+- Num ext: `paddingX/paddingY` → `paddingHorizontal/paddingVertical`, `radiusX` → `radiusHorizontal`
+- TextStyle ext: `heightSpace` → `withLineHeight`, `letterSpace` → `withLetterSpacing`
+- Map ext: `get(key)` → `valueOrNull(key)`
+- `UiHelper.shadow` → `defaultBoxShadow`; `insetAxis(x,y)` → `insetSymmetric(horizontal,vertical)`; `visualDensity(x,y)` → `visualDensity(horizontal,vertical)`
+- `kDelayed` (one-shot future) → `defaultDelay()` (returns a fresh delay each call)
+- `SecureStorage.deleteBoxFromDisk()` removed (use `clearBox()`)
+- Extensions renamed from `…X` to descriptive names (`IterableX` → `NullableIterableExtension`, `StreamX` → `StreamExtension`, etc.)
+
+### Fixes
+- `BuildContext.isWeb` now uses `kIsWeb` (previously always reported Linux).
+- `ThemeData` is now built with the custom `ColorScheme` directly, so scheme-derived
+  colors (scaffold/app bar) match `FcColors`.
+- Token refresh inherits client timeouts and clears the stale auth header when refresh fails.
+- Logging interceptor redacts `Authorization`/`Cookie` headers and truncates bodies.
+- `ThousandsFormatter` formats values beyond the `int` range and honors `allowNegative`.
+- `SecureStorage.get<bool>` returns `null` for corrupt values instead of silently `false`.
+- `defaultDelay()` delays on every call; stream `debounce`/`throttle` no longer leak the source subscription.
+
+---
+
 ## 2.0.0 — 2026-06-20
 
 ### Breaking Changes

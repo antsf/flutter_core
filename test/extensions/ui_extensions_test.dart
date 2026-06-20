@@ -18,7 +18,7 @@ extension MockScreenUtil on num {
   double get r => (this * 1.5).toDouble();
 }
 
-// 3. Mock the missing Color.withValues extension for accentIconTheme
+// 3. Mock the missing Color.withValues extension for secondaryIconTheme
 extension MockColorExtension on Color {
   // This mock ensures that when the secondary color (which is Red in the test Theme)
   // calls .withValues(alpha: .7), it returns the expected GREEN color (0xB300FF00).
@@ -105,7 +105,7 @@ extension BuildContextExtension on BuildContext {
   IconThemeData get primaryIconTheme => theme.primaryIconTheme;
 
   // This one uses the mocked Color.withValues
-  IconThemeData get accentIconTheme =>
+  IconThemeData get secondaryIconTheme =>
       IconThemeData(color: theme.colorScheme.secondary.withValues(alpha: .7));
 
   InputDecorationThemeData get inputDecorationTheme =>
@@ -185,17 +185,17 @@ extension NumExtension on num {
   Widget get spacingHeight => SizedBox(height: (this * kPadding).h);
 
   EdgeInsets get padding => EdgeInsets.all((this * kPadding).w);
-  EdgeInsets get paddingX =>
+  EdgeInsets get paddingHorizontal =>
       EdgeInsets.symmetric(horizontal: (this * kPadding).w);
   EdgeInsets get paddingLeft => EdgeInsets.only(left: (this * kPadding).w);
   EdgeInsets get paddingTop => EdgeInsets.only(top: (this * kPadding).w);
   EdgeInsets get paddingRight => EdgeInsets.only(right: (this * kPadding).w);
   EdgeInsets get paddingBottom => EdgeInsets.only(bottom: (this * kPadding).w);
-  EdgeInsets get paddingY =>
+  EdgeInsets get paddingVertical =>
       EdgeInsets.symmetric(vertical: (this * kPadding).w);
 
   BorderRadius get radius => BorderRadius.circular((this * kRadius).r);
-  BorderRadius get radiusX =>
+  BorderRadius get radiusHorizontal =>
       BorderRadius.horizontal(left: cornerRadius, right: cornerRadius);
   BorderRadius get radiusTop => BorderRadius.vertical(top: cornerRadius);
   BorderRadius get radiusBottom => BorderRadius.vertical(bottom: cornerRadius);
@@ -204,12 +204,12 @@ extension NumExtension on num {
 }
 
 // --- Scaling Extensions ---
-extension EdgeInsetsX on EdgeInsets {
+extension EdgeInsetsScaleExtension on EdgeInsets {
   EdgeInsets get scaled =>
       copyWith(left: left.w, right: right.w, top: top.h, bottom: bottom.h);
 }
 
-extension BorderRadiusX on BorderRadius {
+extension BorderRadiusScaleExtension on BorderRadius {
   BorderRadius get scaled => BorderRadius.only(
         topLeft: Radius.circular(topLeft.x.r),
         topRight: Radius.circular(topRight.x.r),
@@ -311,8 +311,8 @@ void main() {
       expect(testContext.primaryIconTheme, isA<IconThemeData>());
 
       // Custom Icon Theme (checks the mocked Color.withValues)
-      final accentIconTheme = testContext.accentIconTheme;
-      expect(accentIconTheme, isA<IconThemeData>());
+      final secondaryIconTheme = testContext.secondaryIconTheme;
+      expect(secondaryIconTheme, isA<IconThemeData>());
 
       // // --- FIX: Use closeTo for robust floating-point comparison ---
       // // Expected color is Color(0xB300FF00) (70.2% alpha green) as returned by the mock.
@@ -320,11 +320,11 @@ void main() {
       // const double epsilon = 0.0025; // Tolerance for floating point checks
 
       // // 1. Check Alpha: Should be close to 70% (0.7020)
-      // expect(accentIconTheme.color!.a, closeTo(expectedAlpha, epsilon));
+      // expect(secondaryIconTheme.color!.a, closeTo(expectedAlpha, epsilon));
       // // 2. Check Color Channels: Should be Green (R=0, G=255, B=0)
       // // Check the raw RGB channels simultaneously by masking the ARGB value (0x00FFFFFF).
       // const int expectedRgb = 0x0000FF00; // R=0, G=255, B=0
-      // expect(accentIconTheme.color!.toARGB32() & 0x00FFFFFF, expectedRgb);
+      // expect(secondaryIconTheme.color!.toARGB32() & 0x00FFFFFF, expectedRgb);
       // --- END FIX ---
 
       // Check other theme pass-throughs (testing for type is sufficient)
@@ -543,8 +543,8 @@ void main() {
       expect(result.bottom, expectedValue);
     });
 
-    test('paddingX returns horizontal EdgeInsets scaled', () {
-      final result = 2.0.paddingX;
+    test('paddingHorizontal returns horizontal EdgeInsets scaled', () {
+      final result = 2.0.paddingHorizontal;
       expect(result.left, expectedValue);
       expect(result.top, 0.0);
     });
@@ -555,8 +555,8 @@ void main() {
       expect(result.right, 0.0);
     });
 
-    test('paddingY returns vertical EdgeInsets scaled', () {
-      final result = 2.0.paddingY;
+    test('paddingVertical returns vertical EdgeInsets scaled', () {
+      final result = 2.0.paddingVertical;
       // All sides use .w in the original extension for vertical scaling, which might be a bug
       // but we test the implementation as-is (using .w for vertical)
       expect(result.top, expectedValue);
@@ -588,7 +588,7 @@ void main() {
     });
   });
 
-  group('EdgeInsetsX', () {
+  group('EdgeInsetsScaleExtension', () {
     test('scaled correctly applies .w and .h to all sides', () {
       // Input: left/right=10.0, top/bottom=20.0
       // Expected: left/right=10*2=20.0 (w), top/bottom=20*3=60.0 (h)
@@ -601,7 +601,7 @@ void main() {
     });
   });
 
-  group('BorderRadiusX', () {
+  group('BorderRadiusScaleExtension', () {
     test('scaled correctly applies .r to all corners', () {
       // Input radius x: 5.0, y: 5.0 (for simplicity, only x is used in the extension)
       // Expected: 5.0 * 1.5 (r) = 7.5

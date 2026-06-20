@@ -1,4 +1,4 @@
-extension IterableX<T> on Iterable<T>? {
+extension NullableIterableExtension<T> on Iterable<T>? {
   /// true if null OR empty
   bool get isNullOrEmpty => this == null || this?.isEmpty == true;
 

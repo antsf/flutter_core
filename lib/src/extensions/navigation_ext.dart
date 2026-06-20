@@ -100,7 +100,7 @@ extension NavigationExtension on BuildContext {
   /// Checks if the navigator can be popped.
   ///
   /// Wraps `Navigator.canPop(this)`.
-  bool canBack() => Navigator.canPop(this);
+  bool canGoBack() => Navigator.canPop(this);
 
   /// Pops all routes until the initial route.
   /// If a [result] is provided, it's passed to the pop method for each route.
@@ -108,7 +108,7 @@ extension NavigationExtension on BuildContext {
   /// **Caution**: This will pop all routes above the very first route in the stack.
   /// Ensure this is the desired behavior.
   void maybeBack<T extends Object?>([T? result]) {
-    while (canBack()) {
+    while (canGoBack()) {
       back<T>(result);
     }
   }

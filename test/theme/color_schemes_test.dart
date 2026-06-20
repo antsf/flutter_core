@@ -13,8 +13,8 @@ void main() {
       expect(ColorSchemes.greenScheme.brightness, Brightness.light);
     });
 
-    test('darkGreen is dark', () {
-      expect(ColorSchemes.darkGreen.brightness, Brightness.dark);
+    test('darkGreenScheme is dark', () {
+      expect(ColorSchemes.darkGreenScheme.brightness, Brightness.dark);
     });
   });
 }

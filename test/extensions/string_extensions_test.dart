@@ -77,7 +77,7 @@ import 'package:flutter_test/flutter_test.dart';
 //     }
 //   }
 
-//   String toRemove62() {
+//   String withoutCountryCode62() {
 //     if (this.startsWith('62')) {
 //       return substring(2);
 //     }
@@ -87,7 +87,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   /// Parses a JSON string into a Dart `Map` or `List`.
 //   ///
 //   /// Throws a `FormatException` if the string is not valid JSON.
-//   dynamic get jsonDecode => json.decode(this);
+//   dynamic get decodedJson => json.decode(this);
 
 //   /// Capitalizes the first letter of the string.
 //   ///
@@ -116,7 +116,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   /// Returns an empty string if the input is `null`.
 //   ///
 //   /// For example, `0812...` or `812...` becomes `62812...`.
-//   String toPhoneNumber62() {
+//   String toIndonesianPhoneDigits() {
 //     // Remove all non-digit characters
 //     final digits = this?.replaceAll(RegExp(r'\D'), '') ?? '';
 //     if (digits.isEmpty) return '';
@@ -199,27 +199,27 @@ void main() {
         expect(''.formatPhoneNumber(), '');
       });
 
-      test('toRemove62 removes prefix correctly', () {
-        expect('62812345'.toRemove62(), '812345');
+      test('withoutCountryCode62 removes prefix correctly', () {
+        expect('62812345'.withoutCountryCode62(), '812345');
       });
-      test('toRemove62 ignores non-matching prefix', () {
-        expect('0812345'.toRemove62(), '0812345');
+      test('withoutCountryCode62 ignores non-matching prefix', () {
+        expect('0812345'.withoutCountryCode62(), '0812345');
       });
-      test('toRemove62 handles empty string', () {
-        expect(''.toRemove62(), '');
+      test('withoutCountryCode62 handles empty string', () {
+        expect(''.withoutCountryCode62(), '');
       });
 
-      test('jsonDecode decodes valid JSON map', () {
+      test('decodedJson decodes valid JSON map', () {
         const jsonString = '{"id": 1, "name": "Test"}';
-        expect(jsonString.jsonDecode, {'id': 1, 'name': 'Test'});
+        expect(jsonString.decodedJson, {'id': 1, 'name': 'Test'});
       });
-      test('jsonDecode decodes valid JSON list', () {
+      test('decodedJson decodes valid JSON list', () {
         const jsonString = '[1, 2, 3]';
-        expect(jsonString.jsonDecode, [1, 2, 3]);
+        expect(jsonString.decodedJson, [1, 2, 3]);
       });
-      test('jsonDecode throws FormatException for invalid JSON', () {
+      test('decodedJson throws FormatException for invalid JSON', () {
         const jsonString = '{"id": 1, "name": "Test"'; // Missing closing brace
-        expect(() => jsonString.jsonDecode, throwsA(isA<FormatException>()));
+        expect(() => jsonString.decodedJson, throwsA(isA<FormatException>()));
       });
 
       test('capitalize capitalizes the first letter', () {
@@ -249,24 +249,24 @@ void main() {
     });
 
     group('StringNullExt', () {
-      test('toPhoneNumber62 converts 0-prefix to 62', () {
-        expect('081234567890'.toPhoneNumber62(), '6281234567890');
+      test('toIndonesianPhoneDigits converts 0-prefix to 62', () {
+        expect('081234567890'.toIndonesianPhoneDigits(), '6281234567890');
       });
-      test('toPhoneNumber62 ensures 62 prefix if missing (no 0)', () {
-        expect('81234567890'.toPhoneNumber62(), '6281234567890');
+      test('toIndonesianPhoneDigits ensures 62 prefix if missing (no 0)', () {
+        expect('81234567890'.toIndonesianPhoneDigits(), '6281234567890');
       });
-      test('toPhoneNumber62 handles already 62 prefixed number', () {
-        expect('6281234567890'.toPhoneNumber62(), '6281234567890');
+      test('toIndonesianPhoneDigits handles already 62 prefixed number', () {
+        expect('6281234567890'.toIndonesianPhoneDigits(), '6281234567890');
       });
-      test('toPhoneNumber62 handles non-digit characters', () {
-        expect('+62 812-3456-7890'.toPhoneNumber62(), '6281234567890');
+      test('toIndonesianPhoneDigits handles non-digit characters', () {
+        expect('+62 812-3456-7890'.toIndonesianPhoneDigits(), '6281234567890');
       });
-      test('toPhoneNumber62 returns empty string for null input', () {
+      test('toIndonesianPhoneDigits returns empty string for null input', () {
         String? input;
-        expect(input.toPhoneNumber62(), '');
+        expect(input.toIndonesianPhoneDigits(), '');
       });
-      test('toPhoneNumber62 returns empty string for empty input', () {
-        expect(''.toPhoneNumber62(), '');
+      test('toIndonesianPhoneDigits returns empty string for empty input', () {
+        expect(''.toIndonesianPhoneDigits(), '');
       });
 
       test('isNullOrEmpty returns true for null', () {

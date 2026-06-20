@@ -22,7 +22,11 @@ extension IndonesianCurrency on num {
     return toString();
   }
 
-  /// Short informal Rupiah format. Example: `1500000` → `Rp 1,5jt`.
+  /// Short informal Rupiah format. Example: `1500000` → `Rp 1.5jt`,
+  /// `50000` → `Rp 50rb`.
+  ///
+  /// The fractional part uses a `.` separator (it is not locale-formatted);
+  /// the `< 1000` fallback uses Indonesian thousand grouping.
   String toShortRupiah() {
     if (this >= 1000000) {
       final value = this / 1000000;
@@ -47,7 +51,7 @@ extension IndonesianCurrency on num {
   /// Formats with thousand separators. Defaults to Indonesian locale (`id_ID`).
   ///
   /// Example (id_ID): `1000` → `1.000`
-  String toFormattedString({String locale = 'id_ID'}) {
+  String toGroupedDigits({String locale = 'id_ID'}) {
     final fmt = NumberFormat.decimalPattern(locale);
     return fmt.format(this);
   }

@@ -30,7 +30,7 @@ FutureResult<R?> safeRemoteCall<T, R>({
   required RemoteCall<T> remoteCall,
   R Function(T)? onSuccess,
   void Function(T)? onBeforeSuccess,
-  String genericError = 'Terjadi kesalahan tak terduga',
+  String fallbackErrorMessage = 'Terjadi kesalahan tak terduga',
 }) async {
   try {
     final result = await remoteCall();
@@ -41,7 +41,7 @@ FutureResult<R?> safeRemoteCall<T, R>({
       if (onSuccess != null) return Success(onSuccess(data as T));
       return const Success(null);
     } else {
-      return Error(result.failure ?? GenericFailure(message: genericError));
+      return Error(result.failure ?? GenericFailure(message: fallbackErrorMessage));
     }
   } on NetworkException catch (e) {
     // NetworkException is a Failure — return it directly, preserving its
@@ -61,13 +61,13 @@ FutureResult<R?> safeRemoteCall<T, R>({
 FutureResult<void> safeRemoteCallVoid<T>({
   required RemoteCall<T> remoteCall,
   void Function(T)? onBeforeSuccess,
-  String genericError = 'Terjadi kesalahan tak terduga',
+  String fallbackErrorMessage = 'Terjadi kesalahan tak terduga',
 }) async {
   final result = await safeRemoteCall<T, void>(
     remoteCall: remoteCall,
     onSuccess: null,
     onBeforeSuccess: onBeforeSuccess,
-    genericError: genericError,
+    fallbackErrorMessage: fallbackErrorMessage,
   );
   return result;
 }

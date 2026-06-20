@@ -51,8 +51,8 @@ extension ColorContextExtensions on BuildContext {
 
   Color get transparentColor => FcColors.transparent;
 
-  Color withOpacity(Color color, double opacity) =>
-      FcColors.withOpacity(color, opacity);
+  Color colorWithOpacity(Color color, double opacity) =>
+      FcColors.colorWithOpacity(color, opacity);
   Color darken(Color color, [double amount = 0.1]) =>
       FcColors.darken(color, amount);
   Color lighten(Color color, [double amount = 0.1]) =>

@@ -402,7 +402,7 @@ void main() {
   group('Header Management', () {
     test('adds and retrieves auth token correctly', () {
       dioClient.setAuthToken('test_token');
-      expect(dioClient.authToken, 'Bearer test_token');
+      expect(dioClient.authorizationHeader, 'Bearer test_token');
     });
 
     test('adds custom header', () {
@@ -427,7 +427,7 @@ void main() {
     test('clears auth token', () {
       dioClient.setAuthToken('test_token');
       dioClient.clearAuthToken();
-      expect(dioClient.authToken, isNull);
+      expect(dioClient.authorizationHeader, isNull);
     });
   });
 

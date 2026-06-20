@@ -37,10 +37,10 @@ extension TextStyleExtension on TextStyle {
   TextStyle fontSize(double value) => copyWith(fontSize: value.sp);
 
   /// Returns a new [TextStyle] with the specified line [value] (line spacing).
-  TextStyle heightSpace(double value) => copyWith(height: value);
+  TextStyle withLineHeight(double value) => copyWith(height: value);
 
   /// Returns a new [TextStyle] with the specified letter [value].
-  TextStyle letterSpace(double value) => copyWith(letterSpacing: value);
+  TextStyle withLetterSpacing(double value) => copyWith(letterSpacing: value);
 
   /// Returns a new [TextStyle] with the specified [color].
   TextStyle withColor(Color color) => copyWith(color: color);

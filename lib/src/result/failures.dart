@@ -3,22 +3,22 @@ import 'package:flutter/foundation.dart';
 /// A base class for all failures in the application.
 ///
 /// Enforces value equality and provides a standard structure for failure
-/// information, including a message, the original error, and a stack trace.
+/// information, including a message, the original cause, and a stack trace.
 @immutable
 abstract class Failure {
   final String message;
-  final dynamic error;
+  final dynamic cause;
   final StackTrace? stackTrace;
   final int statusCode;
 
   const Failure({
     required this.message,
-    this.error,
+    this.cause,
     this.stackTrace,
     this.statusCode = 0,
   });
 
-  List<Object?> get props => [message, error, stackTrace, statusCode];
+  List<Object?> get props => [message, cause, stackTrace, statusCode];
 
   @override
   bool operator ==(Object other) =>
@@ -32,14 +32,14 @@ abstract class Failure {
 
   @override
   String toString() =>
-      '$runtimeType(message: $message, error: $error, statusCode: $statusCode)';
+      '$runtimeType(message: $message, cause: $cause, statusCode: $statusCode)';
 }
 
 /// Represents a failure related to server operations (e.g., 5xx errors).
 class ServerFailure extends Failure {
   const ServerFailure({
     required super.message,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   });
@@ -49,7 +49,7 @@ class ServerFailure extends Failure {
 class NetworkFailure extends Failure {
   const NetworkFailure({
     required super.message,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   });
@@ -59,7 +59,7 @@ class NetworkFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure({
     required super.message,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   });
@@ -69,7 +69,7 @@ class CacheFailure extends Failure {
 class AuthFailure extends Failure {
   const AuthFailure({
     required super.message,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   });
@@ -81,7 +81,7 @@ class ValidationFailure extends Failure {
 
   const ValidationFailure({
     required this.errors,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   }) : super(message: 'One or more validation errors occurred.');
@@ -94,7 +94,7 @@ class ValidationFailure extends Failure {
 class GenericFailure extends Failure {
   const GenericFailure({
     required super.message,
-    super.error,
+    super.cause,
     super.stackTrace,
     super.statusCode,
   });

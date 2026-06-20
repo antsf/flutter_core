@@ -11,7 +11,7 @@ class ThemeProvider extends ChangeNotifier {
   static ThemeProvider? _instance;
 
   /// `shared_preferences` key used to persist the dark-mode flag.
-  static const String themeKey = 'flutter_corekit.theme_mode';
+  static const String themeModeKey = 'flutter_corekit.theme_mode';
 
   // Optional custom themes supplied via [configure].
   ThemeData? _customLightTheme;
@@ -45,7 +45,7 @@ class ThemeProvider extends ChangeNotifier {
   /// Loads the saved theme mode from `shared_preferences`.
   Future<void> loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool(themeKey) ?? false;
+    _isDarkMode = prefs.getBool(themeModeKey) ?? false;
     _updateTheme();
     notifyListeners();
   }
@@ -58,7 +58,7 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(themeKey, _isDarkMode);
+    await prefs.setBool(themeModeKey, _isDarkMode);
   }
 
   /// Toggles between light and dark, persisting the choice.
@@ -70,7 +70,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   /// Sets the theme mode explicitly, persisting the choice.
-  Future<void> setThemeMode(bool isDark) async {
+  Future<void> setDarkMode(bool isDark) async {
     if (_isDarkMode != isDark) {
       _isDarkMode = isDark;
       _updateTheme();

@@ -17,7 +17,7 @@ class UiHelper {
   /// Default box shadow for UI elements.
   ///
   /// This shadow provides a subtle elevation effect.
-  static final BoxShadow shadow = BoxShadow(
+  static final BoxShadow defaultBoxShadow = BoxShadow(
     color: Colors.black.withValues(alpha: .1), // Shadow color with 10% opacity
     offset: const Offset(0, 6), // Offset from the top (y-axis)
     blurRadius: 6.0, // Spread of the shadow
@@ -100,13 +100,13 @@ class UiHelper {
   ///
   /// Each inset value is multiplied by `kPadding` and then scaled by ScreenUtil.
   ///
-  /// [x]: Multiplier for `kPadding` for horizontal (left and right) insets.
-  /// [y]: Multiplier for `kPadding` for vertical (top and bottom) insets.
+  /// [horizontal]: Multiplier for `kPadding` for horizontal (left and right) insets.
+  /// [vertical]: Multiplier for `kPadding` for vertical (top and bottom) insets.
   /// Returns an [EdgeInsets.symmetric] value.
-  static EdgeInsetsGeometry insetAxis({double? x, double? y}) {
+  static EdgeInsetsGeometry insetSymmetric({double? horizontal, double? vertical}) {
     return EdgeInsets.symmetric(
-      horizontal: (kPadding * (x ?? 0)).w,
-      vertical: (kPadding * (y ?? 0)).h,
+      horizontal: (kPadding * (horizontal ?? 0)).w,
+      vertical: (kPadding * (vertical ?? 0)).h,
     );
   }
 
@@ -150,11 +150,12 @@ class UiHelper {
   /// Defaults to `VisualDensity(horizontal: -4, vertical: -4)` if values are not provided.
   /// These default values typically make UI elements more compact.
   ///
-  /// [x]: Horizontal visual density.
-  /// [y]: Vertical visual density.
+  /// [horizontal]: Horizontal visual density.
+  /// [vertical]: Vertical visual density.
   /// Returns a [VisualDensity] object.
-  static VisualDensity visualDensity({double? x, double? y}) {
+  static VisualDensity visualDensity({double? horizontal, double? vertical}) {
     // Default values are common for a compact UI.
-    return VisualDensity(horizontal: x ?? -4.0, vertical: y ?? -4.0);
+    return VisualDensity(
+        horizontal: horizontal ?? -4.0, vertical: vertical ?? -4.0);
   }
 }

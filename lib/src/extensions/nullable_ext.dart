@@ -1,4 +1,4 @@
-extension NullableX<T> on T? {
+extension NullableExtension<T> on T? {
   /// Run block if value is NOT null
   R? let<R>(R Function(T) block) => this == null ? null : block(this as T);
 

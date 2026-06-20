@@ -1,7 +1,7 @@
 /// Path utility methods for building URLs and replacing parameters.
 class PathUtils {
-  static String buildUrl(String base, String endpoint) {
-    return '$base$endpoint';
+  static String buildUrl(String baseUrl, String path) {
+    return '$baseUrl$path';
   }
 
   static String replaceParams(String path, Map<String, dynamic> params) {

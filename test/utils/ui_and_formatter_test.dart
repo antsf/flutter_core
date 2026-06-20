@@ -76,7 +76,7 @@ class UiHelper {
     );
   }
 
-  static EdgeInsetsGeometry insetAxis({double? x, double? y}) {
+  static EdgeInsetsGeometry insetSymmetric({double? x, double? y}) {
     return EdgeInsets.symmetric(
       horizontal: (kPadding * (x ?? 0)).w,
       vertical: (kPadding * (y ?? 0)).h,
@@ -266,9 +266,9 @@ void main() {
       });
     });
 
-    group('insetAxis', () {
+    group('insetSymmetric', () {
       test('returns correct symmetric EdgeInsets', () {
-        final insets = UiHelper.insetAxis(x: 1, y: 0.5);
+        final insets = UiHelper.insetSymmetric(x: 1, y: 0.5);
         // (10 * 1).w = 20.0
         // (10 * 0.5).h = 15.0
         expect(insets, isA<EdgeInsets>());

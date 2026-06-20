@@ -15,10 +15,15 @@ class AppTheme {
   /// Dark theme color scheme
   static ColorScheme get darkColorScheme => FcColors.darkColorScheme;
 
-  /// Creates a base theme
-  static ThemeData _baseTheme(Brightness brightness) => ThemeData(
+  /// Creates a base theme for the given [colorScheme].
+  ///
+  /// The [colorScheme] is passed directly to the [ThemeData] constructor so that
+  /// scheme-derived defaults (scaffold background, app bar, etc.) are computed
+  /// from it. Applying the scheme via `copyWith` afterwards would NOT recompute
+  /// those derived colors, leaving them on the framework defaults.
+  static ThemeData _baseTheme(ColorScheme colorScheme) => ThemeData(
         useMaterial3: true,
-        brightness: brightness,
+        colorScheme: colorScheme,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         splashFactory: InkRipple.splashFactory,
         typography: Typography.material2021(),
@@ -63,14 +68,9 @@ class AppTheme {
 
   /// Creates the default light theme
   static ThemeData get defaultLightTheme =>
-      _baseTheme(Brightness.light).copyWith(
-        textTheme: TextThemes.light,
-        colorScheme: lightColorScheme,
-      );
+      _baseTheme(lightColorScheme).copyWith(textTheme: TextThemes.light);
 
   /// Creates the default dark theme
-  static ThemeData get defaultDarkTheme => _baseTheme(Brightness.dark).copyWith(
-        textTheme: TextThemes.dark,
-        colorScheme: darkColorScheme,
-      );
+  static ThemeData get defaultDarkTheme =>
+      _baseTheme(darkColorScheme).copyWith(textTheme: TextThemes.dark);
 }

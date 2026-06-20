@@ -19,35 +19,35 @@ void main() {
     test('ServerFailure initializes correctly', () {
       final failure = ServerFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, message);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'ServerFailure(message: $message, error: $error, statusCode: $statusCode)');
+          'ServerFailure(message: $message, cause: $error, statusCode: $statusCode)');
     });
 
     test('ServerFailure equality and hashCode', () {
       final failure1 = ServerFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
       final failure2 = ServerFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
       final failure3 = ServerFailure(
         message: 'Different',
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
@@ -62,66 +62,66 @@ void main() {
     test('NetworkFailure initializes correctly', () {
       final failure = NetworkFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, message);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'NetworkFailure(message: $message, error: $error, statusCode: $statusCode)');
+          'NetworkFailure(message: $message, cause: $error, statusCode: $statusCode)');
     });
 
     test('CacheFailure initializes correctly', () {
       final failure = CacheFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, message);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'CacheFailure(message: $message, error: $error, statusCode: $statusCode)');
+          'CacheFailure(message: $message, cause: $error, statusCode: $statusCode)');
     });
 
     test('AuthFailure initializes correctly', () {
       final failure = AuthFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, message);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'AuthFailure(message: $message, error: $error, statusCode: $statusCode)');
+          'AuthFailure(message: $message, cause: $error, statusCode: $statusCode)');
     });
 
     test('ValidationFailure initializes correctly', () {
       final failure = ValidationFailure(
         errors: errors,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, 'One or more validation errors occurred.');
       expect(failure.errors, errors);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'ValidationFailure(message: One or more validation errors occurred., error: $error, statusCode: $statusCode)');
+          'ValidationFailure(message: One or more validation errors occurred., cause: $error, statusCode: $statusCode)');
       expect(failure.props, [
         'One or more validation errors occurred.',
         error,
@@ -134,19 +134,19 @@ void main() {
     test('ValidationFailure equality and hashCode', () {
       final failure1 = ValidationFailure(
         errors: errors,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
       final failure2 = ValidationFailure(
         errors: errors,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
       final failure3 = ValidationFailure(
         errors: const {'different': 'error'},
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
@@ -160,17 +160,17 @@ void main() {
     test('GenericFailure initializes correctly', () {
       final failure = GenericFailure(
         message: message,
-        error: error,
+        cause: error,
         stackTrace: stackTrace,
         statusCode: statusCode,
       );
 
       expect(failure.message, message);
-      expect(failure.error, error);
+      expect(failure.cause, error);
       expect(failure.stackTrace, stackTrace);
       expect(failure.statusCode, statusCode);
       expect(failure.toString(),
-          'GenericFailure(message: $message, error: $error, statusCode: $statusCode)');
+          'GenericFailure(message: $message, cause: $error, statusCode: $statusCode)');
     });
   });
 

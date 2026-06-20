@@ -91,7 +91,7 @@ class ConnectivityService {
   /// This method provides a snapshot of the current connection state(s).
   /// Returns a list of [ConnectivityResult]s.
   /// On error, logs the error and returns an empty list.
-  Future<List<ConnectivityResult>> getCurrentConnectivity() async {
+  Future<List<ConnectivityResult>> getCurrentConnectivityResults() async {
     try {
       return await _connectivity.checkConnectivity();
     } catch (e, stackTrace) {

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // --- EXTENSIONS UNDER TEST ---
 
-// extension StreamX<T> on Stream<T> {
+// extension StreamExtension<T> on Stream<T> {
 //   /// Shortcut for debounceTime(Duration(milliseconds: ms))
 //   Stream<T> debounceMs(int ms) => debounceTime(Duration(milliseconds: ms));
 
@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   Stream<T> throttleMs(int ms) => throttleTime(Duration(milliseconds: ms));
 // }
 
-// extension NullableX<T> on T? {
+// extension NullableExtension<T> on T? {
 //   /// Run block if value is NOT null
 //   R? let<R>(R Function(T) block) => this == null ? null : block(this as T);
 
@@ -27,7 +27,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   bool get isNotNull => this != null;
 // }
 
-// extension MapX<K, V> on Map<K, V>? {
+// extension NullableMapExtension<K, V> on Map<K, V>? {
 //   /// true if null OR empty
 //   bool get isNullOrEmpty => this == null || this?.isEmpty == true;
 
@@ -44,7 +44,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   }
 // }
 
-// extension IterableX<T> on Iterable<T>? {
+// extension NullableIterableExtension<T> on Iterable<T>? {
 //   /// true if null OR empty
 //   bool get isNullOrEmpty => this == null || this?.isEmpty == true;
 
@@ -71,7 +71,7 @@ import 'package:flutter_test/flutter_test.dart';
 // --- UNIT TESTS ---
 
 void main() {
-  group('StreamX (RxDart Extensions)', () {
+  group('StreamExtension (RxDart Extensions)', () {
     // Uses fakeAsync to drive virtual time — deterministic, not wall-clock
     // dependent (the previous real-timer version flaked under load).
     test('debounceMs only emits the last value within the debounce period', () {
@@ -132,7 +132,7 @@ void main() {
     });
   });
 
-  group('NullableX Tests', () {
+  group('NullableExtension Tests', () {
     test('let runs block on non-null value and returns result', () {
       int? nonNullValue = 5;
       final result = nonNullValue.let((v) => v * 2);
@@ -165,7 +165,7 @@ void main() {
     });
   });
 
-  group('MapX Tests', () {
+  group('NullableMapExtension Tests', () {
     const Map<String, int>? nullMap = null;
     final Map<String, int> emptyMap = {};
     final Map<String, int> dataMap = {'a': 1, 'b': 2};
@@ -182,10 +182,10 @@ void main() {
       expect(dataMap.isNotNullOrEmpty, isTrue);
     });
 
-    test('get safely retrieves values', () {
-      expect(dataMap.get('a'), 1);
-      expect(dataMap.get('c'), isNull);
-      expect(nullMap.get('a'), isNull);
+    test('valueOrNull safely retrieves values', () {
+      expect(dataMap.valueOrNull('a'), 1);
+      expect(dataMap.valueOrNull('c'), isNull);
+      expect(nullMap.valueOrNull('a'), isNull);
     });
 
     test('pretty formats the map with indentation', () {
@@ -198,7 +198,7 @@ void main() {
     });
   });
 
-  group('IterableX Tests', () {
+  group('NullableIterableExtension Tests', () {
     const List<int>? nullList = null;
     final List<int> emptyList = [];
     final List<int> singleList = [1];
