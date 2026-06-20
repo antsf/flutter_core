@@ -1,7 +1,6 @@
 // test/theme/theme_widget_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/theme/theme_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -14,6 +13,11 @@ void main() {
 
   setUp(() {
     initScreenUtilForTests();
+
+    // Use a plain TextStyle builder instead of GoogleFonts.inter so the theme
+    // never triggers a real font fetch (flaky under parallel load) — matches
+    // the other theme tests. AppTheme.*Theme are getters, so this takes effect.
+    setFontBuilderForTesting(setFontForTesting);
 
     // ThemeProvider is a singleton; reset it so state (e.g. dark mode) doesn't
     // leak in from other theme tests and make this order-dependent.

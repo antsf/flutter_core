@@ -2,6 +2,8 @@ library network_exceptions;
 
 import 'package:dio/dio.dart';
 
+import '../../result/failures.dart';
+
 /// Defines a hierarchy of custom exceptions related to network operations.
 ///
 /// These exceptions provide more specific and user-friendly error information
@@ -17,33 +19,36 @@ import 'package:dio/dio.dart';
 ///
 /// The factory constructor `NetworkException.fromDioException` is provided to
 /// conveniently convert a [DioException] into a more specific [NetworkException] subtype.
-abstract class NetworkException implements Exception {
-  /// A user-friendly message describing the error.
-  final String message;
-
-  /// The HTTP status code associated with the error, if applicable.
-  final int? statusCode;
-
-  /// The original error object, often a [DioException] or other low-level error.
-  final dynamic error;
-
-  /// The stack trace associated with the original error, if available.
-  final StackTrace? stackTrace;
-
+abstract class NetworkException extends Failure implements Exception {
   /// Creates a const [NetworkException].
+  ///
+  /// A [NetworkException] **is a** [Failure] — it is the network-specific family
+  /// of the unified [Failure] error model, so it can flow directly into a
+  /// [Result] without a separate conversion. [statusCode] stays optional here
+  /// (it defaults to `0` on the [Failure] base when unknown) so the many
+  /// subtypes can keep passing `response?.statusCode`.
+  // Can't use super-parameters: `statusCode` needs a `?? 0` transform (subtypes
+  // pass a nullable `int?`, but Failure.statusCode is non-null), and Dart
+  // forbids mixing `super.x` params with an explicit `super(...)` call.
+  // ignore: use_super_parameters
   const NetworkException({
-    required this.message,
-    this.statusCode,
-    this.error,
-    this.stackTrace,
-  });
+    required String message,
+    int? statusCode,
+    Object? error,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          statusCode: statusCode ?? 0,
+          error: error,
+          stackTrace: stackTrace,
+        );
 
   @override
   String toString() {
     final StringBuffer sb = StringBuffer();
     sb.write(runtimeType); // e.g., "TimeoutException"
     sb.write(': $message');
-    if (statusCode != null) {
+    if (statusCode != 0) {
       sb.write(' (Status Code: $statusCode)');
     }
     if (error != null && error is DioException) {

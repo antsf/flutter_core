@@ -19,6 +19,20 @@ All notable changes to this project will be documented in this file.
   parameter to inject a custom Dio interceptor (ported from `main`'s
   `feat(network)` work and adapted to the refactored layout).
 
+### Unified error model (M1)
+- **`Failure` is now the single error currency.** `NetworkException` (and all its
+  subtypes — `UnauthorizedException`, `NotFoundException`, …) now **extend
+  `Failure`**, so network errors flow directly into the `Result<T, Failure>`
+  domain model without a lossy remap.
+- **`ApiResponse.toResult()`** bridges the HTTP transport type into
+  `Result<T?, Failure>`. `ApiResponse` remains the `DioClient` return type
+  because HTTP allows a *success with no body* (204) that `Result.Success<T>`
+  can't represent; the two now share one error type and convert cleanly.
+- **Removed the dead, unexported `network/safe_call.dart`** (the duplicate
+  helper) and the unused `ResponseExtension`. `safeRemoteCall` no longer
+  re-wraps `NetworkException` into a generic `NetworkFailure` — it returns the
+  specific failure as-is.
+
 ### Security & reliability (production hardening)
 - **Retries are now idempotency-aware** (`RetryOptions.retryableMethods`,
   default `{GET, HEAD, OPTIONS}`). Non-idempotent requests (POST/PUT/PATCH/...)
