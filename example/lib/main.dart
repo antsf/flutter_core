@@ -139,17 +139,6 @@ class _HomePageState extends State<HomePage> {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                // Example of setting a custom color scheme (doesn't change theme in this simple example)
-                themeProvider.setColorScheme('blue');
-              },
-              child: Text(
-                'Set Blue Scheme',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-            ),
           ],
         ),
       ),

@@ -124,14 +124,14 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 
 ## P3 — DOKUMENTASI & KEBERSIHAN
 
-### [ ] M8. Selaraskan dokumentasi dengan API nyata
-Severity: 6/10
-- [ ] `README.md:53-54` — hapus/ganti `ThemeProvider.instance.darkTheme` & `.themeMode` (tidak ada)
-- [ ] `README.md:14` — hapus klaim `BaseRepository` (sudah dihapus, lihat `CHANGELOG.md:30-33`)
-- [ ] Hapus tombol "Set Blue Scheme" yang no-op di `example/lib/main.dart:144-152`
-- [ ] Implement atau hapus `ThemeProvider.setColorScheme` (`theme_provider.dart:91-99`)
-- [ ] Koreksi klaim palsu `REFACTOR_PLAN.md:5,124` ("Semua tahap SELESAI ✅" / "No issues found ✅")
-- **DoD:** Semua contoh di README compile terhadap API nyata.
+### [x] M8. Selaraskan dokumentasi dengan API nyata ✅
+- [x] README theme example → pakai `currentTheme` saja (hapus `darkTheme`/`themeMode` yang tidak ada)
+- [x] README feature bullet `BaseRepository`/`UseCase` → diganti "Result Type" (sebelumnya saat hapus UseCase)
+- [x] Hapus tombol no-op "Set Blue Scheme" di example
+- [x] README: `LocalStorage`→`SecureStorage`, `TimeoutException`→`NetworkTimeoutException`, catatan error-model & idempotent retry, deps google_fonts/intl ditandai internal
+- [x] Koreksi klaim palsu di `REFACTOR_PLAN.md` (tambah catatan koreksi)
+- [ ] (opsional) `ThemeProvider.setColorScheme` masih ada tapi no-op — biarkan/implement nanti
+- **DoD:** ✅ Semua contoh README & example compile terhadap API nyata (analyze 0 issue).
 
 ### [ ] Minor — kebersihan kode & konfigurasi
 - [ ] Hapus dead code terkomentar: `core.dart:85-93,124-127,176-197`; `formatter.dart:109-116`; self-import aneh `core.dart:49`

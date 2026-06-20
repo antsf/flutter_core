@@ -49,9 +49,9 @@ class MyApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: ThemeProvider.instance,
       builder: (context, _) => MaterialApp(
+        // ThemeProvider exposes a single already-resolved theme; toggle it with
+        // ThemeProvider.instance.toggleTheme() / setThemeMode(bool).
         theme: ThemeProvider.instance.currentTheme,
-        darkTheme: ThemeProvider.instance.darkTheme,
-        themeMode: ThemeProvider.instance.themeMode,
         home: const HomePage(),
       ),
     );
@@ -105,8 +105,12 @@ client.clearCache();
 
 ### Secure Storage
 
+> `SecureStorage` is encrypted (flutter_secure_storage) — use it for small
+> sensitive values (tokens, keys), not as a general app database. Bulk helpers
+> read/decrypt all keys, and the web has no OS keychain.
+
 ```dart
-final storage = LocalStorage();
+final storage = SecureStorage();
 
 // Store and retrieve typed values
 await storage.set<String>('auth', 'token', 'eyJhbGci...');
@@ -224,23 +228,36 @@ final name = result.map((user) => user.name);
 
 ## API Reference
 
-### NetworkException types
-`TimeoutException`, `NoInternetConnectionException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `InternalServerErrorException`, `BadGatewayException`, `ServiceUnavailableException`, `GatewayTimeoutException`, `CancelledException`, `UnknownNetworkException`
+### Error model
+Every error is a `Failure`. `NetworkException` and its subtypes **extend**
+`Failure`, so network and domain errors share one type. Bridge an `ApiResponse`
+to a `Result<T?, Failure>` with `apiResponse.toResult()`.
 
-### Failure types
-`ServerFailure`, `NetworkFailure`, `CacheFailure`, `AuthFailure`, `ValidationFailure`, `GenericFailure`
+`NetworkException` types: `NetworkTimeoutException`, `NoInternetConnectionException`,
+`UnauthorizedException`, `ForbiddenException`, `NotFoundException`,
+`ConflictException`, `TooManyRequestsException`, `InternalServerErrorException`,
+`BadGatewayException`, `ServiceUnavailableException`, `GatewayTimeoutException`,
+`CancelledException`, `UnknownNetworkException`.
+
+Plain `Failure` types: `ServerFailure`, `NetworkFailure`, `CacheFailure`,
+`AuthFailure`, `ValidationFailure`, `GenericFailure`.
 
 ### RetryOptions
 
 ```dart
 const RetryOptions(
-  maxAttempts: 3,           // default
-  baseDelayMs: 1000,        // default
-  maxDelayMs: 10000,        // default
+  maxAttempts: 3,              // default
+  baseDelayMs: 1000,           // default
+  maxDelayMs: 10000,           // default
   useExponentialBackoff: true, // default
-  retryableStatusCodes: [408, 500, 502, 503, 504], // default
+  useJitter: true,             // default — spreads retries to avoid a herd
+  retryableStatusCodes: [408, 500, 502, 503, 504],  // default
+  retryableMethods: {'GET', 'HEAD', 'OPTIONS'},     // default (idempotent only)
 )
 ```
+
+By default only idempotent methods are retried. To retry a specific
+non-idempotent request, pass `Options(extra: {'retry': true})`.
 
 ## Dependencies
 
@@ -248,10 +265,10 @@ const RetryOptions(
 |---|---|
 | `dio` | HTTP client |
 | `connectivity_plus` | Network connectivity |
-| `flutter_secure_storage` | Encrypted key-value storage |
+| `flutter_secure_storage` | Encrypted storage (`SecureStorage`) |
 | `flutter_screenutil` | Responsive UI scaling |
-| `google_fonts` | Inter font family |
-| `intl` | Locale-aware formatting |
+| `google_fonts` | Inter font family (internal; not re-exported) |
+| `intl` | Locale-aware formatting (internal; not re-exported) |
 | `logger` | Structured logging |
 
 ## Contributing
