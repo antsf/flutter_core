@@ -5,7 +5,11 @@
 > Status awal: **TIDAK BISA COMPILE** — `flutter analyze` = 168 error / 175 issue
 > Skor awal: **2.5 / 10** — Publish: TIDAK · Production: TIDAK
 >
-> **Update 2026-06-20 — P0 SELESAI ✅:** `flutter analyze --fatal-infos` = 0 issue · `flutter test` = **295 lulus** · CI ditambahkan. Selanjutnya: P1 (keamanan produksi).
+> **Update 2026-06-20 — P0/P1/P2/P3 SELESAI ✅ & sudah di `main`.**
+> `flutter analyze --fatal-infos` = 0 issue · `flutter test` = **321 lulus** · CI hijau.
+> Dimerge lewat PR #7 (P0 + resolusi konflik) lalu PR #8 (P1+P2+P3, merge `d8eccad`).
+> Skor sekarang ~**8/10**. Yang tersisa = item **opsional** (lihat P3/Minor) + prasyarat **rilis**
+> (lihat *Definition of Done*): coverage di CI, rename package, bump versi 2.0.0.
 
 Kerjakan **berurutan dari atas ke bawah**. Setiap item punya: lokasi file:line, kriteria selesai (DoD), dan severity. Centang `[x]` jika selesai.
 
@@ -18,7 +22,7 @@ Kerjakan **berurutan dari atas ke bawah**. Setiap item punya: lokasi file:line, 
 > Tanpa ini, semua hal lain tidak relevan. Target: `flutter analyze` = 0 error, `flutter test` hijau.
 
 ### [x] C1. Perbaiki semua path import/export yang rusak setelah pindah file ✅
-Severity: 10/10 — **SELESAI** (commit menyusul). `flutter analyze` = **No issues found!**
+Severity: 10/10 — **SELESAI** (commit `ce079cc`). `flutter analyze` = **No issues found!**
 File pindah dari `lib/src/core/*` → `lib/src/*` tapi barrel & file internal masih menunjuk path lama.
 - [x] `lib/flutter_core.dart:13,16,17,18,19,20,23,26,35` — perbaiki export `src/core/...` → `src/...`
 - [x] `lib/core.dart:50,55,57` — perbaiki import `src/core/...` → `src/...` (+ hapus 2 baris import terkomentar mati)
@@ -33,7 +37,7 @@ Severity: 9/10 — **SELESAI**. Dibuat `.github/workflows/ci.yml`.
 - [x] Workflow: `pub get` → `dart format --set-exit-if-changed .` → `flutter analyze --fatal-infos` → `flutter test --timeout 60s` → `dart pub publish --dry-run`
 - [x] Jalankan di setiap PR + push ke `main`
 - [x] Seluruh gate diverifikasi lulus lokal (format, analyze --fatal-infos, test, dry-run bersih di checkout bersih)
-- **DoD:** ✅ Workflow siap; gate akan memblokir PR yang gagal. (Perlu push ke GitHub agar Actions aktif.)
+- **DoD:** ✅ Workflow aktif & **hijau** di GitHub Actions (PR #7 & #8 lulus gate).
 - **Catatan:** `dart pub publish --dry-run` memberi *hint* bahwa nama `flutter_core` sudah ada di pub.dev (versi 1.0.2). Distribusi saat ini via git dependency (lihat README). Bukan blocker CI, tapi nama harus dibereskan jika ingin publish ke pub.dev. → tracked sebagai catatan P2/P3.
 
 ### [x] C3. Perbaiki agar test suite bisa jalan ✅
@@ -107,11 +111,11 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 ### [x] M4. `UseCase` cancellation — **MOOT** ✅
 - [x] Tidak relevan lagi: `UseCase` sudah dihapus seluruhnya (commit `680cead`).
 
-### [x] M7. Jangan re-export seluruh package pihak ketiga ✅ (commit menyusul)
+### [x] M7. Jangan re-export seluruh package pihak ketiga ✅ (commit `66b10bb`)
 - [x] Hapus re-export `google_fonts` & `intl` (internal-only); pertahankan `dio`/`connectivity_plus`/`flutter_screenutil` (dipakai di signature publik)
 - **DoD:** ✅ Autocomplete consumer tidak banjir simbol google_fonts/intl.
 
-### [x] M9. Hapus duplikasi `back()` pada `BuildContext` ✅ (commit menyusul)
+### [x] M9. Hapus duplikasi `back()` pada `BuildContext` ✅ (commit `66b10bb`)
 - [x] `back()` hanya di `NavigationExtension`; dihapus dari `DialogsAndAlerts`
 - [x] +1 regression test (impor via barrel)
 - **DoD:** ✅ `context.back()` tidak ambigu via barrel.
@@ -133,27 +137,34 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 - [ ] (opsional) `ThemeProvider.setColorScheme` masih ada tapi no-op — biarkan/implement nanti
 - **DoD:** ✅ Semua contoh README & example compile terhadap API nyata (analyze 0 issue).
 
-### [ ] Minor — kebersihan kode & konfigurasi
+### Minor — kebersihan kode & konfigurasi (inti selesai; sisanya opsional)
 - [x] Hapus dead code terkomentar di `core.dart` + self-import aneh (commit `874e7bf`)
-- [x] Naikkan `flutter_lints ^3 → ^6` (commit menyusul); semua temuan baru dibereskan (17× `unnecessary_library_name` → `library;` anonim, 2× angle-bracket di doc comment). `strict-casts` = follow-up opsional terpisah.
+- [x] Naikkan `flutter_lints ^3 → ^6` (commit `599a58e`); semua temuan baru dibereskan (17× `unnecessary_library_name` → `library;` anonim, 2× angle-bracket di doc comment). `strict-casts` = follow-up opsional terpisah.
 - [ ] (opsional) Kurangi global singleton `FlutterCore`/`ThemeProvider` → DI — perubahan arsitektural besar, butuh diskusi
 - [ ] (opsional) String ID hardcoded `safe_remote_call genericError` — sudah bisa di-override via parameter; rendah prioritas
 - [ ] (opsional) Semantik null-success — sebagian besar sudah ditangani M1 (`toResult`); review jika perlu
-- [x] `PhoneFormatter`/`CreditCardFormatter`/`ThousandsFormatter` — caret dipertahankan saat edit di tengah (hitung digit sebelum caret). Bonus: fix grouping `PhoneFormatter` agar cocok dengan doc (`0812 3456 7890`, bukan `081 2345 67890`). +6 test (commit menyusul).
+- [x] `PhoneFormatter`/`CreditCardFormatter`/`ThousandsFormatter` — caret dipertahankan saat edit di tengah (hitung digit sebelum caret). Bonus: fix grouping `PhoneFormatter` agar cocok dengan doc (`0812 3456 7890`, bukan `081 2345 67890`). +6 test (commit `3a8167b`).
 
 ---
 
 ## Definition of Done (rilis)
 
-- [ ] `flutter analyze --fatal-warnings` = 0 issue
-- [ ] `flutter test` hijau + coverage dilaporkan
-- [ ] `dart pub publish --dry-run` lolos
-- [ ] CI hijau di GitHub Actions
-- [ ] README & example compile terhadap API nyata
-- [ ] Semua item P0 & P1 selesai (P2/P3 boleh menyusul, tapi P1 wajib sebelum dipakai produksi)
+- [x] `flutter analyze --fatal-infos` = 0 issue (lebih ketat dari `--fatal-warnings`)
+- [x] `flutter test` hijau (**321 lulus**)
+- [ ] Coverage dilaporkan — **belum**; CI belum jalankan `--coverage`/upload (follow-up cepat)
+- [ ] `dart pub publish --dry-run` lolos — **belum**; masih ketahan *hint* nama `flutter_core` sudah dipakai di pub.dev (perlu rename)
+- [x] CI hijau di GitHub Actions (PR #7 & #8)
+- [x] README & example compile terhadap API nyata
+- [x] Semua item P0 & P1 selesai
+- [ ] Bump versi → **2.0.0** (breaking) — **belum**
+- [ ] Rename package (nama `flutter_core` sudah dipakai di pub.dev) — **belum**
 
-## Urutan eksekusi yang disarankan
-1. P0 (C1 → C2 → C3) — buat hijau & berCI
-2. P1 (C4, C5, M5, M6) — hilangkan bahaya produksi
-3. P2 (M1, M3, M2, M4, M7, M9, M10) — rapikan desain/API
-4. P3 (M8 + minor) — dokumentasi & polish
+## Status fase
+1. ✅ P0 (C1 → C2 → C3) — compile, hijau, berCI
+2. ✅ P1 (C4, C5, M5, M6) — bahaya produksi hilang
+3. ✅ P2 (M1, M2, M3, M4-moot, M7, M9, M10) — desain/API rapi
+4. ✅ P3 (M8 + minor: dead-code, lints 6, formatter) — docs & polish
+
+## Sisa pekerjaan (opsional / rilis)
+- Opsional: singleton → DI (arsitektural, butuh keputusan), `ThemeProvider.setColorScheme` no-op, string `genericError` hardcoded, semantik null-success.
+- Rilis: coverage di CI, rename package, bump versi 2.0.0.
