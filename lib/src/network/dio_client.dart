@@ -50,7 +50,20 @@ class DioClient {
   final Dio _dio;
   final ConnectivityService _connectivityService;
   final Logger? _logger;
+
+  /// In-memory GET cache. A [LinkedHashMap] preserves insertion order so the
+  /// least-recently-used entry is always `keys.first` for LRU eviction.
   final _cache = <String, _CacheEntry>{};
+
+  /// Maximum number of cached GET responses. Beyond this, the least-recently-
+  /// used entry is evicted so the cache can't grow without bound.
+  final int _maxCacheEntries;
+
+  /// A single in-flight token refresh, shared by all requests that hit a 401
+  /// at the same time. Coalescing prevents a "refresh stampede" — concurrent
+  /// 401s firing multiple simultaneous refreshes, which (with single-use /
+  /// rotating refresh tokens) invalidate each other and log the user out.
+  Future<String?>? _ongoingRefresh;
 
   DioClient({
     required String baseUrl,
@@ -62,6 +75,7 @@ class DioClient {
     bool enableLogging = true,
     RetryOptions retryOptions = const RetryOptions(),
     Interceptor? interceptor,
+    int maxCacheEntries = 100,
     Future<String?> Function(Dio)? refreshToken,
   })  : _dio = dio ??
             Dio(BaseOptions(
@@ -71,6 +85,7 @@ class DioClient {
             )),
         _connectivityService =
             connectivityService ?? ConnectivityService.instance,
+        _maxCacheEntries = maxCacheEntries,
         _logger = logger {
     _setupInterceptors(
       enableLogging: enableLogging,
@@ -95,9 +110,8 @@ class DioClient {
     bool forceRefresh = false,
   }) {
     if (cacheTtl != null && !forceRefresh) {
-      final key = _cacheKey(path, queryParameters);
-      final entry = _cache[key];
-      if (entry != null && entry.isValid) {
+      final entry = _readCacheEntry(_cacheKey(path, queryParameters));
+      if (entry != null) {
         return Future.value(_parseResponse<T>(entry.rawData, fromJson));
       }
     }
@@ -266,7 +280,7 @@ class DioClient {
       final response = await call();
       final rawData = response.data;
       if (cacheKey != null && cacheTtl != null && rawData != null) {
-        _cache[cacheKey] = _CacheEntry(rawData, cacheTtl);
+        _writeCacheEntry(cacheKey, _CacheEntry(rawData, cacheTtl));
       }
       return _parseResponse<T>(rawData, fromJson);
     } on NetworkException catch (e) {
@@ -308,10 +322,34 @@ class DioClient {
   }
 
   String _cacheKey(String path, Map<String, dynamic>? query) {
-    if (query == null || query.isEmpty) return path;
-    final sorted = Map.fromEntries(
-        query.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
-    return '$path?${sorted.entries.map((e) => '${e.key}=${e.value}').join('&')}';
+    // Scope every cache key to the current identity (auth token) so a cached
+    // response for one user can never be served to another after the token
+    // changes. The token itself is not stored — only its hash.
+    final identity = _dio.options.headers['Authorization']?.hashCode ?? 0;
+    final base = (query == null || query.isEmpty)
+        ? path
+        : '$path?${(query.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => '${e.key}=${e.value}').join('&')}';
+    return '$identity|$base';
+  }
+
+  /// Reads a cache entry, applying LRU semantics: a valid hit is moved to
+  /// most-recently-used; an expired entry is dropped. Returns null on miss.
+  _CacheEntry? _readCacheEntry(String key) {
+    final entry = _cache.remove(key);
+    if (entry == null) return null;
+    if (!entry.isValid) return null; // expired -> evicted
+    _cache[key] = entry; // re-insert as most-recently-used
+    return entry;
+  }
+
+  /// Writes a cache entry and evicts the least-recently-used entries once the
+  /// cache exceeds [_maxCacheEntries].
+  void _writeCacheEntry(String key, _CacheEntry entry) {
+    _cache.remove(key); // ensure re-insertion updates recency order
+    _cache[key] = entry;
+    while (_cache.length > _maxCacheEntries) {
+      _cache.remove(_cache.keys.first); // eldest == least recently used
+    }
   }
 
   void _setupInterceptors({
@@ -333,17 +371,20 @@ class DioClient {
     if (refreshTokenCallback != null) {
       _dio.interceptors.add(InterceptorsWrapper(
         onError: (DioException error, ErrorInterceptorHandler handler) async {
-          if (error.response?.statusCode == 401) {
+          // Only attempt a refresh once per request — if the retried request
+          // still 401s, fall through instead of looping forever.
+          final alreadyRetried =
+              error.requestOptions.extra['__retried_after_refresh'] == true;
+          if (error.response?.statusCode == 401 && !alreadyRetried) {
             _logger?.i('DioClient: 401 received. Attempting token refresh.');
             try {
-              final dioForRefresh =
-                  Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
-              final newToken = await refreshTokenCallback(dioForRefresh);
+              final newToken = await _refreshAuthToken(refreshTokenCallback);
               if (newToken != null) {
                 setAuthToken(newToken);
                 _logger?.i('DioClient: Token refreshed. Retrying request.');
                 error.requestOptions.headers['Authorization'] =
                     'Bearer $newToken';
+                error.requestOptions.extra['__retried_after_refresh'] = true;
                 return handler.resolve(await _dio.fetch(error.requestOptions));
               }
               _logger?.w('DioClient: Token refresh returned null.');
@@ -363,5 +404,20 @@ class DioClient {
       logger: _logger,
       enableLogging: enableLogging,
     ));
+  }
+
+  /// Runs [callback] to obtain a fresh token, coalescing concurrent callers
+  /// onto a single in-flight refresh. The first 401 starts the refresh; any
+  /// other 401s that arrive while it is running await the same result instead
+  /// of starting their own.
+  Future<String?> _refreshAuthToken(Future<String?> Function(Dio) callback) {
+    return _ongoingRefresh ??= () async {
+      try {
+        final dioForRefresh = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
+        return await callback(dioForRefresh);
+      } finally {
+        _ongoingRefresh = null;
+      }
+    }();
   }
 }

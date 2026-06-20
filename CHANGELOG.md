@@ -19,6 +19,25 @@ All notable changes to this project will be documented in this file.
   parameter to inject a custom Dio interceptor (ported from `main`'s
   `feat(network)` work and adapted to the refactored layout).
 
+### Security & reliability (production hardening)
+- **Retries are now idempotency-aware** (`RetryOptions.retryableMethods`,
+  default `{GET, HEAD, OPTIONS}`). Non-idempotent requests (POST/PUT/PATCH/...)
+  are **no longer auto-retried** on timeout/5xx — which previously risked
+  **duplicate transactions** (double payment/order). A request can opt in with
+  `Options(extra: {'retry': true})` when it's safe. Backoff now adds **jitter**
+  (`RetryOptions.useJitter`, default on) to avoid a thundering herd.
+- **Token refresh is coalesced.** Concurrent 401s now share a single in-flight
+  refresh instead of each firing its own — preventing a refresh **stampede**
+  that (with single-use/rotating tokens) logged users out at random. A
+  per-request guard also prevents infinite refresh→retry loops.
+- **GET cache is bounded and identity-scoped.** The in-memory cache now has an
+  LRU bound (`DioClient(maxCacheEntries: 100)`) so it can't grow without limit,
+  and cache keys include the auth-token identity so a cached response for one
+  user can never be served to another after the token changes.
+- **No more PII in logs.** `safeRemoteCall` no longer logs full response bodies
+  (which routinely contain PII/tokens); remaining error logs are gated to debug
+  builds only.
+
 ### Changed
 - Reorganized `lib/src/domain/` into content-matched folders (no `domain/`):
   `result/failures.dart`, `result/result.dart`, `usecase/usecase.dart` (now
