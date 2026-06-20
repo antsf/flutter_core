@@ -24,7 +24,7 @@ Add to your `pubspec.yaml`:
 dependencies:
   flutter_corekit:
     git:
-      url: https://github.com/antsf/flutter_core
+      url: https://github.com/antsf/flutter_corekit
       ref: main
 ```
 
