@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_corekit/src/storage/secure_storage.dart'
-    show SecureStorage;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'theme.dart';
 
-/// The main provider for managing and notifying listeners of theme changes.
+/// Manages and persists light/dark theme selection and notifies listeners.
+///
+/// Theme mode is a non-sensitive UI preference, so it is stored in
+/// `shared_preferences` (fast) rather than secure storage.
 class ThemeProvider extends ChangeNotifier {
   static ThemeProvider? _instance;
-  static const String themeBoxName = 'theme_box';
-  static const String themeKey = 'theme_mode';
-  static const String _colorSchemeKey = 'color_scheme';
-  static SecureStorage localStorage = SecureStorage();
 
-  // These are the themes that can be customized during configuration
+  /// `shared_preferences` key used to persist the dark-mode flag.
+  static const String themeKey = 'flutter_corekit.theme_mode';
+
+  // Optional custom themes supplied via [configure].
   ThemeData? _customLightTheme;
   ThemeData? _customDarkTheme;
 
-  // The currently active theme, selected from custom or default themes
   ThemeData _currentTheme = AppTheme.defaultLightTheme;
   bool _isDarkMode = false;
-  String _currentColorScheme = 'default';
 
   ThemeProvider._();
 
   static ThemeProvider get instance => _instance ??= ThemeProvider._();
 
-  /// Configure the theme provider with custom light and dark themes.
-  /// This method should be called once, before the app starts.
+  /// Configure the provider with custom light/dark themes.
+  /// Call once before the app starts (e.g. in `main`).
   static void configure({
     ThemeData? lightTheme,
     ThemeData? darkTheme,
@@ -36,64 +36,45 @@ class ThemeProvider extends ChangeNotifier {
     _instance!._updateTheme();
   }
 
-  /// Get the current theme, which will be either a custom theme or a default.
+  /// The currently active theme (custom if provided, otherwise the default).
   ThemeData get currentTheme => _currentTheme;
-  bool get isDarkMode => _isDarkMode;
-  String get currentColorScheme => _currentColorScheme;
 
-  /// Load saved theme settings from [SecureStorage].
+  /// Whether dark mode is currently active.
+  bool get isDarkMode => _isDarkMode;
+
+  /// Loads the saved theme mode from `shared_preferences`.
   Future<void> loadThemeMode() async {
-    final isDark = await localStorage.get<bool>(themeBoxName, themeKey);
-    final scheme =
-        await localStorage.get<String>(themeBoxName, _colorSchemeKey);
-    _isDarkMode = isDark ?? false;
-    _currentColorScheme = scheme ?? 'default';
+    final prefs = await SharedPreferences.getInstance();
+    _isDarkMode = prefs.getBool(themeKey) ?? false;
     _updateTheme();
     notifyListeners();
   }
 
-  /// Update the current theme based on the selected mode and custom themes.
   void _updateTheme() {
     _currentTheme = _isDarkMode
         ? (_customDarkTheme ?? AppTheme.defaultDarkTheme)
         : (_customLightTheme ?? AppTheme.defaultLightTheme);
   }
 
-  /// Save current theme settings to [SecureStorage].
-  Future<void> _saveThemeSettings() async {
-    await localStorage.set<bool>(themeBoxName, themeKey, _isDarkMode);
-    await localStorage.set<String>(
-        themeBoxName, _colorSchemeKey, _currentColorScheme);
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(themeKey, _isDarkMode);
   }
 
-  /// Toggle between light and dark theme.
+  /// Toggles between light and dark, persisting the choice.
   Future<void> toggleTheme() async {
     _isDarkMode = !_isDarkMode;
     _updateTheme();
-    await _saveThemeSettings();
+    await _save();
     notifyListeners();
   }
 
-  /// Sets the theme mode explicitly.
+  /// Sets the theme mode explicitly, persisting the choice.
   Future<void> setThemeMode(bool isDark) async {
     if (_isDarkMode != isDark) {
       _isDarkMode = isDark;
       _updateTheme();
-      await _saveThemeSettings();
-      notifyListeners();
-    }
-  }
-
-  /// Sets the color scheme. This functionality is more illustrative
-  /// as the current `_updateTheme` only uses the theme object itself.
-  /// For more dynamic color schemes, the `_updateTheme` logic would
-  /// need to be adjusted to merge a new color scheme into the base theme.
-  Future<void> setColorScheme(String scheme) async {
-    if (_currentColorScheme != scheme) {
-      _currentColorScheme = scheme;
-      // In a real-world scenario, you would have logic here to
-      // merge the new color scheme into the current theme.
-      await _saveThemeSettings();
+      await _save();
       notifyListeners();
     }
   }

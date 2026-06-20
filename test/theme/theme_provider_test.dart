@@ -1,34 +1,22 @@
 // test/theme/theme_provider_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_corekit/flutter_corekit.dart';
-import 'package:test/test.dart';
-import 'package:mocktail/mocktail.dart';
-import '../mocks/mock_local_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../test_helpers.dart';
 
 void main() {
-  late MockLocalStorage mockStorage;
+  // Needed for the shared_preferences mock method channel.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ThemeProvider provider;
 
   setUp(() {
-    ThemeProvider.reset(); // 🔥 Critical: reset singleton
-
+    SharedPreferences.setMockInitialValues({});
+    ThemeProvider.reset();
     initScreenUtilForTests();
     setFontBuilderForTesting(setFontForTesting);
-
-    mockStorage = MockLocalStorage();
-    registerFallbackValue('any_string');
-
-    when(() => mockStorage.get<bool>(any(), any()))
-        .thenAnswer((_) async => null);
-    when(() => mockStorage.get<String>(any(), any()))
-        .thenAnswer((_) async => null);
-    when(() => mockStorage.set<bool>(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockStorage.set<String>(any(), any(), any()))
-        .thenAnswer((_) async => true);
-
-    ThemeProvider.localStorage = mockStorage;
     provider = ThemeProvider.instance;
   });
 
@@ -37,25 +25,25 @@ void main() {
     expect(provider.isDarkMode, isFalse);
   });
 
-  test('toggleTheme switches to dark and saves', () async {
+  test('toggleTheme switches to dark, persists, and reloads', () async {
     await provider.toggleTheme();
     expect(provider.isDarkMode, isTrue);
     expect(provider.currentTheme.brightness, Brightness.dark);
 
-    verify(() => mockStorage.set<bool>(
-        ThemeProvider.themeBoxName, ThemeProvider.themeKey, true)).called(1);
-    verify(() => mockStorage.set<String>(any(), any(), any())).called(1);
+    // Round-trip: a fresh provider should load the persisted dark mode.
+    ThemeProvider.reset();
+    final reloaded = ThemeProvider.instance;
+    await reloaded.loadThemeMode();
+    expect(reloaded.isDarkMode, isTrue);
+    expect(reloaded.currentTheme.brightness, Brightness.dark);
   });
 
   test('configure sets custom dark theme', () async {
-    // Use a DARK color scheme for dark theme
     final customDark = AppTheme.defaultDarkTheme.copyWith(
-      colorScheme: ColorSchemes.darkGreen, // ✅ dark scheme
+      colorScheme: ColorSchemes.darkGreen,
     );
 
     ThemeProvider.configure(darkTheme: customDark);
-
-    // Switch to dark mode to activate it
     await ThemeProvider.instance.setThemeMode(true);
 
     expect(
@@ -64,16 +52,15 @@ void main() {
     );
   });
 
-  test('loadThemeMode loads dark mode from storage', () async {
-    when(() => mockStorage.get<bool>(
-            ThemeProvider.themeBoxName, ThemeProvider.themeKey))
-        .thenAnswer((_) async => true);
-    when(() => mockStorage.get<String>(any(), any()))
-        .thenAnswer((_) async => 'default');
+  test('loadThemeMode reads dark mode from storage', () async {
+    SharedPreferences.setMockInitialValues({ThemeProvider.themeKey: true});
+    ThemeProvider.reset();
+    final p = ThemeProvider.instance;
+    setFontBuilderForTesting(setFontForTesting);
 
-    await provider.loadThemeMode();
+    await p.loadThemeMode();
 
-    expect(provider.isDarkMode, isTrue);
-    expect(provider.currentTheme.brightness, Brightness.dark);
+    expect(p.isDarkMode, isTrue);
+    expect(p.currentTheme.brightness, Brightness.dark);
   });
 }

@@ -2,42 +2,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_corekit/flutter_corekit.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../mocks/mock_local_storage.dart';
 import '../test_helpers.dart';
 
 void main() {
-  late MockLocalStorage mockStorage;
   late ThemeProvider provider;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     initScreenUtilForTests();
 
-    // Use a plain TextStyle builder instead of GoogleFonts.inter so the theme
-    // never triggers a real font fetch (flaky under parallel load) — matches
-    // the other theme tests. AppTheme.*Theme are getters, so this takes effect.
+    // Plain TextStyle builder instead of GoogleFonts.inter so the theme never
+    // triggers a real font fetch (flaky under parallel load).
     setFontBuilderForTesting(setFontForTesting);
 
-    // ThemeProvider is a singleton; reset it so state (e.g. dark mode) doesn't
-    // leak in from other theme tests and make this order-dependent.
+    // ThemeProvider is a singleton; reset so state doesn't leak between tests.
     ThemeProvider.reset();
-
-    mockStorage = MockLocalStorage();
-
-    // ✅ Use thenAnswer for async methods (returning Future)
-    when(() => mockStorage.get<bool>(any(), any()))
-        .thenAnswer((_) async => false);
-    when(() => mockStorage.get<String>(any(), any()))
-        .thenAnswer((_) async => 'default');
-    when(() => mockStorage.set<bool>(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockStorage.set<String>(any(), any(), any()))
-        .thenAnswer((_) async => true);
-
-    // Inject mock
-    ThemeProvider.localStorage = mockStorage;
-
     provider = ThemeProvider.instance;
   });
 
@@ -56,20 +37,15 @@ void main() {
       ),
     );
 
-    final initialBrightness = provider.currentTheme.brightness;
-    expect(initialBrightness, Brightness.light);
+    expect(provider.currentTheme.brightness, Brightness.light);
 
     await provider.toggleTheme();
     await tester.pump();
 
-    final newBrightness = provider.currentTheme.brightness;
-    expect(newBrightness, Brightness.dark);
-    expect(newBrightness, isNot(equals(initialBrightness)));
+    expect(provider.currentTheme.brightness, Brightness.dark);
 
-    verify(() => mockStorage.set<bool>(
-          ThemeProvider.themeBoxName,
-          ThemeProvider.themeKey,
-          true,
-        )).called(1);
+    // The choice was persisted.
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool(ThemeProvider.themeKey), isTrue);
   });
 }

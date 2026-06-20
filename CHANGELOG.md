@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 - **Package renamed `flutter_core` → `flutter_corekit`** (the `flutter_core` name
   is taken on pub.dev). Update imports to
   `package:flutter_corekit/flutter_corekit.dart`.
+- **`ThemeProvider`**: removed the no-op `setColorScheme` / `currentColorScheme`
+  (they never affected the theme) and the public `themeBoxName` / `localStorage`
+  fields. Theme mode is now persisted via **`shared_preferences`** (a non-secret
+  UI preference) instead of secure storage — much faster. Key: `themeKey`.
 - **Removed `UseCase` / `NoParams`** (`lib/src/usecase/`). The base class was
   unused, untested, and its cooperative-cancellation feature was non-functional
   (the running `execute()` never observed `cancel()`). It also conflicted with
