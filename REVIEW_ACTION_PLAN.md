@@ -86,11 +86,12 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 
 ## P2 — DESAIN & API (koherensi, kebersihan permukaan publik)
 
-### [ ] M1. Satukan model error/result
-Severity: 7/10 — `lib/src/domain/failures.dart` vs `lib/src/network/api_response.dart`; dua file `safe_call.dart`
-- [ ] Pilih satu model (`Result`/`Failure`) dan map `NetworkException` → `Failure`
-- [ ] Hapus salah satu `safe_call.dart` yang duplikatif (`domain/` vs `network/`)
-- **DoD:** Hanya satu jalur error; README tidak perlu konversi manual.
+### [x] M1. Satukan model error/result ✅ (commit `af12686`)
+- [x] **`Failure` jadi satu-satunya mata uang error**: `NetworkException` (+ semua subtipe) sekarang `extends Failure` → network error langsung masuk `Result<T, Failure>` tanpa remap lossy
+- [x] `ApiResponse.toResult()` menjembatani transport HTTP → `Result<T?, Failure>` (ApiResponse tetap dipakai DioClient karena HTTP 204 = sukses tanpa body, tak bisa diwakili `Result.Success<T>`)
+- [x] Hapus `network/safe_call.dart` (dead/duplikat) + `ResponseExtension` (unused); `safeRemoteCall` kembalikan failure spesifik apa adanya
+- [x] +5 test (`api_response_test.dart`); bonus: fix flaky `theme_widget_test` (pakai `setFontBuilderForTesting`, bukan GoogleFonts asli)
+- **DoD:** ✅ Satu mata uang error (`Failure`); konversi eksplisit via `toResult()`. Suite hijau 3× berturut (313).
 
 ### [ ] M2. Pisahkan & ganti nama `LocalStorage` (secure storage menyamar)
 Severity: 7/10 — `lib/src/storage/local_storage.dart:17-26,72,78,89,111-124`
