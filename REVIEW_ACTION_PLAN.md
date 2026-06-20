@@ -93,41 +93,32 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 - [x] +5 test (`api_response_test.dart`); bonus: fix flaky `theme_widget_test` (pakai `setFontBuilderForTesting`, bukan GoogleFonts asli)
 - **DoD:** ✅ Satu mata uang error (`Failure`); konversi eksplisit via `toResult()`. Suite hijau 3× berturut (313).
 
-### [ ] M2. Pisahkan & ganti nama `LocalStorage` (secure storage menyamar)
-Severity: 7/10 — `lib/src/storage/local_storage.dart:17-26,72,78,89,111-124`
-- [ ] Pisah: `KeyValueStore` cepat (prefs/Hive) vs `SecureStore` khusus rahasia
-- [ ] Hindari `readAll()` di setiap operasi bulk
-- [ ] Tambah dukungan `List` atau dokumentasikan batasan tipe dengan jelas
-- [ ] Dokumentasikan perbedaan jaminan keamanan per platform (web ≠ secure)
-- **DoD:** Nama jujur sesuai fungsi; bulk op tidak mendekripsi seluruh keychain.
+### [x] M2. Ganti nama `LocalStorage` → `SecureStorage` ✅ (commit `8ad9bd6`)
+- [x] Rename class + file (`secure_storage.dart`); `@Deprecated typedef LocalStorage` untuk migrasi
+- [x] Dokumentasikan caveat perf/keamanan (lambat, bulk op dekripsi semua key, web ≠ secure)
+- [x] Tambah dukungan `List<dynamic>`
+- **DoD:** ✅ Nama jujur. (Catatan: bulk op tetap `readAll()` — itu sifat secure storage; didokumentasikan. Split ke KV-store cepat = follow-up opsional jika butuh.)
 
-### [ ] M3. Hapus/optional-kan connectivity pre-flight
-Severity: 7/10 — `lib/src/network/dio_client.dart:265,297-307` + `connectivity_service.dart:156-161`
-`connectivity_plus` melaporkan interface, bukan reachability; menambah latency tiap request.
-- [ ] Hapus pre-check default; map `DioExceptionType.connectionError` → `NoInternetConnectionException`
-- [ ] Jika dipertahankan, jadikan opt-in
-- **DoD:** Request tidak lagi memanggil platform channel sebelum tiap HTTP call.
+### [x] M3. Connectivity pre-flight jadi opt-in ✅ (commit `8ad9bd6`)
+- [x] `DioClient(checkConnectivityBeforeRequest: false)` default; offline tetap muncul sebagai `NoInternetConnectionException` via Dio `connectionError`
+- [x] +1 test (default-off)
+- **DoD:** ✅ Tidak ada platform-channel call sebelum tiap request secara default.
 
-### [ ] M4. `UseCase` cancellation: implement sungguhan atau hapus
-Severity: 6/10 — `lib/src/domain/usecase.dart:60-159`
-Cancellation saat ini tidak berfungsi (hanya ganti pesan saat exception).
-- [ ] Implement cancellation kooperatif nyata (pass `CancelToken`/`Completer` ke `execute`) **atau** hapus fitur + dokumentasi terkait
-- **DoD:** Test membuktikan `cancel()` benar-benar menghentikan operasi, atau fitur dihapus bersih.
+### [x] M4. `UseCase` cancellation — **MOOT** ✅
+- [x] Tidak relevan lagi: `UseCase` sudah dihapus seluruhnya (commit `680cead`).
 
-### [ ] M7. Jangan re-export seluruh package pihak ketiga
-Severity: 6/10 — `lib/flutter_core.dart:41-45`
-- [ ] Re-export hanya tipe yang dipakai di signature publik (`DioException`, `Options`, `CancelToken`), bukan seluruh `dio`/`google_fonts`/`intl`/`screenutil`/`connectivity_plus`
-- **DoD:** Autocomplete consumer tidak banjir simbol pihak ketiga.
+### [x] M7. Jangan re-export seluruh package pihak ketiga ✅ (commit menyusul)
+- [x] Hapus re-export `google_fonts` & `intl` (internal-only); pertahankan `dio`/`connectivity_plus`/`flutter_screenutil` (dipakai di signature publik)
+- **DoD:** ✅ Autocomplete consumer tidak banjir simbol google_fonts/intl.
 
-### [ ] M9. Hapus duplikasi `back()` pada `BuildContext`
-Severity: 5/10 — `navigation_ext.dart:97` & `dialogs_and_alerts_ext.dart:26`
-- [ ] Konsolidasikan ke satu extension
-- **DoD:** `context.back()` tidak ambigu.
+### [x] M9. Hapus duplikasi `back()` pada `BuildContext` ✅ (commit menyusul)
+- [x] `back()` hanya di `NavigationExtension`; dihapus dari `DialogsAndAlerts`
+- [x] +1 regression test (impor via barrel)
+- **DoD:** ✅ `context.back()` tidak ambigu via barrel.
 
-### [ ] M10. Hindari tabrakan nama dengan SDK
-Severity: 5/10 — `network_exceptions.dart:215` (`TimeoutException` menutupi `dart:async`)
-- [ ] Beri prefix: `NetworkTimeoutException`, dll. (juga `CancelledException`, `NotFoundException`, `ConflictException`)
-- **DoD:** Tidak ada shadowing simbol `dart:async`/SDK.
+### [x] M10. Hindari tabrakan nama dengan SDK ✅ (commit `8ad9bd6`)
+- [x] `TimeoutException` → `NetworkTimeoutException` (tak lagi menutupi `dart:async`)
+- **DoD:** ✅ Tidak ada shadowing `dart:async`.
 
 ---
 

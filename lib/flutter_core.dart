@@ -35,9 +35,16 @@ export 'src/utils/utils.dart';
 // Extensions
 export 'src/extensions/extensions.dart';
 
-// External packages re-exported for consumer convenience
+// External packages re-exported because their types appear in this package's
+// public API (or are needed to use it):
+//  - dio: DioClient takes Options/CancelToken/ProgressCallback, returns types
+//    built on Response/DioException, and exposes the raw Dio via dioInstance.
+//  - connectivity_plus: ConnectivityResult is in ConnectivityService's API.
+//  - flutter_screenutil: ScreenUtilWrapper + the .w/.h/.sp sizing extensions.
+//
+// google_fonts and intl are deliberately NOT re-exported — they're internal
+// implementation details (fonts in the default theme, locale formatting in the
+// extensions). Add them to your own pubspec if you need them directly.
+export 'package:connectivity_plus/connectivity_plus.dart';
 export 'package:dio/dio.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
-export 'package:google_fonts/google_fonts.dart';
-export 'package:intl/intl.dart';
-export 'package:connectivity_plus/connectivity_plus.dart';

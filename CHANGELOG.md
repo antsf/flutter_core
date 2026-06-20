@@ -27,7 +27,16 @@ All notable changes to this project will be documented in this file.
   parameter to inject a custom Dio interceptor (ported from `main`'s
   `feat(network)` work and adapted to the refactored layout).
 
-### API & design cleanup (M2, M3, M10)
+### API & design cleanup (M2, M3, M7, M9, M10)
+- **Fixed duplicate `back()` on `BuildContext` (M9):** it was defined on both
+  `NavigationExtension` and `DialogsAndAlerts`, making `context.back()` ambiguous
+  for anyone importing the extensions barrel. It now lives only on
+  `NavigationExtension`.
+- **Trimmed barrel re-exports (M7):** `google_fonts` and `intl` are no longer
+  re-exported from `package:flutter_core/flutter_core.dart` — they're internal
+  implementation details. `dio`, `connectivity_plus`, and `flutter_screenutil`
+  are still re-exported because their types appear in the public API. If you
+  used `Intl`/`GoogleFonts` via the barrel, import those packages directly.
 - **`SecureStorage`** now documents its performance/security caveats (slow,
   bulk ops decrypt all keys, web is not strongly protected) and gained
   `List<dynamic>` support.
