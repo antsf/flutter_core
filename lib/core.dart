@@ -148,7 +148,8 @@ class FlutterCore {
   /// this only resets the `_isInitialized` flag.
   static Future<void> resetInitialization() async {
     if (!_isInitialized) {
-      debugPrint("FlutterCore.resetInitialization() called but core is not initialized.");
+      debugPrint(
+          "FlutterCore.resetInitialization() called but core is not initialized.");
       return;
     }
 

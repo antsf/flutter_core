@@ -103,7 +103,8 @@ class UiHelper {
   /// [horizontal]: Multiplier for `kPadding` for horizontal (left and right) insets.
   /// [vertical]: Multiplier for `kPadding` for vertical (top and bottom) insets.
   /// Returns an [EdgeInsets.symmetric] value.
-  static EdgeInsetsGeometry insetSymmetric({double? horizontal, double? vertical}) {
+  static EdgeInsetsGeometry insetSymmetric(
+      {double? horizontal, double? vertical}) {
     return EdgeInsets.symmetric(
       horizontal: (kPadding * (horizontal ?? 0)).w,
       vertical: (kPadding * (vertical ?? 0)).h,

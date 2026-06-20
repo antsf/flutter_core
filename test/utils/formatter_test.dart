@@ -32,7 +32,8 @@ void main() {
       // 25 digits — far past 2^63; the old int.tryParse path returned null here
       // and froze the field.
       const big = '1234567890123456789012345';
-      final r = f.formatEditUpdate(TextEditingValue.empty, _val(big, big.length));
+      final r =
+          f.formatEditUpdate(TextEditingValue.empty, _val(big, big.length));
       expect(r.text, '1.234.567.890.123.456.789.012.345');
     });
 
@@ -43,8 +44,7 @@ void main() {
 
     test('allowNegative: false ignores a leading minus', () {
       final neg = ThousandsFormatter();
-      final r =
-          neg.formatEditUpdate(TextEditingValue.empty, _val('-1000', 5));
+      final r = neg.formatEditUpdate(TextEditingValue.empty, _val('-1000', 5));
       expect(r.text, '1.000');
     });
 

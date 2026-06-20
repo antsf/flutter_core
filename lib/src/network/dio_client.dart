@@ -278,7 +278,8 @@ class DioClient {
 
   void clearHeaders() => _dio.options.headers.clear();
 
-  String? get authorizationHeader => _dio.options.headers['Authorization'] as String?;
+  String? get authorizationHeader =>
+      _dio.options.headers['Authorization'] as String?;
 
   /// Direct access to the underlying [Dio] instance. Use with caution.
   Dio get dioInstance => _dio;

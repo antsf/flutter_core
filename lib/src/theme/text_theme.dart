@@ -47,7 +47,8 @@ class TextThemes {
         displayMedium: _fontStyleBuilder(fontSize: 45.sp, fontWeight: bold),
         displaySmall: _fontStyleBuilder(fontSize: 36.sp, fontWeight: bold),
         headlineLarge: _fontStyleBuilder(fontSize: 32.sp, fontWeight: semiBold),
-        headlineMedium: _fontStyleBuilder(fontSize: 28.sp, fontWeight: semiBold),
+        headlineMedium:
+            _fontStyleBuilder(fontSize: 28.sp, fontWeight: semiBold),
         headlineSmall: _fontStyleBuilder(fontSize: 22.sp, fontWeight: semiBold),
         titleLarge: _fontStyleBuilder(
             fontSize: 18.sp,

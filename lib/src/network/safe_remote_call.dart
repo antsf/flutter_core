@@ -41,7 +41,8 @@ FutureResult<R?> safeRemoteCall<T, R>({
       if (onSuccess != null) return Success(onSuccess(data as T));
       return const Success(null);
     } else {
-      return Error(result.failure ?? GenericFailure(message: fallbackErrorMessage));
+      return Error(
+          result.failure ?? GenericFailure(message: fallbackErrorMessage));
     }
   } on NetworkException catch (e) {
     // NetworkException is a Failure — return it directly, preserving its

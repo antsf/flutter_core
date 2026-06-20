@@ -58,7 +58,8 @@ class RetryOptions {
     final rawDelayMs = useExponentialBackoff
         ? baseDelayMs * pow(2, (attempt - 1).clamp(0, 30))
         : baseDelayMs;
-    final cappedDelayMs = (rawDelayMs > maxDelayMs ? maxDelayMs : rawDelayMs).toInt();
+    final cappedDelayMs =
+        (rawDelayMs > maxDelayMs ? maxDelayMs : rawDelayMs).toInt();
     if (!useJitter || cappedDelayMs <= 0) return cappedDelayMs;
     // Equal jitter: keep half the delay fixed, randomize the other half.
     final halfDelayMs = cappedDelayMs ~/ 2;
