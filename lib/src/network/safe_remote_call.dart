@@ -41,21 +41,21 @@ FutureResult<R?> safeRemoteCall<T, R>({
       if (onSuccess != null) return Success(onSuccess(data as T));
       return const Success(null);
     } else {
-      return Error(
+      return ResultError(
           result.failure ?? GenericFailure(message: fallbackErrorMessage));
     }
   } on NetworkException catch (e) {
     // NetworkException is a Failure — return it directly, preserving its
     // specific type (Unauthorized/NotFound/...) instead of flattening it.
     _logError('NetworkException: ${e.message}');
-    return Error(e);
+    return ResultError(e);
   } on DioException catch (e) {
     final networkException = NetworkException.fromDioException(e);
     _logError('DioException: ${networkException.message}');
-    return Error(networkException);
+    return ResultError(networkException);
   } catch (e) {
     _logError('Unexpected error: $e');
-    return Error(GenericFailure(message: e.toString()));
+    return ResultError(GenericFailure(message: e.toString()));
   }
 }
 

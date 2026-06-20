@@ -187,8 +187,8 @@ void main() {
       expect(result.failure, isNull);
     });
 
-    test('Error initializes correctly', () {
-      const result = Error<String, Failure>(failure);
+    test('ResultError initializes correctly', () {
+      const result = ResultError<String, Failure>(failure);
 
       expect(result.isSuccess, isFalse);
       expect(result.isFailure, isTrue);
@@ -208,8 +208,8 @@ void main() {
       expect(result.isFailure, isFalse);
     });
 
-    test('isSuccess and isFailure getters for Error', () {
-      const result = Error<String, Failure>(failure);
+    test('isSuccess and isFailure getters for ResultError', () {
+      const result = ResultError<String, Failure>(failure);
 
       expect(result.isSuccess, isFalse);
       expect(result.isFailure, isTrue);
@@ -221,8 +221,8 @@ void main() {
       expect(result.requiredData, data);
     });
 
-    test('requiredData throws StateError for Error', () {
-      const result = Error<String, Failure>(failure);
+    test('requiredData throws StateError for ResultError', () {
+      const result = ResultError<String, Failure>(failure);
 
       expect(
         () => result.requiredData,
@@ -245,8 +245,8 @@ void main() {
       expect(output, 'Success: $data');
     });
 
-    test('when handles Error case', () {
-      const result = Error<String, Failure>(failure);
+    test('when handles ResultError case', () {
+      const result = ResultError<String, Failure>(failure);
 
       final output = result.when(
         onSuccess: (value) => 'Success: $value',

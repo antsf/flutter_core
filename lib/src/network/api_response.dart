@@ -72,7 +72,8 @@ class ApiResponse<T> {
   ///
   /// The success value is nullable (`T?`) to honour empty 204 responses; the
   /// failure is the same [Failure] carried by [error].
-  Result<T?, Failure> toResult() => isFailure ? Error(error!) : Success(data);
+  Result<T?, Failure> toResult() =>
+      isFailure ? ResultError(error!) : Success(data);
 
   @override
   String toString() => isSuccessful

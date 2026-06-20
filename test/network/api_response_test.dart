@@ -30,7 +30,7 @@ void main() {
   });
 
   group('ApiResponse.toResult bridge', () {
-    test('failure -> Result.Error carrying the same Failure', () {
+    test('failure -> ResultError carrying the same Failure', () {
       final ne = UnauthorizedException(dioException: _dioErr(401));
       final result = ApiResponse<int>.failure(ne).toResult();
       expect(result.isFailure, isTrue);

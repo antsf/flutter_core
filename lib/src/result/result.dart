@@ -1,7 +1,8 @@
 import 'failures.dart';
 
 /// Represents the result of an operation that can either succeed with [T] or
-/// fail with a [Failure]. Use [Success] and [Error] as concrete implementations.
+/// fail with a [Failure]. Use [Success] and [ResultError] as concrete
+/// implementations.
 abstract class Result<T, F> {
   const Result();
   bool get isSuccess;
@@ -23,9 +24,11 @@ class Success<T, F> extends Result<T, F> {
   F? get failure => null;
 }
 
-class Error<T, F> extends Result<T, F> {
+/// The failure variant of a [Result]. Named `ResultError` (not `Error`) to
+/// avoid shadowing `dart:core`'s [Error].
+class ResultError<T, F> extends Result<T, F> {
   final F error;
-  const Error(this.error);
+  const ResultError(this.error);
   @override
   bool get isSuccess => false;
   @override
@@ -64,7 +67,7 @@ extension ResultExtension<T, F> on Result<T, F> {
     if (this is Success<T, F>) {
       return onSuccess((this as Success<T, F>).value);
     } else {
-      return onFailure((this as Error<T, F>).error);
+      return onFailure((this as ResultError<T, F>).error);
     }
   }
 
@@ -73,13 +76,13 @@ extension ResultExtension<T, F> on Result<T, F> {
     if (this is Success<T, F>) {
       return Success(transform((this as Success<T, F>).value));
     }
-    return Error((this as Error<T, F>).error);
+    return ResultError((this as ResultError<T, F>).error);
   }
 
   /// Transforms the failure value, leaving successes untouched.
   Result<T, G> mapFailure<G>(G Function(F failure) transform) {
-    if (this is Error<T, F>) {
-      return Error(transform((this as Error<T, F>).error));
+    if (this is ResultError<T, F>) {
+      return ResultError(transform((this as ResultError<T, F>).error));
     }
     return Success((this as Success<T, F>).value);
   }

@@ -13,6 +13,7 @@ Public identifiers were renamed so each name reflects its value/role. Update cal
 - `FlutterCore.localStorage` → `FlutterCore.secureStorage`; `FlutterCore.cleanup()` → `resetInitialization()`
 - `ThemeProvider.setThemeMode(bool)` → `setDarkMode(bool)`
 - `Failure.error` field → `Failure.cause` (all subclasses + `NetworkException`)
+- `Result` failure variant `Error` → `ResultError` (avoids shadowing `dart:core.Error`)
 - `ConnectivityService.getCurrentConnectivity()` → `getCurrentConnectivityResults()`
 - `DioClient.authToken` getter → `authorizationHeader` (returns the `Bearer …` header)
 - `ColorSchemes.purple/orange/darkBlue/darkGreen` → `…Scheme`
