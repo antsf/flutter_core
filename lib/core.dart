@@ -10,7 +10,7 @@
 /// Before using any services from this package, you must initialize [FlutterCore]:
 ///
 /// ```dart
-/// import 'package:flutter_core/flutter_core.dart';
+/// import 'package:flutter_corekit/flutter_corekit.dart';
 /// import 'package:flutter/material.dart';
 ///
 /// void main() async {
@@ -47,7 +47,7 @@ library;
 
 import 'package:dio/dio.dart' show Dio, Interceptor;
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/storage/secure_storage.dart';
+import 'package:flutter_corekit/src/storage/secure_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
 

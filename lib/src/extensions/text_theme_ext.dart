@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/extensions/extensions.dart';
+import 'package:flutter_corekit/src/extensions/extensions.dart';
 
 extension TextThemeExtensions on BuildContext {
   TextTheme get textTheme => theme.textTheme;

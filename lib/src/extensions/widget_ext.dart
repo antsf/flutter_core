@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_core/src/extensions/ui_ext.dart';
+import 'package:flutter_corekit/src/extensions/ui_ext.dart';
 
 /// Extensions on `List<Widget>`.
 extension ListWidgetX on List<Widget> {

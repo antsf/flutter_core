@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## Unreleased
+## 2.0.0 — 2026-06-20
 
 ### Breaking Changes
+- **Package renamed `flutter_core` → `flutter_corekit`** (the `flutter_core` name
+  is taken on pub.dev). Update imports to
+  `package:flutter_corekit/flutter_corekit.dart`.
 - **Removed `UseCase` / `NoParams`** (`lib/src/usecase/`). The base class was
   unused, untested, and its cooperative-cancellation feature was non-functional
   (the running `execute()` never observed `cancel()`). It also conflicted with

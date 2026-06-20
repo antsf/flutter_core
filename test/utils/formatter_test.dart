@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_core/src/utils/formatter.dart';
+import 'package:flutter_corekit/src/utils/formatter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 TextEditingValue _val(String text, int offset) => TextEditingValue(

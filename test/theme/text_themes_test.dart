@@ -1,5 +1,5 @@
 // test/theme/text_themes_test.dart
-import 'package:flutter_core/src/theme/text_theme.dart';
+import 'package:flutter_corekit/src/theme/text_theme.dart';
 import 'package:test/test.dart';
 
 import '../test_helpers.dart';

@@ -1,8 +1,10 @@
-# flutter_core
+# flutter_corekit
 
 A comprehensive Flutter core package providing theme management, network handling, secure storage, and UI extensions optimized for Indonesian Flutter apps.
 
-[![pub.dev](https://img.shields.io/pub/v/flutter_core.svg)](https://pub.dev/packages/flutter_core)
+> Formerly `flutter_core` (renamed in 2.0.0 — that name was taken on pub.dev).
+
+[![pub.dev](https://img.shields.io/pub/v/flutter_corekit.svg)](https://pub.dev/packages/flutter_corekit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
@@ -20,7 +22,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_core:
+  flutter_corekit:
     git:
       url: https://github.com/antsf/flutter_core
       ref: main
@@ -29,7 +31,7 @@ dependencies:
 Import everything from one place:
 
 ```dart
-import 'package:flutter_core/flutter_core.dart';
+import 'package:flutter_corekit/flutter_corekit.dart';
 ```
 
 ## Usage

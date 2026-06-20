@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/constants/colors.dart' show FcColors;
-import 'package:flutter_core/src/extensions/extensions.dart';
+import 'package:flutter_corekit/src/constants/colors.dart' show FcColors;
+import 'package:flutter_corekit/src/extensions/extensions.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 

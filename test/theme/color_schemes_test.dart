@@ -1,6 +1,6 @@
 // test/theme/color_schemes_test.dart
 import 'package:flutter/material.dart' show Brightness;
-import 'package:flutter_core/src/theme/color_schemes.dart' show ColorSchemes;
+import 'package:flutter_corekit/src/theme/color_schemes.dart' show ColorSchemes;
 import 'package:test/test.dart';
 
 void main() {

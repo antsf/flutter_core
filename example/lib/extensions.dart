@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:flutter_core/flutter_core.dart';
+import 'package:flutter_corekit/flutter_corekit.dart';
 
 void main() {
   const text = '  ';

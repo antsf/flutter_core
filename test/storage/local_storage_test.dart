@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:flutter_core/src/storage/secure_storage.dart';
+import 'package:flutter_corekit/src/storage/secure_storage.dart';
 
 import '../mocks/mock_flutter_secure_storage.dart'
     show MockFlutterSecureStorage;
