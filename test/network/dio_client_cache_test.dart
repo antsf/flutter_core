@@ -91,4 +91,17 @@ void main() {
     await c.get('/x', cacheTtl: ttl, forceRefresh: true); // bypass -> 2
     expect(getCount, 2);
   });
+
+  test('connectivity pre-flight is OFF by default (M3)', () async {
+    // Offline per the connectivity service...
+    when(() => conn.hasConnection()).thenAnswer((_) async => false);
+    final c = client(); // default: checkConnectivityBeforeRequest = false
+
+    final result = await c.get('/x');
+
+    // ...but the request still proceeds (no unreliable pre-flight blocking it),
+    // and connectivity is never consulted.
+    expect(result.isSuccessful, isTrue);
+    verifyNever(() => conn.hasConnection());
+  });
 }

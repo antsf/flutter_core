@@ -48,7 +48,7 @@ library flutter_core;
 import 'package:dio/dio.dart' show Interceptor;
 import 'package:flutter/material.dart';
 import 'package:flutter_core/flutter_core.dart' show Dio;
-import 'package:flutter_core/src/storage/local_storage.dart';
+import 'package:flutter_core/src/storage/secure_storage.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
@@ -83,7 +83,7 @@ class FlutterCore {
   /// Throws a [LateInitializationError] if accessed before initialization.
   // static late final SecureStorageService storageService;
 
-  static late final LocalStorage localStorage;
+  static late final SecureStorage localStorage;
 
   /// Provides access to the singleton [ThemeProvider] instance for managing app themes.
   ///
@@ -126,7 +126,7 @@ class FlutterCore {
     // storageService = SecureStorageService();
     // await storageService.initialize();
 
-    localStorage = LocalStorage();
+    localStorage = SecureStorage();
 
     await localStorage.init();
 

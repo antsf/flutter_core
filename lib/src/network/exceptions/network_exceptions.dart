@@ -72,7 +72,7 @@ abstract class NetworkException extends Failure implements Exception {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return TimeoutException(dioException: dioException);
+        return NetworkTimeoutException(dioException: dioException);
       case DioExceptionType.badResponse:
         return _mapStatusCodeToException(dioException);
       case DioExceptionType.cancel:
@@ -217,9 +217,12 @@ abstract class NetworkException extends Failure implements Exception {
 }
 
 /// Exception thrown when a network request times out (connection, send, or receive).
-class TimeoutException extends NetworkException {
-  /// Creates a [TimeoutException].
-  TimeoutException({required DioException dioException})
+///
+/// Named `NetworkTimeoutException` (not `TimeoutException`) to avoid shadowing
+/// `dart:async`'s [TimeoutException] when both are imported.
+class NetworkTimeoutException extends NetworkException {
+  /// Creates a [NetworkTimeoutException].
+  NetworkTimeoutException({required DioException dioException})
       : super(
           message:
               'The network request timed out. Please check your connection and try again.',

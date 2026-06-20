@@ -59,12 +59,26 @@ class DioClient {
   /// used entry is evicted so the cache can't grow without bound.
   final int _maxCacheEntries;
 
+  /// Whether to check connectivity before each request. Off by default — see
+  /// the [DioClient] constructor docs for why.
+  final bool _checkConnectivityBeforeRequest;
+
   /// A single in-flight token refresh, shared by all requests that hit a 401
   /// at the same time. Coalescing prevents a "refresh stampede" — concurrent
   /// 401s firing multiple simultaneous refreshes, which (with single-use /
   /// rotating refresh tokens) invalidate each other and log the user out.
   Future<String?>? _ongoingRefresh;
 
+  /// Creates a [DioClient].
+  ///
+  /// [checkConnectivityBeforeRequest] (default `false`): when `true`, a
+  /// connectivity check runs before every request and short-circuits with a
+  /// [NoInternetConnectionException] if offline. It's **off by default** because
+  /// `connectivity_plus` reports the network *interface*, not real reachability
+  /// (a Wi-Fi captive portal reports "online"), and it adds a platform-channel
+  /// round-trip to every call. With it off, a genuinely failed connection still
+  /// surfaces as a [NoInternetConnectionException] (mapped from Dio's
+  /// `connectionError`) — just without the unreliable pre-flight.
   DioClient({
     required String baseUrl,
     Dio? dio,
@@ -76,6 +90,7 @@ class DioClient {
     RetryOptions retryOptions = const RetryOptions(),
     Interceptor? interceptor,
     int maxCacheEntries = 100,
+    bool checkConnectivityBeforeRequest = false,
     Future<String?> Function(Dio)? refreshToken,
   })  : _dio = dio ??
             Dio(BaseOptions(
@@ -86,6 +101,7 @@ class DioClient {
         _connectivityService =
             connectivityService ?? ConnectivityService.instance,
         _maxCacheEntries = maxCacheEntries,
+        _checkConnectivityBeforeRequest = checkConnectivityBeforeRequest,
         _logger = logger {
     _setupInterceptors(
       enableLogging: enableLogging,
@@ -223,7 +239,7 @@ class DioClient {
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) async {
-    await _checkConnectivity();
+    if (_checkConnectivityBeforeRequest) await _checkConnectivity();
     try {
       await _dio.download(urlPath, savePath,
           queryParameters: queryParameters,
@@ -276,7 +292,7 @@ class DioClient {
     Duration? cacheTtl,
   }) async {
     try {
-      await _checkConnectivity();
+      if (_checkConnectivityBeforeRequest) await _checkConnectivity();
       final response = await call();
       final rawData = response.data;
       if (cacheKey != null && cacheTtl != null && rawData != null) {

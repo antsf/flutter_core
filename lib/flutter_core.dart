@@ -24,7 +24,7 @@ export 'src/network/safe_remote_call.dart';
 export 'src/services/connectivity_service.dart';
 
 // Storage
-export 'src/storage/local_storage.dart';
+export 'src/storage/secure_storage.dart';
 
 // Constants
 export 'src/constants/constants.dart';

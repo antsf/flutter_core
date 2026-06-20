@@ -13,11 +13,30 @@ All notable changes to this project will be documented in this file.
   the package's own principle of not shipping abstractions that compete with the
   modern Flutter ecosystem (Riverpod/Bloc + repositories). Bring your own
   use-case base class if you need one — `Result` / `Failure` remain exported.
+- **`TimeoutException` → `NetworkTimeoutException`** (M10) to stop shadowing
+  `dart:async`'s `TimeoutException`.
+- **`LocalStorage` → `SecureStorage`** (M2), file `storage/local_storage.dart` →
+  `storage/secure_storage.dart`. `LocalStorage` remains as a `@Deprecated`
+  typedef alias for now. The rename makes it explicit that this is encrypted
+  secure storage (flutter_secure_storage), not general key-value storage.
+- **Connectivity pre-flight is now opt-in** (M3):
+  `DioClient(checkConnectivityBeforeRequest: false)` by default. See below.
 
 ### New Features
 - **`DioClient` / `FlutterCore.initialize`**: optional `Interceptor? interceptor`
   parameter to inject a custom Dio interceptor (ported from `main`'s
   `feat(network)` work and adapted to the refactored layout).
+
+### API & design cleanup (M2, M3, M10)
+- **`SecureStorage`** now documents its performance/security caveats (slow,
+  bulk ops decrypt all keys, web is not strongly protected) and gained
+  `List<dynamic>` support.
+- **Connectivity pre-flight off by default**: `connectivity_plus` reports the
+  network interface, not real reachability (a captive portal reads "online"),
+  and the check added a platform-channel round-trip per request. With it off, a
+  failed connection still surfaces as `NoInternetConnectionException` (mapped
+  from Dio's `connectionError`). Re-enable with
+  `DioClient(checkConnectivityBeforeRequest: true)`.
 
 ### Unified error model (M1)
 - **`Failure` is now the single error currency.** `NetworkException` (and all its

@@ -57,6 +57,9 @@ void main() {
       connectivityService: mockConnectivityService,
       logger: mockLogger,
       enableLogging: true,
+      // Connectivity pre-flight is opt-in (default off); enable it here so the
+      // existing connectivity tests below exercise that path.
+      checkConnectivityBeforeRequest: true,
       refreshToken: (dio) async => 'new_refreshed_token',
     );
   });
@@ -374,7 +377,7 @@ void main() {
     });
 
     test(
-        'returns ApiResponse.failure with TimeoutException on connection timeout',
+        'returns ApiResponse.failure with NetworkTimeoutException on connection timeout',
         () async {
       final dioException = DioException(
         requestOptions: RequestOptions(path: testPath),
@@ -392,7 +395,7 @@ void main() {
       final result = await dioClient.get(testPath);
 
       expect(result.isFailure, isTrue);
-      expect(result.error, isA<TimeoutException>());
+      expect(result.error, isA<NetworkTimeoutException>());
     });
   });
 
