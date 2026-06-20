@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/storage/secure_storage.dart'
+import 'package:flutter_corekit/src/storage/secure_storage.dart'
     show SecureStorage;
 import 'theme.dart';
 

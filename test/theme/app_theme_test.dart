@@ -1,7 +1,7 @@
 // test/theme/app_theme_test.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/theme/text_theme.dart';
-import 'package:flutter_core/src/theme/theme.dart';
+import 'package:flutter_corekit/src/theme/text_theme.dart';
+import 'package:flutter_corekit/src/theme/theme.dart';
 import 'package:test/test.dart';
 
 import '../test_helpers.dart';

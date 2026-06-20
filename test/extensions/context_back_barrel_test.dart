@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Import via the barrel so BOTH NavigationExtension and DialogsAndAlerts are in
 // scope — this is exactly the case where a duplicated `back()` would make
 // `context.back()` ambiguous and fail to compile (regression guard for M9).
-import 'package:flutter_core/flutter_core.dart';
+import 'package:flutter_corekit/flutter_corekit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

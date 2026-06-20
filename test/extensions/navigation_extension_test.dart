@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/extensions/navigation_ext.dart';
+import 'package:flutter_corekit/src/extensions/navigation_ext.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // --- EXTENSIONS UNDER TEST ---

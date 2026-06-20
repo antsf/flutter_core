@@ -1,5 +1,5 @@
-import 'package:flutter_core/flutter_core.dart';
-import 'package:flutter_core/src/network/dio_interceptor.dart';
+import 'package:flutter_corekit/flutter_corekit.dart';
+import 'package:flutter_corekit/src/network/dio_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 import 'package:mocktail/mocktail.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_core/src/constants/colors.dart' show FcColors;
-import 'package:flutter_core/src/extensions/ui_ext.dart';
+import 'package:flutter_corekit/src/constants/colors.dart' show FcColors;
+import 'package:flutter_corekit/src/extensions/ui_ext.dart';
 
 extension ColorContextExtensions on BuildContext {
   ColorScheme get colorScheme => theme.colorScheme;

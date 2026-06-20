@@ -152,12 +152,12 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 - [x] `flutter analyze --fatal-infos` = 0 issue (lebih ketat dari `--fatal-warnings`)
 - [x] `flutter test` hijau (**321 lulus**)
 - [x] Coverage dilaporkan — CI jalankan `flutter test --coverage`, tampilkan `%` di job summary + upload `coverage/lcov.info` sebagai artifact. Baseline saat ini **~48.9%** (676/1383 baris).
-- [ ] `dart pub publish --dry-run` lolos — **belum**; masih ketahan *hint* nama `flutter_core` sudah dipakai di pub.dev (perlu rename)
+- [x] `dart pub publish --dry-run` lolos — hint nama hilang setelah rename; sisa hanya warning git-tree kotor (hilang di checkout bersih CI)
 - [x] CI hijau di GitHub Actions (PR #7 & #8)
 - [x] README & example compile terhadap API nyata
 - [x] Semua item P0 & P1 selesai
-- [ ] Bump versi → **2.0.0** (breaking) — **belum**
-- [ ] Rename package (nama `flutter_core` sudah dipakai di pub.dev) — **belum**
+- [x] Bump versi → **2.0.0** (breaking)
+- [x] Rename package `flutter_core` → **`flutter_corekit`** (nama lama dipakai di pub.dev)
 
 ## Status fase
 1. ✅ P0 (C1 → C2 → C3) — compile, hijau, berCI
@@ -167,4 +167,4 @@ Severity: 9/10 — **SELESAI**. `flutter test` = **+295 All tests passed**, EXIT
 
 ## Sisa pekerjaan (opsional / rilis)
 - Opsional: singleton → DI (arsitektural, butuh keputusan), `ThemeProvider.setColorScheme` no-op, string `genericError` hardcoded, semantik null-success.
-- Rilis: ~~coverage di CI~~ ✅, rename package, bump versi 2.0.0.
+- Rilis: ~~coverage di CI~~ ✅, ~~rename package~~ ✅ (`flutter_corekit`), ~~bump versi 2.0.0~~ ✅. **Siap publish ke pub.dev** (tinggal `dart pub publish`).

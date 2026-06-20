@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_core/src/network/dio_retry_interceptor.dart';
+import 'package:flutter_corekit/src/network/dio_retry_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

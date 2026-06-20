@@ -2,7 +2,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_core/src/services/connectivity_service.dart';
+import 'package:flutter_corekit/src/services/connectivity_service.dart';
 import '../mocks/mock_connectivity.dart';
 
 void main() {

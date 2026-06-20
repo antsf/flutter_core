@@ -1,4 +1,4 @@
-import 'package:flutter_core/src/extensions/date_ext.dart';
+import 'package:flutter_corekit/src/extensions/date_ext.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // -----------------------------------------------------------------------------
