@@ -4,23 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## 4.0.0 — 2026-06-21
-
-### Breaking Changes
-- Entry-point class `FlutterCore` → **`FlutterCorekit`**, to match the package
-  name. Update call sites: `FlutterCorekit.initialize(...)`,
-  `FlutterCorekit.dioClient`, `FlutterCorekit.secureStorage`,
-  `FlutterCorekit.resetInitialization()`.
-
----
-
 ## 3.0.0 — 2026-06-21
 
 ### Breaking Changes — identifier renames
 
 Public identifiers were renamed so each name reflects its value/role. Update call sites accordingly:
 
-- `FlutterCore.localStorage` → `FlutterCore.secureStorage`; `FlutterCore.cleanup()` → `resetInitialization()`
+- Entry-point class `FlutterCore` → `FlutterCorekit` (matches the package name)
+- `FlutterCorekit.localStorage` → `FlutterCorekit.secureStorage`; `FlutterCorekit.cleanup()` → `resetInitialization()`
 - `ThemeProvider.setThemeMode(bool)` → `setDarkMode(bool)`
 - `Failure.error` field → `Failure.cause` (all subclasses + `NetworkException`)
 - `Result` failure variant `Error` → `ResultError` (avoids shadowing `dart:core.Error`)
