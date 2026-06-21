@@ -14,7 +14,7 @@ import '../../result/failures.dart';
 ///
 /// Implements [Exception] to be throwable.
 /// Each [NetworkException] carries a user-friendly [message], an optional
-/// HTTP [statusCode], the original [error] (often a [DioException]), and
+/// HTTP [statusCode], the original [cause] (often a [DioException]), and
 /// an optional [stackTrace].
 ///
 /// The factory constructor `NetworkException.fromDioException` is provided to
@@ -34,12 +34,12 @@ abstract class NetworkException extends Failure implements Exception {
   const NetworkException({
     required String message,
     int? statusCode,
-    Object? error,
+    Object? cause,
     StackTrace? stackTrace,
   }) : super(
           message: message,
           statusCode: statusCode ?? 0,
-          error: error,
+          cause: cause,
           stackTrace: stackTrace,
         );
 
@@ -51,8 +51,8 @@ abstract class NetworkException extends Failure implements Exception {
     if (statusCode != 0) {
       sb.write(' (Status Code: $statusCode)');
     }
-    if (error != null && error is DioException) {
-      sb.write(' URL: ${(error as DioException).requestOptions.uri}');
+    if (cause != null && cause is DioException) {
+      sb.write(' URL: ${(cause as DioException).requestOptions.uri}');
     }
     return sb.toString();
   }
@@ -99,12 +99,12 @@ abstract class NetworkException extends Failure implements Exception {
       apiMessage = responseData;
     }
 
-    final specificMessage = _getDefaultMessage(statusCode);
+    final defaultMessage = _getDefaultMessage(statusCode);
 
     // Prioritize the API message if it's available and not empty.
     final finalMessage = (apiMessage != null && apiMessage.isNotEmpty)
         ? apiMessage
-        : specificMessage;
+        : defaultMessage;
 
     if (statusCode == null) {
       return ServerException(dioException: dioException);
@@ -227,7 +227,7 @@ class NetworkTimeoutException extends NetworkException {
           message:
               'The network request timed out. Please check your connection and try again.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -240,7 +240,7 @@ class NoInternetConnectionException extends NetworkException {
           message:
               'No internet connection. Please check your network settings and try again.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -254,7 +254,7 @@ class ServerException extends NetworkException {
           message: specificMessage ??
               'A server error occurred. Please try again later.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -270,7 +270,7 @@ class ClientErrorException extends NetworkException {
           message: specificMessage ??
               'There was an issue with the request (Client Error).',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -285,7 +285,7 @@ class UnauthorizedException extends NetworkException {
           message: specificMessage ??
               'Unauthorized: Authentication credentials were missing or incorrect.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -300,7 +300,7 @@ class ForbiddenException extends NetworkException {
           message: specificMessage ??
               'Forbidden: The request is understood, but it has been refused or access is not allowed.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -315,7 +315,7 @@ class NotFoundException extends NetworkException {
           message: specificMessage ??
               'Not Found: The requested resource could not be found.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -330,7 +330,7 @@ class MethodNotAllowedException extends NetworkException {
           message: specificMessage ??
               'Method Not Allowed: The request was made to a resource using an HTTP request method not supported by that resource.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -345,7 +345,7 @@ class RequestTimeoutException extends NetworkException {
           message: specificMessage ??
               'Request Timeout: The server timed out waiting for the request.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -360,7 +360,7 @@ class ConflictException extends NetworkException {
           message: specificMessage ??
               'Conflict: The request could not be completed due to a conflict with the current state of the resource.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -375,7 +375,7 @@ class TooManyRequestsException extends NetworkException {
           message: specificMessage ??
               'Too Many Requests: The user has sent too many requests in a given amount of time.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -390,7 +390,7 @@ class InternalServerErrorException extends NetworkException {
           message: specificMessage ??
               'Internal Server Error: The server encountered an unexpected condition that prevented it from fulfilling the request.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -405,7 +405,7 @@ class NotImplementedException extends NetworkException {
           message: specificMessage ??
               'Not Implemented: The server does not support the functionality required to fulfill the request.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -420,7 +420,7 @@ class BadGatewayException extends NetworkException {
           message: specificMessage ??
               'Bad Gateway: The server was acting as a gateway or proxy and received an invalid response from the upstream server.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -435,7 +435,7 @@ class ServiceUnavailableException extends NetworkException {
           message: specificMessage ??
               'Service Unavailable: The server is currently unavailable.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -450,7 +450,7 @@ class GatewayTimeoutException extends NetworkException {
           message: specificMessage ??
               'Gateway Timeout: The server was acting as a gateway or proxy and did not receive a timely response from the upstream server.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -461,7 +461,7 @@ class CancelledException extends NetworkException {
   CancelledException({required DioException dioException})
       : super(
           message: 'The network request was cancelled.',
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }
@@ -476,7 +476,7 @@ class UnknownNetworkException extends NetworkException {
           message: specificMessage ??
               'An unknown network error occurred. Please try again.',
           statusCode: dioException.response?.statusCode,
-          error: dioException,
+          cause: dioException,
           stackTrace: dioException.stackTrace,
         );
 }

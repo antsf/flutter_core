@@ -53,31 +53,41 @@ class ThousandsFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = newValue.text.replaceAll('.', '');
-    if (text.isEmpty) {
+    // Allow the field to be cleared.
+    if (newValue.text.isEmpty) {
       return newValue;
     }
 
-    // Attempt to parse the text as an integer
-    final intValue = int.tryParse(text);
-    if (intValue == null) {
-      return oldValue;
-    }
+    final negative = allowNegative && newValue.text.trimLeft().startsWith('-');
 
-    return _withCaret(newValue, _formatNumber(intValue));
+    // Operate on the raw digit string instead of parsing to `int`, so values
+    // beyond the `int` range (≈19 digits) are still formatted rather than
+    // reverting the field.
+    var digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      // Keep a lone "-" so the user can finish typing a negative number;
+      // otherwise reject the (non-digit) input by reverting.
+      return negative
+          ? const TextEditingValue(
+              text: '-', selection: TextSelection.collapsed(offset: 1))
+          : oldValue;
+    }
+    // Drop leading zeros (keep a single "0").
+    digits = digits.replaceFirst(RegExp(r'^0+(?=\d)'), '');
+
+    return _withCaret(newValue, _formatDigits(digits, negative));
   }
 
-  /// Formats the integer with thousand separators.
-  String _formatNumber(int value) {
-    final str = value.abs().toString();
+  /// Groups a digit string with thousand separators, e.g. `1000000` → `1.000.000`.
+  String _formatDigits(String digits, bool negative) {
     final buffer = StringBuffer();
-    for (int i = 0; i < str.length; i++) {
-      if (i > 0 && (str.length - i) % 3 == 0) {
+    for (int i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) {
         buffer.write('.');
       }
-      buffer.write(str[i]);
+      buffer.write(digits[i]);
     }
-    return (value < 0 ? '-' : '') + buffer.toString();
+    return (negative ? '-' : '') + buffer.toString();
   }
 }
 

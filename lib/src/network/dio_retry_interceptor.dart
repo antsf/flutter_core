@@ -55,14 +55,15 @@ class RetryOptions {
 
   /// Computes the delay (ms) before the given 1-based [attempt].
   int calculateDelay(int attempt) {
-    final raw = useExponentialBackoff
+    final rawDelayMs = useExponentialBackoff
         ? baseDelayMs * pow(2, (attempt - 1).clamp(0, 30))
         : baseDelayMs;
-    final capped = (raw > maxDelayMs ? maxDelayMs : raw).toInt();
-    if (!useJitter || capped <= 0) return capped;
+    final cappedDelayMs =
+        (rawDelayMs > maxDelayMs ? maxDelayMs : rawDelayMs).toInt();
+    if (!useJitter || cappedDelayMs <= 0) return cappedDelayMs;
     // Equal jitter: keep half the delay fixed, randomize the other half.
-    final half = capped ~/ 2;
-    return half + _retryRandom.nextInt(capped - half + 1);
+    final halfDelayMs = cappedDelayMs ~/ 2;
+    return halfDelayMs + _retryRandom.nextInt(cappedDelayMs - halfDelayMs + 1);
   }
 }
 

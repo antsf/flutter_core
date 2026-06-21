@@ -1,4 +1,4 @@
-# Contributing to flutter_core
+# Contributing to flutter_corekit
 
 ## Getting Started
 
@@ -23,7 +23,7 @@
 - No commented-out code in production files — delete or use a separate branch
 - No development notes in source (`// TODO added for feature X`, emoji markers)
 - Extensions go in `lib/src/extensions/` with corresponding test in `test/extensions/`
-- New public API must be exported from `lib/flutter_core.dart`
+- New public API must be exported from `lib/flutter_corekit.dart`
 - Follow existing naming: snake_case files, PascalCase classes, camelCase methods
 
 ## Adding a New Extension

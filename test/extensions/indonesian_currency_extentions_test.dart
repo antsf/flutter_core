@@ -67,7 +67,7 @@ import 'package:intl/intl.dart';
 //   ///
 //   /// For Indonesian (`id_ID`), this results in a period as the separator (e.g., "1.000").
 //   /// For US English (`en_US`), this results in a comma as the separator (e.g., "1,000").
-//   String toFormattedString({String locale = 'id_ID'}) {
+//   String toGroupedDigits({String locale = 'id_ID'}) {
 //     final fmt = NumberFormat.decimalPattern(locale);
 //     return fmt.format(this);
 //   }
@@ -182,20 +182,20 @@ void main() {
       });
     });
 
-    group('toFormattedString', () {
+    group('toGroupedDigits', () {
       test('formats with default id_ID locale (dot thousand separator)', () {
         const value = 1234567;
-        expect(value.toFormattedString(), '1.234.567');
+        expect(value.toGroupedDigits(), '1.234.567');
       });
 
       test('formats with en_US locale (comma thousand separator)', () {
         const value = 1234567;
-        expect(value.toFormattedString(locale: 'en_US'), '1,234,567');
+        expect(value.toGroupedDigits(locale: 'en_US'), '1,234,567');
       });
 
       test('formats decimal number with id_ID locale', () {
         const value = 1234.56;
-        expect(value.toFormattedString(locale: 'id_ID'), '1.234,56');
+        expect(value.toGroupedDigits(locale: 'id_ID'), '1.234,56');
       });
     });
   });

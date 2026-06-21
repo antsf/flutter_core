@@ -13,7 +13,7 @@ extension MockUiExt on num {
 // --- EXTENSIONS UNDER TEST (Copied/Inlined for testing environment) ---
 
 /// Extensions on `List<Widget>`.
-extension ListWidgetX on List<Widget> {
+extension WidgetListExtension on List<Widget> {
   /// Adds [separator] between every existing widget
   List<Widget> separatedBy(Widget separator) {
     if (this.isEmpty) return this;
@@ -68,7 +68,7 @@ extension ListWidgetX on List<Widget> {
 }
 
 /// Extensions on a single Widget
-extension WidgetX on Widget {
+extension SingleWidgetExtension on Widget {
   /// Returns a list containing only this widget
   List<Widget> get asList => [this];
 
@@ -93,7 +93,7 @@ void main() {
   const Widget ifTrue = Placeholder(key: ValueKey('IfTrue'));
   const Widget ifFalse = Placeholder(key: ValueKey('IfFalse'));
 
-  group('ListWidgetX', () {
+  group('WidgetListExtension', () {
     final list = [widgetA, widgetB];
     final emptyList = <Widget>[];
 
@@ -197,7 +197,7 @@ void main() {
     });
   });
 
-  group('WidgetX', () {
+  group('SingleWidgetExtension', () {
     test('asList converts a single widget to a list of one', () {
       final result = widgetA.asList;
       expect(result, isA<List<Widget>>());

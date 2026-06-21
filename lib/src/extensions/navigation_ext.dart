@@ -100,15 +100,15 @@ extension NavigationExtension on BuildContext {
   /// Checks if the navigator can be popped.
   ///
   /// Wraps `Navigator.canPop(this)`.
-  bool canBack() => Navigator.canPop(this);
+  bool canGoBack() => Navigator.canPop(this);
 
-  /// Pops all routes until the initial route.
-  /// If a [result] is provided, it's passed to the pop method for each route.
+  /// Pops every route until the initial (root) route is reached.
+  /// If a [result] is provided, it's passed to each pop.
   ///
-  /// **Caution**: This will pop all routes above the very first route in the stack.
-  /// Ensure this is the desired behavior.
-  void maybeBack<T extends Object?>([T? result]) {
-    while (canBack()) {
+  /// **Caution**: this pops *all* routes above the first one in the stack — it is
+  /// not a single conditional pop. Use [back] for that.
+  void popToRoot<T extends Object?>([T? result]) {
+    while (canGoBack()) {
       back<T>(result);
     }
   }
@@ -141,19 +141,20 @@ extension NavigationExtension on BuildContext {
 
   // --- Dialogs & Modals ---
 
-  /// Checks if a dialog is currently open over this context.
+  /// Whether this context's route is currently covered by another route on top
+  /// (e.g. a dialog, bottom sheet, or pushed page).
   ///
-  /// This is a heuristic and might not be universally accurate for all types of
-  /// modal routes or dialog implementations. It checks if the current route
-  /// associated with this context is the topmost active route.
-  bool get isDialogOpen => ModalRoute.of(this)?.isCurrent != true;
+  /// This is a heuristic: it reports `true` whenever this route is not the
+  /// topmost active route. It cannot tell *what* is on top (dialog vs. page).
+  bool get isCoveredByRoute => ModalRoute.of(this)?.isCurrent != true;
 
-  /// Attempts to close an open dialog if [isDialogOpen] is true.
+  /// Pops the topmost route if this context's route is [isCoveredByRoute]
+  /// (commonly used to dismiss an open dialog/bottom sheet).
   ///
-  /// Uses [back] to pop the current route, which is assumed to be a dialog.
-  /// See caveats for [isDialogOpen].
-  void closeDialog() {
-    if (isDialogOpen) {
+  /// See the caveats on [isCoveredByRoute] — it dismisses whatever is on top,
+  /// not specifically a dialog.
+  void dismissTopRoute() {
+    if (isCoveredByRoute) {
       back();
     }
   }

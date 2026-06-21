@@ -71,13 +71,13 @@ extension StringExt on String {
   }
 
   /// Removes the `62` country code prefix, if present.
-  String toRemove62() {
+  String withoutCountryCode62() {
     if (startsWith('62')) return substring(2);
     return this;
   }
 
   /// Parses a JSON string into a Dart [Map] or [List].
-  dynamic get jsonDecode => json.decode(this);
+  dynamic get decodedJson => json.decode(this);
 
   /// Capitalizes the first letter. Example: `hello` → `Hello`.
   String get capitalize =>
@@ -113,7 +113,7 @@ extension StringExt on String {
 extension StringNullExt on String? {
   /// Converts to Indonesian phone format starting with `62`.
   /// Returns empty string if null.
-  String toPhoneNumber62() {
+  String toIndonesianPhoneDigits() {
     final digits = this?.replaceAll(RegExp(r'\D'), '') ?? '';
     if (digits.isEmpty) return '';
 

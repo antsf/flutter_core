@@ -40,20 +40,20 @@ void main() {
 
   test('configure sets custom dark theme', () async {
     final customDark = AppTheme.defaultDarkTheme.copyWith(
-      colorScheme: ColorSchemes.darkGreen,
+      colorScheme: ColorSchemes.darkGreenScheme,
     );
 
     ThemeProvider.configure(darkTheme: customDark);
-    await ThemeProvider.instance.setThemeMode(true);
+    await ThemeProvider.instance.setDarkMode(true);
 
     expect(
       ThemeProvider.instance.currentTheme.colorScheme.primary,
-      ColorSchemes.darkGreen.primary,
+      ColorSchemes.darkGreenScheme.primary,
     );
   });
 
   test('loadThemeMode reads dark mode from storage', () async {
-    SharedPreferences.setMockInitialValues({ThemeProvider.themeKey: true});
+    SharedPreferences.setMockInitialValues({ThemeProvider.themeModeKey: true});
     ThemeProvider.reset();
     final p = ThemeProvider.instance;
     setFontBuilderForTesting(setFontForTesting);

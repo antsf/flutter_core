@@ -24,7 +24,7 @@ Add to your `pubspec.yaml`:
 dependencies:
   flutter_corekit:
     git:
-      url: https://github.com/antsf/flutter_core
+      url: https://github.com/antsf/flutter_corekit
       ref: main
 ```
 
@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
       listenable: ThemeProvider.instance,
       builder: (context, _) => MaterialApp(
         // ThemeProvider exposes a single already-resolved theme; toggle it with
-        // ThemeProvider.instance.toggleTheme() / setThemeMode(bool).
+        // ThemeProvider.instance.toggleTheme() / setDarkMode(bool).
         theme: ThemeProvider.instance.currentTheme,
         home: const HomePage(),
       ),
@@ -138,7 +138,7 @@ DateTime.now().toIndonesianDate()        // "26 Juni 2025"
 DateTime.now().toShortMonthName()        // "26 Jun 2025"
 DateTime.now().toIndonesianDateWithDay() // "Kamis, 26 Juni 2025"
 DateTime.now().toTime()                  // "14:30"
-DateTime.now().toDbFormat()              // "2025-06-26"
+DateTime.now().toIsoDate()               // "2025-06-26"
 ```
 
 #### Numbers (Rupiah)
@@ -193,7 +193,7 @@ context.isDarkMode
 1.spacing        // SizedBox(16x16)
 2.spacingHeight  // SizedBox(height: 32)
 1.padding        // EdgeInsets.all(16)
-1.paddingX       // EdgeInsets.symmetric(horizontal: 16)
+1.paddingHorizontal // EdgeInsets.symmetric(horizontal: 16)
 0.5.radius       // BorderRadius.circular(5)
 ```
 
@@ -201,8 +201,8 @@ context.isDarkMode
 
 ```dart
 searchController.stream
-  .debounceMs(300)   // wait 300ms of silence
-  .throttleMs(500)   // emit at most once per 500ms
+  .debounce(const Duration(milliseconds: 300))   // wait 300ms of silence
+  .throttle(const Duration(milliseconds: 500))   // emit at most once per 500ms
 ```
 
 ### Result Type

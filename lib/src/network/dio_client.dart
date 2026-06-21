@@ -278,7 +278,8 @@ class DioClient {
 
   void clearHeaders() => _dio.options.headers.clear();
 
-  String? get authToken => _dio.options.headers['Authorization'] as String?;
+  String? get authorizationHeader =>
+      _dio.options.headers['Authorization'] as String?;
 
   /// Direct access to the underlying [Dio] instance. Use with caution.
   Dio get dioInstance => _dio;
@@ -286,14 +287,14 @@ class DioClient {
   // --- Private ---
 
   Future<ApiResponse<T>> _execute<T>(
-    Future<Response<dynamic>> Function() call, {
+    Future<Response<dynamic>> Function() request, {
     T Function(dynamic)? fromJson,
     String? cacheKey,
     Duration? cacheTtl,
   }) async {
     try {
       if (_checkConnectivityBeforeRequest) await _checkConnectivity();
-      final response = await call();
+      final response = await request();
       final rawData = response.data;
       if (cacheKey != null && cacheTtl != null && rawData != null) {
         _writeCacheEntry(cacheKey, _CacheEntry(rawData, cacheTtl));
@@ -341,11 +342,11 @@ class DioClient {
     // Scope every cache key to the current identity (auth token) so a cached
     // response for one user can never be served to another after the token
     // changes. The token itself is not stored — only its hash.
-    final identity = _dio.options.headers['Authorization']?.hashCode ?? 0;
-    final base = (query == null || query.isEmpty)
+    final authHash = _dio.options.headers['Authorization']?.hashCode ?? 0;
+    final keyBody = (query == null || query.isEmpty)
         ? path
         : '$path?${(query.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => '${e.key}=${e.value}').join('&')}';
-    return '$identity|$base';
+    return '$authHash|$keyBody';
   }
 
   /// Reads a cache entry, applying LRU semantics: a valid hit is moved to
@@ -403,7 +404,12 @@ class DioClient {
                 error.requestOptions.extra['__retried_after_refresh'] = true;
                 return handler.resolve(await _dio.fetch(error.requestOptions));
               }
-              _logger?.w('DioClient: Token refresh returned null.');
+              // Refresh definitively failed to produce a token: the current
+              // token is invalid, so drop it instead of leaving a stale
+              // Authorization header on every subsequent request.
+              _logger?.w(
+                  'DioClient: Token refresh returned null. Clearing stale auth token.');
+              clearAuthToken();
             } catch (e, s) {
               _logger?.e('DioClient: Token refresh failed.',
                   error: e, stackTrace: s);
@@ -429,7 +435,14 @@ class DioClient {
   Future<String?> _refreshAuthToken(Future<String?> Function(Dio) callback) {
     return _ongoingRefresh ??= () async {
       try {
-        final dioForRefresh = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
+        // Inherit the main client's timeouts so a hung refresh endpoint can't
+        // stall all coalesced 401 callers indefinitely.
+        final dioForRefresh = Dio(BaseOptions(
+          baseUrl: _dio.options.baseUrl,
+          connectTimeout: _dio.options.connectTimeout,
+          receiveTimeout: _dio.options.receiveTimeout,
+          sendTimeout: _dio.options.sendTimeout,
+        ));
         return await callback(dioForRefresh);
       } finally {
         _ongoingRefresh = null;

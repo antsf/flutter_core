@@ -45,7 +45,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   }
 
 //   /// Formats the date with full month name and time (e.g., `26 Juni 2025 14:30`).
-//   String toDateTime() {
+//   String toIndonesianDateTimeString() {
 //     initialize();
 //     return DateFormat('d MMMM yyyy HH:mm', 'id_ID').format(this);
 //   }
@@ -81,7 +81,7 @@ import 'package:flutter_test/flutter_test.dart';
 //   }
 
 //   /// Formats the date for a database (e.g., `2025-06-26`).
-//   String toDbFormat() {
+//   String toIsoDate() {
 //     initialize();
 //     return DateFormat('yyyy-MM-dd').format(this);
 //   }
@@ -149,8 +149,8 @@ void main() {
       expect(testDate.toShortDateWithTime(), '26/06/2025 14:30');
     });
 
-    test('toDateTime formats to d MMMM yyyy HH:mm', () {
-      expect(testDate.toDateTime(), '26 Juni 2025 14:30');
+    test('toIndonesianDateTimeString formats to d MMMM yyyy HH:mm', () {
+      expect(testDate.toIndonesianDateTimeString(), '26 Juni 2025 14:30');
     });
 
     test('toShortDateTime formats to d MMM yyyy HH:mm', () {
@@ -163,8 +163,8 @@ void main() {
 
     // --- Database Formats (ISO-like) ---
 
-    test('toDbFormat formats to yyyy-MM-dd', () {
-      expect(testDate.toDbFormat(), '2025-06-26');
+    test('toIsoDate formats to yyyy-MM-dd', () {
+      expect(testDate.toIsoDate(), '2025-06-26');
     });
 
     test('toDbDateTimeFormat formats to yyyy-MM-dd HH:mm:ss', () {

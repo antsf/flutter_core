@@ -12,7 +12,7 @@ class FcColors {
   static const Color transparent = Color(0x00000000);
 
   // Mock implementation for color manipulation methods
-  static Color withOpacity(Color color, double opacity) =>
+  static Color colorWithOpacity(Color color, double opacity) =>
       color.withValues(alpha: opacity);
   static Color darken(Color color, [double amount = 0.1]) =>
       Color.lerp(color, Colors.black, amount)!;
@@ -93,8 +93,8 @@ extension ColorContextExtensions on BuildContext {
 
   Color get transparentColor => FcColors.transparent;
 
-  Color withOpacity(Color color, double opacity) =>
-      FcColors.withOpacity(color, opacity);
+  Color colorWithOpacity(Color color, double opacity) =>
+      FcColors.colorWithOpacity(color, opacity);
   Color darken(Color color, [double amount = 0.1]) =>
       FcColors.darken(color, amount);
   Color lighten(Color color, [double amount = 0.1]) =>
@@ -153,8 +153,8 @@ extension TextStyleExtension on TextStyle {
   TextStyle get strikethrough =>
       copyWith(decoration: TextDecoration.lineThrough);
   TextStyle fontSizes(double value) => copyWith(fontSize: value.sp);
-  TextStyle heightSpace(double value) => copyWith(height: value);
-  TextStyle letterSpace(double value) => copyWith(letterSpacing: value);
+  TextStyle withLineHeight(double value) => copyWith(height: value);
+  TextStyle withLetterSpacing(double value) => copyWith(letterSpacing: value);
   TextStyle withColor(Color color) => copyWith(color: color);
   TextStyle withOverflow(TextOverflow overflow) => copyWith(overflow: overflow);
 }
@@ -209,8 +209,8 @@ void main() {
       const Color baseColor = Colors.black;
       const Color targetColor = Colors.white;
 
-      // withOpacity
-      expect(testContext.withOpacity(baseColor, 0.5),
+      // colorWithOpacity
+      expect(testContext.colorWithOpacity(baseColor, 0.5),
           baseColor.withValues(alpha: .5));
 
       // darken (mocked to lerp to black)
@@ -289,11 +289,11 @@ void main() {
     });
 
     test('applies height space', () {
-      expect(baseStyle.heightSpace(1.5).height, 1.5);
+      expect(baseStyle.withLineHeight(1.5).height, 1.5);
     });
 
     test('applies letter space', () {
-      expect(baseStyle.letterSpace(2.0).letterSpacing, 2.0);
+      expect(baseStyle.withLetterSpacing(2.0).letterSpacing, 2.0);
     });
 
     test('applies color', () {

@@ -27,6 +27,41 @@ void main() {
       // Caret should sit right after the digit just typed ("5"), not at the end.
       expect(r.selection.baseOffset, 2);
     });
+
+    test('formats values beyond the int range instead of reverting', () {
+      // 25 digits — far past 2^63; the old int.tryParse path returned null here
+      // and froze the field.
+      const big = '1234567890123456789012345';
+      final r =
+          f.formatEditUpdate(TextEditingValue.empty, _val(big, big.length));
+      expect(r.text, '1.234.567.890.123.456.789.012.345');
+    });
+
+    test('drops leading zeros', () {
+      final r = f.formatEditUpdate(TextEditingValue.empty, _val('007', 3));
+      expect(r.text, '7');
+    });
+
+    test('allowNegative: false ignores a leading minus', () {
+      final neg = ThousandsFormatter();
+      final r = neg.formatEditUpdate(TextEditingValue.empty, _val('-1000', 5));
+      expect(r.text, '1.000');
+    });
+
+    group('allowNegative: true', () {
+      final fn = ThousandsFormatter(allowNegative: true);
+
+      test('formats a negative number', () {
+        final r = fn.formatEditUpdate(TextEditingValue.empty, _val('-1000', 5));
+        expect(r.text, '-1.000');
+      });
+
+      test('keeps a lone "-" so the user can keep typing', () {
+        final r = fn.formatEditUpdate(TextEditingValue.empty, _val('-', 1));
+        expect(r.text, '-');
+        expect(r.selection.baseOffset, 1);
+      });
+    });
   });
 
   group('PhoneFormatter', () {

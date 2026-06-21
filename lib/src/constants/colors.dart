@@ -164,7 +164,7 @@ class FcColors {
   /// [color]: The original color.
   /// [opacity]: The opacity value, ranging from 0.0 (fully transparent) to 1.0 (fully opaque).
   /// Returns a new [Color] instance with the applied opacity.
-  static Color withOpacity(Color color, double opacity) {
+  static Color colorWithOpacity(Color color, double opacity) {
     return color.withValues(alpha: opacity);
   }
 
@@ -233,13 +233,17 @@ class FcColors {
         onErrorContainer: onErrorContainer,
         surface: surface,
         onSurface: onSurface,
+        // The neutral [background] (Grey 50) is intentionally reused as the
+        // container tone: a subtle step below the white [surface] (M3 merged the
+        // old `background` role into surface, so this constant has no other home).
         surfaceContainer: background,
         surfaceContainerHighest: surfaceVariant,
         onSurfaceVariant: onSurfaceVariant,
         outline: outline,
         outlineVariant: outlineVariant,
-        // Inverse colors can be added if needed, e.g.,
-        inversePrimary: onPrimary,
+        // Inverse colors: a lighter, tinted primary reads as a "primary" on the
+        // dark inverse surface (white — the previous `onPrimary` — did not).
+        inversePrimary: primaryLight,
         inverseSurface: onSurface,
         onInverseSurface: surface,
         shadow: Colors.black, // Default shadow color

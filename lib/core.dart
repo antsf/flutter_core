@@ -1,6 +1,6 @@
 /// Exports core functionalities, services, and UI utilities for Flutter applications.
 ///
-/// This library serves as the main entry point for the `flutter_core` package.
+/// This library serves as the main entry point for the `flutter_corekit` package.
 /// It provides the [FlutterCore] class for initializing essential services like
 /// networking and storage, and the [ScreenUtilWrapper] widget for setting up
 /// responsive UI utilities.
@@ -19,9 +19,6 @@
 ///
 ///   // Initialize Flutter Core services (e.g., network, storage).
 ///   await FlutterCore.initialize(baseUrl: 'https://api.example.com');
-///
-///   // Optionally, initialize UI-specific services like themes and fonts.
-///   await FlutterCore.initializeUI();
 ///
 ///   runApp(MyApp());
 /// }
@@ -56,11 +53,10 @@ import 'src/services/connectivity_service.dart';
 
 /// Main class for initializing and accessing core functionalities of the Flutter Core package.
 ///
-/// This class provides static methods to initialize services like networking ([dioClient]),
-/// secure storage ([storageService]), and UI theming ([themeProvider]).
+/// This class provides static methods to initialize services like networking
+/// ([dioClient]) and secure storage ([secureStorage]).
 ///
 /// The [initialize] method **must** be called before accessing any services.
-/// The [initializeUI] method can be called to set up themes and fonts.
 ///
 /// Accessing services before initialization will result in a [LateInitializationError].
 class FlutterCore {
@@ -78,7 +74,7 @@ class FlutterCore {
   ///
   /// Available after [initialize] has been successfully called.
   /// Throws a [LateInitializationError] if accessed before initialization.
-  static late final SecureStorage localStorage;
+  static late final SecureStorage secureStorage;
 
   /// Initializes core non-UI services of the Flutter Core package.
   ///
@@ -111,8 +107,8 @@ class FlutterCore {
     }
 
     // 1. Initialize secure storage.
-    localStorage = SecureStorage();
-    await localStorage.init();
+    secureStorage = SecureStorage();
+    await secureStorage.init();
 
     // 2. Initialize the network client (Dio).
     dioClient = DioClient(
@@ -147,12 +143,13 @@ class FlutterCore {
   /// Primarily for testing, where services may need re-initialization between
   /// tests.
   ///
-  /// **Note:** the `late final` static fields (`dioClient`, `localStorage`)
+  /// **Note:** the `late final` static fields (`dioClient`, `secureStorage`)
   /// cannot be reset without restarting the app or a proper DI container, so
   /// this only resets the `_isInitialized` flag.
-  static Future<void> cleanup() async {
+  static Future<void> resetInitialization() async {
     if (!_isInitialized) {
-      debugPrint("FlutterCore.cleanup() called but core is not initialized.");
+      debugPrint(
+          "FlutterCore.resetInitialization() called but core is not initialized.");
       return;
     }
 

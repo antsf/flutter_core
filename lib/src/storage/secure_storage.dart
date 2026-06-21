@@ -120,9 +120,6 @@ class SecureStorage {
     return result;
   }
 
-  /// Alias for [clearBox] — removes all keys under [boxName].
-  Future<void> deleteBoxFromDisk(String boxName) async => clearBox(boxName);
-
   /* ---------- private ---------- */
 
   String _key(String boxName, String key) => '$boxName|$key';
@@ -136,7 +133,14 @@ class SecureStorage {
     if (T == String) return raw as T;
     if (T == int) return int.tryParse(raw) as T?;
     if (T == double) return double.tryParse(raw) as T?;
-    if (T == bool) return (raw.toLowerCase() == 'true') as T;
+    if (T == bool) {
+      final lower = raw.toLowerCase();
+      if (lower == 'true') return true as T;
+      if (lower == 'false') return false as T;
+      // Corrupt/garbage value — return null like the other tryParse branches
+      // instead of silently coercing to `false`.
+      return null;
+    }
     if (T == Map<String, dynamic>) return jsonDecode(raw) as T?;
     if (T == List<dynamic>) return jsonDecode(raw) as T?;
     throw UnsupportedError(

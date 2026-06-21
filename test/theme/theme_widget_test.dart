@@ -46,6 +46,6 @@ void main() {
 
     // The choice was persisted.
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getBool(ThemeProvider.themeKey), isTrue);
+    expect(prefs.getBool(ThemeProvider.themeModeKey), isTrue);
   });
 }

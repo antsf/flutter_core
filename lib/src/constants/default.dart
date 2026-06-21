@@ -36,19 +36,19 @@ double get kBottomNavigationBarHeight => 56.h;
 /// Returns `56.h`, which means 56 logical pixels scaled vertically by `ScreenUtil`.
 double get kAppBarHeight => 56.h;
 
-/// A pre-created `Future` that completes after `kDuration`.
+/// Returns a fresh `Future` that completes after [kDuration].
 ///
-/// This can be used for simple delays in UI logic or animations.
-/// However, for more complex scenarios or multiple delays, creating `Future.delayed`
-/// instances on demand might be more appropriate to avoid potential reuse issues
-/// if the future is expected to run multiple times.
+/// Use this for simple delays in UI logic or animations. It is a function (not a
+/// cached field) so every call produces a new delay — `await defaultDelay()` always
+/// waits the full [kDuration], whereas a single shared future would only delay
+/// the first awaiter and return immediately thereafter.
 ///
 /// Example:
 /// ```dart
-/// await kDelayed; // Waits for kDuration (300ms)
+/// await defaultDelay(); // Waits for kDuration (300ms)
 /// // Perform action after delay
 /// ```
-final Future<void> kDelayed = Future.delayed(kDuration);
+Future<void> defaultDelay() => Future.delayed(kDuration);
 
 /// A 1x1 transparent PNG image represented as a `Uint8List`.
 ///

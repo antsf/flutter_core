@@ -14,7 +14,7 @@ typedef FontBuilder = TextStyle Function(
     double? letterSpacing});
 
 // Default uses Google Fonts
-FontBuilder _defaultFont = (
+FontBuilder _fontStyleBuilder = (
         {double? fontSize,
         FontWeight? fontWeight,
         Color? color,
@@ -27,7 +27,7 @@ FontBuilder _defaultFont = (
 
 // Allow test to replace it
 void setFontBuilderForTesting(FontBuilder builder) {
-  _defaultFont = builder;
+  _fontStyleBuilder = builder;
 }
 
 /// Text theme configurations
@@ -35,7 +35,7 @@ class TextThemes {
   TextThemes._();
 
   // Font weights
-  static const FontWeight lightW = FontWeight.w300;
+  static const FontWeight lightWeight = FontWeight.w300;
   static const FontWeight regular = FontWeight.w400;
   static const FontWeight medium = FontWeight.w500;
   static const FontWeight semiBold = FontWeight.w600;
@@ -43,54 +43,55 @@ class TextThemes {
 
   /// Creates a base text theme
   static TextTheme get base => TextTheme(
-        displayLarge: _defaultFont(fontSize: 57.sp, fontWeight: bold),
-        displayMedium: _defaultFont(fontSize: 45.sp, fontWeight: bold),
-        displaySmall: _defaultFont(fontSize: 36.sp, fontWeight: bold),
-        headlineLarge: _defaultFont(fontSize: 32.sp, fontWeight: semiBold),
-        headlineMedium: _defaultFont(fontSize: 28.sp, fontWeight: semiBold),
-        headlineSmall: _defaultFont(fontSize: 22.sp, fontWeight: semiBold),
-        titleLarge: _defaultFont(
+        displayLarge: _fontStyleBuilder(fontSize: 57.sp, fontWeight: bold),
+        displayMedium: _fontStyleBuilder(fontSize: 45.sp, fontWeight: bold),
+        displaySmall: _fontStyleBuilder(fontSize: 36.sp, fontWeight: bold),
+        headlineLarge: _fontStyleBuilder(fontSize: 32.sp, fontWeight: semiBold),
+        headlineMedium:
+            _fontStyleBuilder(fontSize: 28.sp, fontWeight: semiBold),
+        headlineSmall: _fontStyleBuilder(fontSize: 22.sp, fontWeight: semiBold),
+        titleLarge: _fontStyleBuilder(
             fontSize: 18.sp,
             letterSpacing: 0,
             color: FcColors.primaryText,
             fontWeight: bold),
-        titleMedium: _defaultFont(
+        titleMedium: _fontStyleBuilder(
             fontSize: 16.sp,
             letterSpacing: 0,
             fontWeight: bold,
             color: FcColors.primaryText),
-        titleSmall: _defaultFont(
+        titleSmall: _fontStyleBuilder(
           fontSize: 14.sp,
           letterSpacing: 0,
           fontWeight: bold,
           color: FcColors.primaryText,
         ),
-        bodyLarge: _defaultFont(
+        bodyLarge: _fontStyleBuilder(
             fontSize: 14.sp,
             letterSpacing: 0,
             fontWeight: regular,
             color: FcColors.primaryText),
-        bodyMedium: _defaultFont(
+        bodyMedium: _fontStyleBuilder(
             fontSize: 12.sp,
             letterSpacing: 0,
             fontWeight: regular,
             color: FcColors.primaryText),
-        bodySmall: _defaultFont(
+        bodySmall: _fontStyleBuilder(
             fontSize: 10.sp,
             letterSpacing: 0,
             fontWeight: medium,
             color: FcColors.secondaryText),
-        labelLarge: _defaultFont(
+        labelLarge: _fontStyleBuilder(
             fontSize: 16.sp,
             letterSpacing: 0,
             fontWeight: bold,
             color: FcColors.primaryText),
-        labelMedium: _defaultFont(
+        labelMedium: _fontStyleBuilder(
             fontSize: 14.sp,
             letterSpacing: 0,
             fontWeight: regular,
             color: FcColors.primaryText),
-        labelSmall: _defaultFont(
+        labelSmall: _fontStyleBuilder(
             fontSize: 12.sp,
             letterSpacing: 0,
             fontWeight: medium,
