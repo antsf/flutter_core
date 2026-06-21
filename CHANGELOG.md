@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 4.0.0 — 2026-06-21
+
+### Breaking Changes
+- Entry-point class `FlutterCore` → **`FlutterCorekit`**, to match the package
+  name. Update call sites: `FlutterCorekit.initialize(...)`,
+  `FlutterCorekit.dioClient`, `FlutterCorekit.secureStorage`,
+  `FlutterCorekit.resetInitialization()`.
+
+---
+
 ## 3.0.0 — 2026-06-21
 
 ### Breaking Changes — identifier renames
