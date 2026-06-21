@@ -10,7 +10,8 @@ All notable changes to this project will be documented in this file.
 
 Public identifiers were renamed so each name reflects its value/role. Update call sites accordingly:
 
-- `FlutterCore.localStorage` → `FlutterCore.secureStorage`; `FlutterCore.cleanup()` → `resetInitialization()`
+- Entry-point class `FlutterCore` → `FlutterCorekit` (matches the package name)
+- `FlutterCorekit.localStorage` → `FlutterCorekit.secureStorage`; `FlutterCorekit.cleanup()` → `resetInitialization()`
 - `ThemeProvider.setThemeMode(bool)` → `setDarkMode(bool)`
 - `Failure.error` field → `Failure.cause` (all subclasses + `NetworkException`)
 - `Result` failure variant `Error` → `ResultError` (avoids shadowing `dart:core.Error`)

@@ -22,7 +22,7 @@ void main() async {
 
   // Initialize theme and core services
   // await ThemeProvider.instance.loadThemeMode();
-  await FlutterCore.initialize(
+  await FlutterCorekit.initialize(
     baseUrl: 'https://jsonplaceholder.typicode.com',
     connectTimeout: 30000,
     receiveTimeout: 30000,
@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FlutterCore.initializeUI();
+    // FlutterCorekit.initializeUI();
 
     return ListenableBuilder(
       listenable: ThemeProvider.instance,
@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> loadData() async {
     setState(() => isLoading = true);
     try {
-      final result = await FlutterCore.dioClient.get('/posts/1');
+      final result = await FlutterCorekit.dioClient.get('/posts/1');
       setState(() {
         response = result.data.toString();
         isLoading = false;

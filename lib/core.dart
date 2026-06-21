@@ -1,13 +1,13 @@
 /// Exports core functionalities, services, and UI utilities for Flutter applications.
 ///
 /// This library serves as the main entry point for the `flutter_corekit` package.
-/// It provides the [FlutterCore] class for initializing essential services like
+/// It provides the [FlutterCorekit] class for initializing essential services like
 /// networking and storage, and the [ScreenUtilWrapper] widget for setting up
 /// responsive UI utilities.
 ///
 /// ## Usage
 ///
-/// Before using any services from this package, you must initialize [FlutterCore]:
+/// Before using any services from this package, you must initialize [FlutterCorekit]:
 ///
 /// ```dart
 /// import 'package:flutter_corekit/flutter_corekit.dart';
@@ -18,7 +18,7 @@
 ///   WidgetsFlutterBinding.ensureInitialized();
 ///
 ///   // Initialize Flutter Core services (e.g., network, storage).
-///   await FlutterCore.initialize(baseUrl: 'https://api.example.com');
+///   await FlutterCorekit.initialize(baseUrl: 'https://api.example.com');
 ///
 ///   runApp(MyApp());
 /// }
@@ -59,7 +59,7 @@ import 'src/services/connectivity_service.dart';
 /// The [initialize] method **must** be called before accessing any services.
 ///
 /// Accessing services before initialization will result in a [LateInitializationError].
-class FlutterCore {
+class FlutterCorekit {
   /// A private flag to track whether [initialize] has been called.
   /// This prevents redundant initializations.
   static bool _isInitialized = false;
@@ -102,7 +102,7 @@ class FlutterCore {
   }) async {
     if (_isInitialized) {
       debugPrint(
-          "FlutterCore.initialize() called multiple times. Ignoring subsequent calls.");
+          "FlutterCorekit.initialize() called multiple times. Ignoring subsequent calls.");
       return;
     }
 
@@ -135,10 +135,10 @@ class FlutterCore {
     await ConnectivityService.instance.hasConnection();
 
     _isInitialized = true;
-    debugPrint("FlutterCore initialized successfully.");
+    debugPrint("FlutterCorekit initialized successfully.");
   }
 
-  /// Resets the initialization flag of FlutterCore.
+  /// Resets the initialization flag of FlutterCorekit.
   ///
   /// Primarily for testing, where services may need re-initialization between
   /// tests.
@@ -149,13 +149,13 @@ class FlutterCore {
   static Future<void> resetInitialization() async {
     if (!_isInitialized) {
       debugPrint(
-          "FlutterCore.resetInitialization() called but core is not initialized.");
+          "FlutterCorekit.resetInitialization() called but core is not initialized.");
       return;
     }
 
     _isInitialized = false;
     debugPrint(
-        "FlutterCore cleaned up. Ready for re-initialization if needed.");
+        "FlutterCorekit cleaned up. Ready for re-initialization if needed.");
   }
 }
 
